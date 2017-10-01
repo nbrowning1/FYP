@@ -1,0 +1,39 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+
+{% if mark_list %}
+    <h2>Marks</h2>
+    <table>
+      <tr>
+        <th>Student Code</th>
+        <th>Mark</th>
+        <th>Date</th>
+      </tr>
+    {% for mark in mark_list %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td>{{ mark.student }}</td>
+        <td>{{ mark.mark }}</td>
+        <td>{{ mark.date }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+    <br>
+{% else %}
+    <p>No marks are available.</p>
+{% endif %}
+
+{% if error_message %}
+  <p>{{ error_message }}</p>
+{% endif %}
+
+<form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="upload-marks">
+  <input type="submit" value="Upload">
+</form>

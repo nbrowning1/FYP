@@ -1,0 +1,24 @@
+body {
+  padding: 15px;
+}
+
+tr {
+  outline: thin solid;
+}
+
+th, td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100px;
+}
+
+tr.alt {
+  background-color: lightgrey;
+}
+
+td.select-row {
+  padding-left: 10px;
+  padding-right: 10px;
+}

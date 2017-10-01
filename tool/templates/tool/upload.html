@@ -1,0 +1,39 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
+
+{% if uploaded_list %}
+    <h2>Saved data:</h2>
+    <table>
+      <tr>
+        <th></th>
+        <th>Student Code</th>
+        <th>Mark</th>
+        <th>Date</th>
+      </tr>
+    {% for upload in uploaded_list %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td class="select-row"><input type="checkbox" checked></td>
+        <td>{{ upload.first }}</td>
+        <td>{{ upload.second }}</td>
+        <td>{{ upload.third }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+
+    <a href="{% url 'tool:index' %}">Go back</a>
+<!--
+    <form id="confirm-data" action="{% url 'tool:index' %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="submit" value="Confirm">
+    </form>
+-->
+{% else %}
+    <p>No upload information available.</p>
+{% endif %}
