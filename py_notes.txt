@@ -1,0 +1,2 @@
+TemplateDoesNotExist problem
+- check that usage is in settings.py INSTALLED_APPS

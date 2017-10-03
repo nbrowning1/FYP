@@ -5,7 +5,7 @@
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
 {% if uploaded_list %}
-    <h2>Saved data:</h2>
+    <h4>Saved data:</h4>
     <table>
       <tr>
         <th></th>
@@ -26,8 +26,6 @@
       </tr>
     {% endfor %}
     </table>
-
-    <a href="{% url 'tool:index' %}">Go back</a>
 <!--
     <form id="confirm-data" action="{% url 'tool:index' %}" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
@@ -37,3 +35,5 @@
 {% else %}
     <p>No upload information available.</p>
 {% endif %}
+
+<a href="{% url 'tool:index' %}">Go back</a>
