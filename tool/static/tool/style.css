@@ -2,6 +2,19 @@ body {
   padding: 15px;
 }
 
+#content {
+  width: 70%;
+  margin: 0 auto;
+}
+
+h1, h2, h3, h4, h5, h6, form, .link-container {
+  text-align: center;
+}
+
+table {
+  margin: 0 auto;
+}
+
 tr {
   outline: thin solid;
 }
@@ -21,4 +34,8 @@ tr.alt {
 td.select-row {
   padding-left: 10px;
   padding-right: 10px;
+}
+
+table {
+  align-self: center;
 }

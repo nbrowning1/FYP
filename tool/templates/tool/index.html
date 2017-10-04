@@ -2,17 +2,26 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript">
     google.load("visualization", "1", {packages:["corechart"]});
 </script>
+
+<div id="content" class="container">
 
 <h1>Upload Marks</h1>
 
 {{ chart.as_html }}
 
 {% if mark_list %}
-    <h4>Marks</h4>
+  <div class="link-container">
+    <a href="#demo" class="btn btn-info" data-toggle="collapse">View Marks</a>    
+  </div>
+  
+  <div id="demo" class="collapse">
+    <br>
     <table>
       <tr>
         <th>Student Code</th>
@@ -31,15 +40,20 @@
       </tr>
     {% endfor %}
     </table>
-    <br>
+  </div>
+  <br>
+  <hr>
+  <br>
 {% else %}
-    <p>No marks are available.</p>
+  <p>No marks are available.</p>
 {% endif %}
 
 {% if error_message %}
   <p>{{ error_message }}</p>
 {% endif %}
 
+
+  
 <form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <!-- pretty file-upload -->
@@ -49,3 +63,4 @@
   <input type="submit" class="btn btn-info" value="Submit">
 </form>
 
+</div>
