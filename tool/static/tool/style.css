@@ -11,12 +11,20 @@ h1, h2, h3, h4, h5, h6, form, .link-container {
   text-align: center;
 }
 
+.login-form-label, .register-form-label {
+  width: 125px;
+}
+
 table {
   margin: 0 auto;
 }
 
 tr {
   outline: thin solid;
+}
+
+table.noborder tr {
+  outline: none;
 }
 
 th, td {

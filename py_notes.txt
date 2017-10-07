@@ -1,2 +1,9 @@
-TemplateDoesNotExist problem
+TemplateDoesNotExist problem:
 - check that usage is in settings.py INSTALLED_APPS
+
+Auth:
+- https://docs.djangoproject.com/en/1.11/topics/auth/default/
+- https://docs.djangoproject.com/en/1.11/topics/auth/default/#built-in-auth-views
+
+References
+- https://github.com/agiliq/django-graphos

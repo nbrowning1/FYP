@@ -1,0 +1,50 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
+
+<!-- From https://docs.djangoproject.com/en/1.11/topics/auth/default/#built-in-auth-views -->
+
+{% if form.errors %}
+<p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+{% if next %}
+    {% if user.is_authenticated %}
+    <p>Your account doesn't have access to this page. To proceed,
+    please login with an account that has access.</p>
+    {% else %}
+    <p>Please login to see this page.</p>
+    {% endif %}
+{% endif %}
+
+<form method="post" action="{% url 'tool:login' %}">
+{% csrf_token %}
+<table class="noborder">
+<tr>
+    <td>{{ form.username.label_tag }}</td>
+    <td>{{ form.username }}</td>
+</tr>
+<tr>
+    <td>{{ form.password.label_tag }}</td>
+    <td>{{ form.password }}</td>
+</tr>
+</table>
+
+<input type="submit" value="Login" />
+<input type="hidden" name="next" value="{{ next }}" />
+</form>
+
+<!--
+<form action="{% url 'tool:index' %}" method="POST">
+  {% csrf_token %}
+  <label for="username" class="login-form-label">Email:</label>
+  <input name="username">
+  <br>
+  <label for="password" class="login-form-label">Password:</label>
+  <input name="password">
+  <br>
+  <br>
+  <input type="submit" value="Login">
+</form>-->

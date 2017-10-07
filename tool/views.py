@@ -4,8 +4,9 @@ from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
-from .models import Student, Mark
+from .models import Student#, Mark
 
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers.gchart import LineChart
@@ -16,8 +17,10 @@ import csv
 import io
 import logging
 
+@login_required
 def index(request):
-  template_name = 'tool/index.html'
+  return render(request, 'tool/index.html', {})
+  """
   mark_list = Mark.objects.order_by('-date')
   error_msg = request.session.pop('error_message', '')
   
@@ -31,6 +34,10 @@ def index(request):
   # order matters - we retrieved the dates in desc order, query could be changed but for now we'll just reverse since table still exists
   dates_distinct = reversed(list(OrderedDict.fromkeys(mark.date for mark in mark_list)))
   
+  # data format:
+#  data =  [
+#    ...[ Y-axis, ...X-axis ]
+#  ]
   data = [ student_data ]
   for date in dates_distinct:
     data_item = []
@@ -48,15 +55,6 @@ def index(request):
         data_item.append(None)
 
     data.append(data_item)
-  
-#  data =  [
-#    # Y-axis, ...X-axis
-#    student_data,
-#    [2004, None, 400, 500],
-#    [2005, 1170, 460, 560],
-#    [2006, 660, 1120, 1220],
-#    [2007, 1030, 540, 640]
-#  ]
 
   chart = LineChart(SimpleDataSource(data=data), options={'title': 'Marks over time'})
   
@@ -65,8 +63,12 @@ def index(request):
     'error_message': error_msg,
     'chart': chart
   })
+  """
   
+@login_required
 def upload(request):
+  return render(request, 'tool/upload.html', {})
+  """
   if request.method == 'POST' and request.FILES.get('upload-marks', False):
 
     uploaded_list = []
@@ -105,7 +107,8 @@ def upload(request):
     # workaround to pass message through redirect
     request.session['error_message'] = "No file uploaded. Please upload a .csv file."
     return redirect(reverse('tool:index'), Permanent=True)
-
+  """
+  
 class DataRow:
     def __init__(self, first, second, third):
         self.first = first
