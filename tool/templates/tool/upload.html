@@ -9,9 +9,12 @@
     <table>
       <tr>
         <th></th>
+        <th>Module Code</th>
+        <th>Lecturer Staff Codes</th>
+        <th>Semester</th>
+        <th>Week</th>
         <th>Student Code</th>
-        <th>Mark</th>
-        <th>Date</th>
+        <th>Attended Lecture</th>
       </tr>
     {% for upload in uploaded_list %}
       {% if forloop.counter|divisibleby:2 %}
@@ -20,18 +23,16 @@
         <tr class="alt">
       {% endif %}
         <td class="select-row"><input type="checkbox" checked></td>
-        <td>{{ upload.first }}</td>
-        <td>{{ upload.second }}</td>
-        <td>{{ upload.third }}</td>
+        <td>{{ upload.module }}</td>
+        <td>{{ upload.lecturers }}</td>
+        <td>{{ upload.semester }}</td>
+        <td>{{ upload.week }}</td>
+        <td>{{ upload.student }}</td>
+        <td>{{ upload.attended }}</td>
       </tr>
     {% endfor %}
     </table>
-<!--
-    <form id="confirm-data" action="{% url 'tool:index' %}" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="submit" value="Confirm">
-    </form>
--->
+
 {% else %}
     <p>No upload information available.</p>
 {% endif %}

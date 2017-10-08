@@ -17,28 +17,25 @@
 
 {{ chart.as_html }}
 
-{% if mark_list %}
+<!-- MODULES -->
+{% if modules %}
   <div class="link-container">
-    <a href="#demo" class="btn btn-info" data-toggle="collapse">View Marks</a>    
+    <a href="#modules-container" class="btn btn-info" data-toggle="collapse">Modules</a>    
   </div>
   
-  <div id="demo" class="collapse">
+  <div id="modules-container" class="collapse">
     <br>
     <table>
       <tr>
-        <th>Student Code</th>
-        <th>Mark</th>
-        <th>Date</th>
+        <th>Module Code</th>
       </tr>
-    {% for mark in mark_list %}
+    {% for module in modules %}
       {% if forloop.counter|divisibleby:2 %}
         <tr>
       {% else %}
         <tr class="alt">
       {% endif %}
-        <td>{{ mark.student }}</td>
-        <td>{{ mark.mark }}</td>
-        <td>{{ mark.date }}</td>
+        <td>{{ module.module_code }}</td>
       </tr>
     {% endfor %}
     </table>
@@ -47,7 +44,101 @@
   <hr>
   <br>
 {% else %}
-  <p>No marks are available.</p>
+  <p>No modules are available.</p>
+{% endif %}
+  
+<!-- LECTURERS -->
+{% if lecturers %}
+  <div class="link-container">
+    <a href="#lecturers-container" class="btn btn-info" data-toggle="collapse">Lecturers</a>    
+  </div>
+  
+  <div id="lecturers-container" class="collapse">
+    <br>
+    <table>
+      <tr>
+        <th>Lecturer Code</th>
+      </tr>
+    {% for lecturer in lecturers %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td>{{ lecturer.user.username }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% else %}
+  <p>No lecturers are available.</p>
+{% endif %}
+  
+<!-- STUDENTS -->
+{% if students %}
+  <div class="link-container">
+    <a href="#students-container" class="btn btn-info" data-toggle="collapse">Students</a>    
+  </div>
+  
+  <div id="students-container" class="collapse">
+    <br>
+    <table>
+      <tr>
+        <th>Student Code</th>
+      </tr>
+    {% for student in students %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td>{{ student.user.username }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% else %}
+  <p>No students are available.</p>
+{% endif %}
+  
+<!-- LECTURES -->
+{% if lectures %}
+  <div class="link-container">
+    <a href="#lectures-container" class="btn btn-info" data-toggle="collapse">Lectures</a>    
+  </div>
+  
+  <div id="lectures-container" class="collapse">
+    <br>
+    <table>
+      <tr>
+        <th>Module</th>
+        <th>Semester</th>
+        <th>Week</th>
+      </tr>
+    {% for lecture in lecturers %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td>{{ lecture.module.module_code }}</td>
+        <td>{{ lecture.semester }}</td>
+        <td>{{ lecture.week }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% else %}
+  <p>No lecturers are available.</p>
 {% endif %}
 
 {% if error_message %}
@@ -60,7 +151,7 @@
   {% csrf_token %}
   <!-- pretty file-upload -->
   <label class="btn btn-default">
-    Upload CSV <input type="file" name="upload-marks" style="display:none;">
+    Upload CSV <input type="file" name="upload-data" style="display:none;">
   </label>
   <input type="submit" class="btn btn-info" value="Submit">
 </form>

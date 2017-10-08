@@ -6,7 +6,9 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from .models import Student#, Mark
+from .models import Student, Staff, Module, Lecture, StudentAttendance
+
+from .data_row import DataRow
 
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers.gchart import LineChart
@@ -19,7 +21,21 @@ import logging
 
 @login_required
 def index(request):
-  return render(request, 'tool/index.html', {})
+  error_msg = request.session.pop('error_message', '')
+    
+  modules = Module.objects.all()
+  lecturers = Staff.objects.all()
+  students = Student.objects.all()
+  lectures = Lecture.objects.all()
+    
+  return render(request, 'tool/index.html', {
+    'error_message': error_msg,
+    'modules': modules,
+    'lecturers': lecturers,
+    'students': students,
+    'lectures': lectures,
+  })
+
   """
   mark_list = Mark.objects.order_by('-date')
   error_msg = request.session.pop('error_message', '')
@@ -67,12 +83,10 @@ def index(request):
   
 @login_required
 def upload(request):
-  return render(request, 'tool/upload.html', {})
-  """
-  if request.method == 'POST' and request.FILES.get('upload-marks', False):
+  if request.method == 'POST' and request.FILES.get('upload-data', False):
 
     uploaded_list = []
-    csv_file = request.FILES['upload-marks']
+    csv_file = request.FILES['upload-data']
     if not (csv_file.name.lower().endswith('.csv')):
       # workaround to pass message through redirect
       request.session['error_message'] = "Invalid file type. Only csv files are accepted."
@@ -81,24 +95,29 @@ def upload(request):
     decoded_file = csv_file.read().decode('utf-8')
     file_str = io.StringIO(decoded_file)
     
+    error_occurred_msg = ''
     reader = csv.reader(file_str)
     for counter, row in enumerate(reader):
-      if (counter == 0):
+      # skip first row - titles
+      if counter == 0:
         continue
+        
+      # empty rows that can appear because of spreadsheet use
+      if not ''.join(row).strip():
+        break
     
-      try:
-        # try to get existing student
-        student = Student.objects.get(student_code=row[0])
-      except Student.DoesNotExist:
-        # create new student
-        student = Student(student_code=row[0])
-        student.save()
-        
-      mark = Mark(student=student, mark=row[1], date=row[2])
-      mark.save()
-        
-      data = DataRow(row[0], row[1], row[2])
-      uploaded_list.append(data)
+      data = DataRow(row)
+      error_with_data = data.get_error_message()
+      if error_with_data:
+        error_occurred_msg = 'Error with inputs: [[%s]] at line %s' % (error_with_data, counter)
+        break
+      else:
+        uploaded_list.append(data)
+      
+    if error_occurred_msg:
+      # workaround to pass message through redirect
+      request.session['error_message'] = error_occurred_msg
+      return redirect(reverse('tool:index'), Permanent=True)
 
     return render(request, 'tool/upload.html', {
       'uploaded_list': uploaded_list,
@@ -107,10 +126,3 @@ def upload(request):
     # workaround to pass message through redirect
     request.session['error_message'] = "No file uploaded. Please upload a .csv file."
     return redirect(reverse('tool:index'), Permanent=True)
-  """
-  
-class DataRow:
-    def __init__(self, first, second, third):
-        self.first = first
-        self.second = second
-        self.third = third
