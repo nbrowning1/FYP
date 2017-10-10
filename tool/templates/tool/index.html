@@ -10,13 +10,16 @@
 </script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
+<span id="username-indicator">{{ username }}</span>
 
 <div id="content" class="container">
 
-<h1>Upload Marks</h1>
-
 {{ chart.as_html }}
 
+<h1>Home</h1>
+  
+<hr>
+  
 <!-- MODULES -->
 {% if modules %}
   <div class="link-container">
@@ -121,7 +124,7 @@
         <th>Semester</th>
         <th>Week</th>
       </tr>
-    {% for lecture in lecturers %}
+    {% for lecture in lectures %}
       {% if forloop.counter|divisibleby:2 %}
         <tr>
       {% else %}
@@ -138,15 +141,19 @@
   <hr>
   <br>
 {% else %}
-  <p>No lecturers are available.</p>
+  <p>No lectures are available.</p>
 {% endif %}
 
 {% if error_message %}
   <p>{{ error_message }}</p>
 {% endif %}
-
-
   
+{% if user.is_staff %}
+  <h4>Upload Marks</h4>
+{% else %}
+  <h4>Upload Marks (but you shouldn't be able to!)</h4>
+{% endif %}
+
 <form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <!-- pretty file-upload -->

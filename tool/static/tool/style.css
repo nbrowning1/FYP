@@ -15,6 +15,10 @@ h1, h2, h3, h4, h5, h6, form, .link-container {
   width: 125px;
 }
 
+#username-indicator {
+  float: right;
+}
+
 table {
   margin: 0 auto;
 }
