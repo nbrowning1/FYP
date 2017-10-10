@@ -22,13 +22,14 @@ import logging
 @login_required
 def index(request):
   error_msg = request.session.pop('error_message', '')
-    
+  
   modules = Module.objects.all()
   lecturers = Staff.objects.all()
   students = Student.objects.all()
   lectures = Lecture.objects.all()
     
   return render(request, 'tool/index.html', {
+    'username': request.user.username,
     'error_message': error_msg,
     'modules': modules,
     'lecturers': lecturers,
@@ -118,6 +119,42 @@ def upload(request):
       # workaround to pass message through redirect
       request.session['error_message'] = error_occurred_msg
       return redirect(reverse('tool:index'), Permanent=True)
+    
+    for uploaded_data in uploaded_list:
+      saved_module = Module.objects.get(module_code=uploaded_data.module)
+      uploaded_student = uploaded_data.student
+      saved_student = Student.objects.get(user__username=uploaded_student)
+      
+      # associate lecturers with module if not already associated
+      for lecturer in uploaded_data.lecturers:
+        if not any(lecturer == saved_lec.user.username for saved_lec in saved_module.lecturers.all()):
+          saved_lecturer = Staff.objects.get(user__username=lecturer)
+          saved_module.lecturers.add(saved_lecturer)
+          
+      # associate student with module if not already associated
+      if not any(uploaded_student == saved_stu.user.username for saved_stu in saved_module.students.all()):
+        saved_module.students.add(saved_student)
+        
+      # create lecture if not already created
+      lecture = Lecture.objects.filter(module__module_code=uploaded_data.module,
+                                       semester=uploaded_data.semester,
+                                       week=uploaded_data.week).first()
+      if not lecture:
+        new_lecture = Lecture(module=saved_module, semester=uploaded_data.semester, week=uploaded_data.week)
+        new_lecture.save()
+        lecture = new_lecture
+        
+      # create attendance or update existing
+      attended_val = str(uploaded_data.attended).lower() in ("y", "1")
+      stud_attendance = StudentAttendance.objects.filter(student=saved_student,
+                                                    lecture=lecture)
+      if stud_attendance:
+        stud_attendance.update(attended = attended_val)
+      else:
+        new_attendance = StudentAttendance(student=saved_student,
+                                          lecture=lecture,
+                                          attended=attended_val)
+        new_attendance.save()
 
     return render(request, 'tool/upload.html', {
       'uploaded_list': uploaded_list,

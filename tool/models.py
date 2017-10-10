@@ -16,6 +16,7 @@ class Staff(models.Model):
   
 class Module(models.Model):
   lecturers = models.ManyToManyField(Staff)
+  students = models.ManyToManyField(Student)
   module_code = models.CharField(validators=[RegexValidator(regex='^[A-Z]{3,4}[0-9]{3}$', message='Must be a valid module code e.g. COM101')], max_length=7)
   
   def __str__(self):
