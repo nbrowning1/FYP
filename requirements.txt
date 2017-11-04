@@ -1,0 +1,1 @@
+django-graphos==0.3.41
