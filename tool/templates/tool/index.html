@@ -10,7 +10,7 @@
 </script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
-<span id="username-indicator">{{ username }}</span>
+<span id="username-indicator">{{ user.username }}</span>
 
 <div id="content" class="container">
 
@@ -76,7 +76,7 @@
   <br>
   <hr>
   <br>
-{% else %}
+{% elif user_type and user_type != "STAFF" %}
   <p>No lecturers are available.</p>
 {% endif %}
   
@@ -106,7 +106,7 @@
   <br>
   <hr>
   <br>
-{% else %}
+{% elif user_type and user_type != "STUDENT" %}
   <p>No students are available.</p>
 {% endif %}
   

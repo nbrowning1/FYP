@@ -8,5 +8,9 @@ Auth:
 Flatmap magic:
 - https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
 
+Testing:
+- run single test: e.g. python manage.py test tool.tests.tests_views.ViewsTests.test_invalid_user
+- see which tests were run: python manage.py test tool -v 2
+
 References
 - https://github.com/agiliq/django-graphos
