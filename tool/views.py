@@ -23,10 +23,27 @@ import logging
 def index(request):
   error_msg = request.session.pop('error_message', '')
   
-  modules = Module.objects.all()
-  lecturers = Staff.objects.all()
-  students = Student.objects.all()
-  lectures = Lecture.objects.all()
+  if request.user.is_staff:
+    modules = Module.objects.all()
+    lecturers = Staff.objects.all()
+    students = Student.objects.all()
+    lectures = Lecture.objects.all()
+  else:
+    # if lecturer exists, it's a lecturer, otherwise can assume student
+#    try:
+    lecturer = Staff.objects.get(user=request.user)
+
+    modules = Module.objects.filter(lecturers__id__exact=lecturer.id)
+    lecturers = []
+    lecturers.append(lecturer)
+    students = []
+    for module in modules:
+      for student in module.students.all():
+        students.append(student)
+    students = list(OrderedDict.fromkeys(students))
+    lectures = Lecture.objects.filter(module__in=modules)
+#    except Staff.DoesNotExist:
+      
     
   return render(request, 'tool/index.html', {
     'username': request.user.username,
@@ -147,9 +164,10 @@ def upload(request):
       # create attendance or update existing
       attended_val = str(uploaded_data.attended).lower() in ("y", "1")
       stud_attendance = StudentAttendance.objects.filter(student=saved_student,
-                                                    lecture=lecture)
+                                                    lecture=lecture).first()
       if stud_attendance:
-        stud_attendance.update(attended = attended_val)
+        stud_attendance.attended = attended_val
+        stud_attendance.save()
       else:
         new_attendance = StudentAttendance(student=saved_student,
                                           lecture=lecture,

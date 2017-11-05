@@ -5,5 +5,8 @@ Auth:
 - https://docs.djangoproject.com/en/1.11/topics/auth/default/
 - https://docs.djangoproject.com/en/1.11/topics/auth/default/#built-in-auth-views
 
+Flatmap magic:
+- https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
+
 References
 - https://github.com/agiliq/django-graphos
