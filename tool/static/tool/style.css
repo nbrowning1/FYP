@@ -7,7 +7,7 @@ body {
   margin: 0 auto;
 }
 
-h1, h2, h3, h4, h5, h6, form, .link-container, p {
+h1, h2, h3, h4, h5, h6, form, .link-container, p, a {
   text-align: center;
 }
 
@@ -15,7 +15,7 @@ h1, h2, h3, h4, h5, h6, form, .link-container, p {
   width: 125px;
 }
 
-#username-indicator {
+#username-indicator, #settings {
   float: right;
 }
 
@@ -50,4 +50,8 @@ td.select-row {
 
 table {
   align-self: center;
+}
+
+.setting {
+  display: block;
 }

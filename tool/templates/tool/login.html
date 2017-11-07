@@ -4,7 +4,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
-<!-- From https://docs.djangoproject.com/en/1.11/topics/auth/default/#built-in-auth-views -->
+<!-- From 
+https://docs.djangoproject.com/en/1.11/topics/auth/default/#built-in-auth-views
+https://docs.djangoproject.com/en/1.8/_modules/django/contrib/auth/forms/
+-->
 
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>
@@ -35,16 +38,3 @@
 <input type="submit" value="Login" />
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
-
-<!--
-<form action="{% url 'tool:index' %}" method="POST">
-  {% csrf_token %}
-  <label for="username" class="login-form-label">Email:</label>
-  <input name="username">
-  <br>
-  <label for="password" class="login-form-label">Password:</label>
-  <input name="password">
-  <br>
-  <br>
-  <input type="submit" value="Login">
-</form>-->

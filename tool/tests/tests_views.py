@@ -10,10 +10,18 @@ class ViewsTests(TestCase):
     
   def test_login_view(self):
     url = reverse('tool:login')
+    
     response = self.client.get(url)
     self.assertContains(response, 'Username')
     self.assertContains(response, 'Password')
     self.assertNotContains(response, 'Please login to see this page.')
+    
+  def test_login_redirects_if_authenticated(self):
+    authenticate_admin(self)
+    
+    url = reverse('tool:login')
+    response = self.client.get(url)
+    self.assertRedirects(response, '/tool/', status_code=302)
     
   def test_unauthenticated_index_view(self):
     url = reverse('tool:index')

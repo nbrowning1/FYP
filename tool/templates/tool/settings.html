@@ -1,0 +1,11 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
+
+<a href="{% url 'tool:index' %}">Home</a>
+
+<h2>Settings</h2>
+<br>
+<a class="setting" href="{% url 'tool:password_change' %}">Change Password</a>

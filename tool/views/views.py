@@ -215,3 +215,7 @@ def upload(request):
     # workaround to pass message through redirect
     request.session['error_message'] = "No file uploaded. Please upload a .csv file."
     return redirect(reverse('tool:index'), Permanent=True)
+  
+@login_required
+def settings(request):
+  return render(request, 'tool/settings.html')
