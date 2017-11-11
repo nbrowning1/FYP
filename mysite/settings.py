@@ -126,4 +126,5 @@ LOGIN_URL = '/tool/login/'
 LOGIN_REDIRECT_URL = '/tool/'
 
 # TODO: change to proper email server for production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = 'tool/tmp/mail'
