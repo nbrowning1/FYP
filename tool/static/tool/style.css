@@ -52,6 +52,6 @@ table {
   align-self: center;
 }
 
-.setting {
+.setting, #reset-password, .centre-link {
   display: block;
 }
