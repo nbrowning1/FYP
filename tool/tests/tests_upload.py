@@ -13,14 +13,25 @@ import os
 class UploadTests(TestCase):
   
   def test_upload_valid_data(self):
-    # add extra assertions to check that links weren't created before but are after upload, also for upload confirmation page
     create_student('B00123456')
     create_student('B00987654')
     create_staff('A00123456')
     create_staff('A00987654')
     create_module('COM101')
     create_module('COM999')
+    
+    # initial check that module is not linked to student
+    unlinked_module = Module.objects.get(module_code='COM101')
+    self.assertTrue(len(unlinked_module.students.all()) == 0)
+    
     test_upload(self, 'upload_test_valid.csv', None)
+    
+    # post-upload check to assert that upload process linked module with student
+    linked_module = Module.objects.get(module_code='COM101')
+    self.assertTrue(len(linked_module.students.all()) == 1)
+    self.assertEqual(linked_module.students.all()[0].user.username, 'B00123456')
+    
+    # TODO: assert upload confirmation page
   
   def test_upload_unrecognised_data(self):
     # uploading valid data but with unrecognised module, staff, student
