@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
@@ -74,8 +74,7 @@ def index(request):
       students = []
       lectures = []
       user_type = 'INVALID'
-      logout(request)
-      return HttpResponseRedirect(reverse('tool:login'))
+      return logout_and_redirect_login(request)
     
   return render(request, 'tool/index.html', {
     'error_message': error_msg,
@@ -272,7 +271,60 @@ def upload(request):
 def settings(request):
   return render(request, 'tool/settings.html')
 
+@login_required
+def module(request, module_id):
+  user_type = None
+  is_valid_user = False
+  
+  try:
+    module = Module.objects.get(id=module_id)
+  except Module.DoesNotExist:
+    raise Http404("Poll does not exist")
+    
+  lectures = Lecture.objects.filter(module=module)
+  
+  try:
+    lecturer = Staff.objects.get(user=request.user)
+  except Staff.DoesNotExist:
+    pass
+  
+  if request.user.is_staff or lecturer:
+    students = []
+    for student in module.students.all():
+      students.append(student)
+    students = list(OrderedDict.fromkeys(students))
+    
+    if request.user.is_staff:
+      user_type = 'ADMIN'
+    else:
+      user_type = 'STAFF' 
+    is_valid_user = True
+  else:
+    
+    try:
+      student = Student.objects.get(user=request.user)
+      students = []
+      user_type = 'STUDENT'
+      is_valid_user = True
+    except Student.DoesNotExist:
+      pass
+    
+  if not is_valid_user:
+    return logout_and_redirect_login(request)
+  
+  return render(request, 'tool/module.html', {
+    'module': module,
+    'students': students,
+    'lectures': lectures,
+    'user_type': user_type
+  })
+  
+
 # workaround to pass message through redirect
 def redirect_with_error(request, redirect_url, error_msg):
   request.session['error_message'] = error_msg
   return redirect(redirect_url, Permanent=True)
+
+def logout_and_redirect_login(request):
+  logout(request)
+  return HttpResponseRedirect(reverse('tool:login'))

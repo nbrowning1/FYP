@@ -14,5 +14,8 @@ Testing:
 - run single test: e.g. python manage.py test tool.tests.tests_views.ViewsTests.test_invalid_user
 - see which tests were run: python manage.py test tool -v 2
 
+Tooling
+- https://github.com/brackets-userland/brackets-git
+
 References
 - https://github.com/agiliq/django-graphos

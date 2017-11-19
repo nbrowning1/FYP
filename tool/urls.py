@@ -11,9 +11,7 @@ urlpatterns = [
   # ex: /tool/
   url(r'^$', views.index, name='index'),
   
-  # ex: /tool/upload/
-  url(r'^upload/$', views.upload, name='upload'),
-  
+  # ex: /tool/login/
   url(r'^login/$', auth_views.LoginView.as_view(template_name='tool/login.html', redirect_authenticated_user=True), name='login'),
   
   url(r'^logout/$', auth_views.logout_then_login, name='logout'),
@@ -32,6 +30,10 @@ urlpatterns = [
   url(r'^password-reset-confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', auth_views.PasswordResetConfirmView.as_view(template_name='tool/password_reset_confirm.html', success_url=reverse_lazy('tool:password_reset_complete')), name='password_reset_confirm'),
   
   url(r'password-reset-complete/$', auth_views.PasswordResetCompleteView.as_view(template_name='tool/password_reset_complete.html'), name='password_reset_complete'),
+  
+  url(r'^upload/$', views.upload, name='upload'),
+  
+  url(r'^modules/(?P<module_id>[0-9]+)$', views.module, name='module'),
   
   url(r'^settings/$', views.settings, name='settings'),
 ]
