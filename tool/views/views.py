@@ -9,16 +9,14 @@ from django.contrib.auth.decorators import login_required
 
 from ..models import Student, Staff, Module, Lecture, StudentAttendance
 
-from ..data_row import DataRow
+from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
 
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers.gchart import LineChart
 
 from collections import OrderedDict
 
-import csv
-import io
-import logging
+import csv, io, logging, types
 
 @login_required
 def index(request):
@@ -147,69 +145,123 @@ def upload(request):
     decoded_file = csv_file.read().decode('utf-8')
     file_str = io.StringIO(decoded_file)
     
-    error_occurred_msg = ''
     reader = csv.reader(file_str)
+    
+    module = None
+    staff = []
+    
+    # finding module (step 1/3)
+    found_module = False
     for counter, row in enumerate(reader):
-      # skip first row - titles
-      if counter == 0:
+      if found_module:
+        module_data = ModuleRow(row)
+        error_msg = module_data.get_error_message()
+        if error_msg:
+          return redirect_with_error(request, reverse('tool:index'), error_msg)
+        
+        module = Module.objects.get(module_code=module_data.module)
+        break
+        
+      if row[0] != 'Module Code':
+        continue
+      else:
+        found_module = True
         continue
         
+    
+    # finding staff (step 2/3)
+    found_staff = False
+    for counter, row in enumerate(reader):
+      if found_staff:
+        if row[0].strip() and row[0].strip() != 'Student Attendance':
+          staff_data = StaffRow(row)
+          error_msg = staff_data.get_error_message()
+          if error_msg:
+            return redirect_with_error(request, reverse('tool:index'), error_msg)
+
+          staff.append(Staff.objects.get(user__username=staff_data.lecturer))
+        else:
+          break
+        
+      if row[0] != 'Lecturers':
+        continue
+      else:
+        found_staff = True
+        continue
+    
+        
+    # finally grabbing attendance data (step 3/3)
+    attendance_session_data = None
+    found_attendance = False
+    for counter, row in enumerate(reader):
       # empty rows that can appear because of spreadsheet use
       if not ''.join(row).strip():
-        break
-    
-      data = DataRow(row)
-      error_with_data = data.get_error_message()
-      if error_with_data:
-        error_occurred_msg = 'Error with inputs: [[%s]] at line %s' % (error_with_data, counter)
-        break
+        continue
+        
+      if found_attendance:
+        attendance_data = AttendanceRow(attendance_session_data, row)
+        error_msg = attendance_data.get_error_message()
+        if error_msg:
+          error_occurred_msg = 'Error with inputs: [[%s]] at line %s' % (error_msg, counter)
+          return redirect_with_error(request, reverse('tool:index'), error_occurred_msg)
+        else:
+          uploaded_list.append(attendance_data)
+        
+      if row[0] != 'Device ID(s)':
+        continue
       else:
-        uploaded_list.append(data)
-      
-    if error_occurred_msg:
-      # workaround to pass message through redirect
-      request.session['error_message'] = error_occurred_msg
-      return redirect(reverse('tool:index'), Permanent=True)
+        found_attendance = True
+        attendance_session_data = AttendanceSessionRow(row)
+        error_msg = attendance_session_data.get_error_message()
+        if error_msg:
+          return redirect_with_error(request, reverse('tool:index'), error_msg)
+        continue
     
+    # associate lecturers with module if not already associated
+    for lecturer in staff:
+      if not any(lecturer.user.username == saved_lec.user.username for saved_lec in module.lecturers.all()):
+        module.lecturers.add(lecturer)
+  
     for uploaded_data in uploaded_list:
-      saved_module = Module.objects.get(module_code=uploaded_data.module)
       uploaded_student = uploaded_data.student
-      saved_student = Student.objects.get(user__username=uploaded_student)
-      
-      # associate lecturers with module if not already associated
-      for lecturer in uploaded_data.lecturers:
-        if not any(lecturer == saved_lec.user.username for saved_lec in saved_module.lecturers.all()):
-          saved_lecturer = Staff.objects.get(user__username=lecturer)
-          saved_module.lecturers.add(saved_lecturer)
           
       # associate student with module if not already associated
-      if not any(uploaded_student == saved_stu.user.username for saved_stu in saved_module.students.all()):
-        saved_module.students.add(saved_student)
+      if not any(uploaded_student.user.username == saved_stu.user.username for saved_stu in module.students.all()):
+        module.students.add(uploaded_student)
         
-      # create lecture if not already created
-      lecture = Lecture.objects.filter(module__module_code=uploaded_data.module,
-                                       semester=uploaded_data.semester,
-                                       week=uploaded_data.week).first()
-      if not lecture:
-        new_lecture = Lecture(module=saved_module, semester=uploaded_data.semester, week=uploaded_data.week)
-        new_lecture.save()
-        lecture = new_lecture
-        
-      # create attendance or update existing
-      attended_val = str(uploaded_data.attended).lower() in ("y", "1")
-      stud_attendance = StudentAttendance.objects.filter(student=saved_student,
-                                                    lecture=lecture).first()
-      if stud_attendance:
-        stud_attendance.attended = attended_val
-        stud_attendance.save()
-      else:
-        new_attendance = StudentAttendance(student=saved_student,
-                                          lecture=lecture,
-                                          attended=attended_val)
-        new_attendance.save()
+      
+      for attendance_data in uploaded_data.attendances:
+        session = attendance_data.session
+        # TODO: extract outside so calls only performed once for lectures
+        # create lectures if not already created
+        lecture = Lecture.objects.filter(module=module,
+                                         session_id=session.session_id,
+                                         date=session.date).first()
+        if not lecture:
+          new_lecture = Lecture(module=module, session_id=session.session_id, date=session.date)
+          new_lecture.save()
+          lecture = new_lecture
+
+        # create attendance or update existing
+        attended = attendance_data.attended
+        stud_attendance = StudentAttendance.objects.filter(student=uploaded_student,
+                                                      lecture=lecture).first()
+        if stud_attendance:
+          stud_attendance.attended = attended
+          stud_attendance.save()
+        else:
+          new_attendance = StudentAttendance(student=uploaded_student,
+                                            lecture=lecture,
+                                            attended=attended)
+          new_attendance.save()
+          
+    uploaded_data = types.SimpleNamespace()
+    uploaded_data.module = module
+    uploaded_data.staff = staff
+    uploaded_data.attendances = uploaded_list
 
     return render(request, 'tool/upload.html', {
-      'uploaded_list': uploaded_list,
+      'uploaded_data': uploaded_data,
     })
   else:
     # workaround to pass message through redirect
@@ -219,3 +271,8 @@ def upload(request):
 @login_required
 def settings(request):
   return render(request, 'tool/settings.html')
+
+# workaround to pass message through redirect
+def redirect_with_error(request, redirect_url, error_msg):
+  request.session['error_message'] = error_msg
+  return redirect(redirect_url, Permanent=True)

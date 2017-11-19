@@ -123,8 +123,8 @@
     <table>
       <tr>
         <th>Module</th>
-        <th>Semester</th>
-        <th>Week</th>
+        <th>Session ID</th>
+        <th>Date</th>
       </tr>
     {% for lecture in lectures %}
       {% if forloop.counter|divisibleby:2 %}
@@ -133,8 +133,8 @@
         <tr class="alt">
       {% endif %}
         <td>{{ lecture.module.module_code }}</td>
-        <td>{{ lecture.semester }}</td>
-        <td>{{ lecture.week }}</td>
+        <td>{{ lecture.session_id }}</td>
+        <td>{{ lecture.date }}</td>
       </tr>
     {% endfor %}
     </table>
@@ -145,24 +145,24 @@
 {% else %}
   <p>No lectures are available.</p>
 {% endif %}
-
+  
+{% if user.is_staff %}
+  <hr>
+  <h3>Admin Panel</h3>
+  <h4>Upload Marks</h4>
+  
+  <form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- pretty file-upload -->
+    <label class="btn btn-default">
+      Upload CSV <input type="file" name="upload-data" style="display:none;">
+    </label>
+    <input type="submit" class="btn btn-info" value="Submit">
+  </form>
+{% endif %}
+  
 {% if error_message %}
   <p>{{ error_message }}</p>
 {% endif %}
-  
-{% if user.is_staff %}
-  <h4>Upload Marks</h4>
-{% else %}
-  <h4>Upload Marks (but you shouldn't be able to!)</h4>
-{% endif %}
-
-<form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
-  {% csrf_token %}
-  <!-- pretty file-upload -->
-  <label class="btn btn-default">
-    Upload CSV <input type="file" name="upload-data" style="display:none;">
-  </label>
-  <input type="submit" class="btn btn-info" value="Submit">
-</form>
 
 </div>

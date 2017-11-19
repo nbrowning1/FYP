@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 
 class Student(models.Model):
   user = models.OneToOneField(User, on_delete=models.CASCADE)
+  device_id = models.CharField(validators=[RegexValidator(regex='^[A-Za-z0-9]{6}$', message='Must be a valid device ID e.g. 10101C')], max_length=6)
   
   def __str__(self):
     return 'Student: ' + self.user.username
@@ -24,11 +25,11 @@ class Module(models.Model):
   
 class Lecture(models.Model):
   module = models.ForeignKey(Module, on_delete=models.CASCADE)
-  semester = models.IntegerField()
-  week = models.IntegerField()
+  session_id = models.CharField(max_length=250)
+  date = models.DateField()
   
   def __str__(self):
-    return 'Lecture for module: %s for semester %s week %s' % (self.module, self.semester, self.week)
+    return 'Lecture for module: %s session id: %s date: %s' % (self.module, self.session_id, self.date)
   
 class StudentAttendance(models.Model):
   student = models.ForeignKey(Student, on_delete=models.CASCADE)

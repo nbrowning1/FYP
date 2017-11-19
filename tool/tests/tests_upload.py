@@ -13,29 +13,87 @@ import os
 class UploadTests(TestCase):
   
   def test_upload_valid_data(self):
-    create_student('B00123456')
-    create_student('B00987654')
-    create_staff('A00123456')
-    create_staff('A00987654')
-    create_module('COM101')
-    create_module('COM999')
+    create_student('B00123456', '10519C')
+    create_student('B00987654', '10518B')
+    create_staff('e00123456')
+    create_staff('e00987654')
+    create_module('EEE312')
     
     # initial check that module is not linked to student
-    unlinked_module = Module.objects.get(module_code='COM101')
-    self.assertTrue(len(unlinked_module.students.all()) == 0)
+    unlinked_module = Module.objects.get(module_code='EEE312')
+    self.assertEqual(len(unlinked_module.students.all()), 0)
     
     test_upload(self, 'upload_test_valid.csv', None)
     
-    # post-upload check to assert that upload process linked module with student
-    linked_module = Module.objects.get(module_code='COM101')
-    self.assertTrue(len(linked_module.students.all()) == 1)
+    # post-upload check to assert that upload process linked module with students
+    linked_module = Module.objects.get(module_code='EEE312')
+    self.assertEqual(len(linked_module.students.all()), 2)
     self.assertEqual(linked_module.students.all()[0].user.username, 'B00123456')
+    self.assertEqual(linked_module.students.all()[1].user.username, 'B00987654')
+    
+    lectures = Lecture.objects.all()
+    self.assertEqual(len(lectures), 6)
+    # should all be linked to module
+    self.assertEqual(lectures[0].module.module_code, 'EEE312')
+    self.assertEqual(lectures[5].module.module_code, 'EEE312')
+    self.assertEqual(lectures[0].session_id, '170925 1228')
+    self.assertEqual(lectures[1].session_id, 'EEE122 170926 1138')
+    self.assertEqual(lectures[2].session_id, 'EEE122 171002 1211')
+    self.assertEqual(lectures[3].session_id, 'EEE122/3-10-2017 171003 1526')
+    self.assertEqual(lectures[4].session_id, 'EEE122_Lecture 171003 1010')
+    self.assertEqual(lectures[5].session_id, 'EEE122/171005 0949')
+    
+    attendances = StudentAttendance.objects.all()
+    self.assertEqual(len(attendances), 12)
+    # first 6 linked to first student..
+    self.assertEqual(attendances[0].student.user.username, 'B00123456')
+    self.assertEqual(attendances[5].student.user.username, 'B00123456')
+    self.assertEqual(attendances[0].lecture.session_id, '170925 1228')
+    self.assertEqual(attendances[5].lecture.session_id, 'EEE122/171005 0949')
+    self.assertEqual(attendances[0].attended, True)
+    self.assertEqual(attendances[1].attended, True)
+    self.assertEqual(attendances[2].attended, True)
+    self.assertEqual(attendances[3].attended, False)
+    self.assertEqual(attendances[4].attended, True)
+    self.assertEqual(attendances[5].attended, False)
+    
+    # ..last 6 to second student
+    self.assertEqual(attendances[6].student.user.username, 'B00987654')
+    self.assertEqual(attendances[11].student.user.username, 'B00987654')
+    self.assertEqual(attendances[6].lecture.session_id, '170925 1228')
+    self.assertEqual(attendances[11].lecture.session_id, 'EEE122/171005 0949')
+    self.assertEqual(attendances[6].attended, False)
+    self.assertEqual(attendances[7].attended, True)
+    self.assertEqual(attendances[8].attended, True)
+    self.assertEqual(attendances[9].attended, True)
+    self.assertEqual(attendances[10].attended, True)
+    self.assertEqual(attendances[11].attended, False)
     
     # TODO: assert upload confirmation page
   
-  def test_upload_unrecognised_data(self):
-    # uploading valid data but with unrecognised module, staff, student
-    test_upload(self, 'upload_test_valid.csv', 'Error with inputs: [[Unrecognised module: COM101, Unrecognised lecturer: A00123456, Unrecognised student: B00123456]] at line 1')
+  def test_upload_unrecognised_module(self):
+    # uploading valid data but without full DB setup
+    test_upload(self, 'upload_test_valid.csv', 'Unrecognised module: EEE312')
+    
+  def test_upload_unrecognised_lecturer(self):
+    create_module('EEE312')
+    # uploading valid data but without full DB setup
+    test_upload(self, 'upload_test_valid.csv', 'Unrecognised lecturer: e00987654')
+    
+  def test_upload_unrecognised_student(self):
+    create_staff('e00123456')
+    create_staff('e00987654')
+    create_module('EEE312')
+    # uploading valid data but without full DB setup
+    test_upload(self, 'upload_test_valid.csv', 'Error with inputs: [[Unrecognised student: 10519C]] at line 2')
+    
+  def test_upload_invalid_attendance_data(self):
+    create_student('B00123456', '10519C')
+    create_student('B00987654', '10518B')
+    create_staff('e00123456')
+    create_staff('e00987654')
+    create_module('EEE312')
+    test_upload(self, 'upload_test_invalid.csv', 'Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 2')
   
   def test_upload_incorrect_file_extension(self):
     test_upload(self, 'upload_test_wrong_ext.txt', 'Invalid file type. Only csv files are accepted.')
@@ -77,9 +135,9 @@ def authenticate_admin(self):
   self.client.login(username='test', password='12345')
   return user
 
-def create_student(username):
+def create_student(username, device_id):
   user = User.objects.create_user(username=username, password='12345')
-  student = Student(user=user)
+  student = Student(user=user, device_id=device_id)
   student.save()
   return student
   

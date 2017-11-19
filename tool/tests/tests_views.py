@@ -1,10 +1,8 @@
 from django.test import TestCase
-
 from django.contrib.auth.models import User
-
 from ..models import Student, Staff, Module, Lecture, StudentAttendance
-
 from django.urls import reverse
+import datetime
 
 class ViewsTests(TestCase):
     
@@ -204,6 +202,6 @@ def create_module(module_code):
   return module
 
 def create_lecture(module):
-  lecture = Lecture(module=module, week=0, semester=0)
+  lecture = Lecture(module=module, session_id='session id', date=datetime.date(2017, 12, 1))
   lecture.save()
   return lecture

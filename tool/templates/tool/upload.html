@@ -2,39 +2,72 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
-{% if uploaded_list %}
-    <h4>Saved data:</h4>
-    <table>
-      <tr>
-        <th></th>
-        <th>Module Code</th>
-        <th>Lecturer Staff Codes</th>
-        <th>Semester</th>
-        <th>Week</th>
-        <th>Student Code</th>
-        <th>Attended Lecture</th>
-      </tr>
-    {% for upload in uploaded_list %}
+{% if uploaded_data %}
+  <h4>Saved data:</h4>
+  <table>
+    <tr>
+      <th>Module Code</th>
+    </tr>
+    <tr>
+      <td>{{ uploaded_data.module.module_code }}</td>
+    </tr>
+  </table>
+  <br>
+  <table>
+    <tr>
+      <th>Lecturer</th>
+    </tr>
+    {% for lecturer in uploaded_data.staff %}
       {% if forloop.counter|divisibleby:2 %}
         <tr>
       {% else %}
         <tr class="alt">
       {% endif %}
-        <td class="select-row"><input type="checkbox" checked></td>
-        <td>{{ upload.module }}</td>
-        <td>{{ upload.lecturers }}</td>
-        <td>{{ upload.semester }}</td>
-        <td>{{ upload.week }}</td>
-        <td>{{ upload.student }}</td>
-        <td>{{ upload.attended }}</td>
+        <td>{{ lecturer.user.username }}</td>
       </tr>
     {% endfor %}
-    </table>
-
+  </table>
+  <br>
+  <table>
+    <tr class="double-header">
+      <th class="double-header-left-cell" rowspan="2">Student Device ID</th>
+      <th class="double-header-right-cell" rowspan="2">Student Code</th>
+      {% for attendance in uploaded_data.attendances.0.attendances %}
+        <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.session.date }}</th>
+      {% endfor %}
+    </tr>
+    <tr class="double-header">
+      {% for attendance in uploaded_data.attendances.0.attendances %}
+        <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.session.session_id }}</th>
+      {% endfor %}
+    </tr>
+    {% for attendance in uploaded_data.attendances %}
+      {% if forloop.counter|divisibleby:2 %}
+        <tr>
+      {% else %}
+        <tr class="alt">
+      {% endif %}
+        <td>{{ attendance.student.device_id }}</td>
+        <td>{{ attendance.student.user.username }}</td>
+        {% for attended in attendance.attendances %}
+          <td>
+            {% if attended.attended %}
+              <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+            {% else %}
+              <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </table>
+  
 {% else %}
-    <p>No upload information available.</p>
+  <p>No upload information available.</p>
 {% endif %}
 
+<br>
 <a href="{% url 'tool:index' %}">Go back</a>
