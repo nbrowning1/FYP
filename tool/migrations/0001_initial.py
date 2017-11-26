@@ -9,7 +9,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -29,22 +28,28 @@ class Migration(migrations.Migration):
             name='Module',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('module_code', models.CharField(max_length=7, validators=[django.core.validators.RegexValidator(message='Must be a valid module code e.g. COM101', regex='^[A-Z]{3,4}[0-9]{3}$')])),
+                ('module_code', models.CharField(max_length=7, validators=[
+                    django.core.validators.RegexValidator(message='Must be a valid module code e.g. COM101',
+                                                          regex='^[A-Z]{3,4}[0-9]{3}$')])),
             ],
         ),
         migrations.CreateModel(
             name='Staff',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                'user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='Student',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device_id', models.CharField(max_length=6, validators=[django.core.validators.RegexValidator(message='Must be a valid device ID e.g. 10101C', regex='^[A-Za-z0-9]{6}$')])),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('device_id', models.CharField(max_length=6, validators=[
+                    django.core.validators.RegexValidator(message='Must be a valid device ID e.g. 10101C',
+                                                          regex='^[A-Za-z0-9]{6}$')])),
+                (
+                'user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
