@@ -274,12 +274,10 @@ def settings(request):
 
 @login_required
 def module(request, module_id):
-    user_type = None
-
     user_type = get_user_type(request)
     check_valid_user(user_type, request)
 
-    if (user_type == STUDENT_TYPE):
+    if user_type == STUDENT_TYPE:
         student = Student.objects.get(user__username=request.user.username)
 
     try:
@@ -319,38 +317,22 @@ def module(request, module_id):
 
     return render(request, 'tool/module.html', {
         'module': module,
-        'student_attendances': student_attendances,
-        'user_type': user_type
+        'student_attendances': student_attendances
     })
 
 
 @login_required
 def student(request, student_id):
-    user_type = None
-    is_valid_user = False
+    user_type = get_user_type(request)
+    check_valid_user(user_type, request)
 
     try:
         student = Student.objects.get(id=student_id)
     except Student.DoesNotExist:
         raise Http404("Student does not exist")
 
-    if request.user.is_staff:
-        is_valid_user = True
-    else:
-        try:
-            Staff.objects.get(user=request.user)
-            is_valid_user = True
-        except Staff.DoesNotExist:
-            pass
-
-        try:
-            Student.objects.get(user=request.user)
-            is_valid_user = True
-        except Student.DoesNotExist:
-            pass
-
-    if not is_valid_user:
-        return logout_and_redirect_login(request)
+    if user_type == STUDENT_TYPE and request.user.username != student.user.username:
+        raise Http404("Not authorised to view this student")
 
     student_module_attendances = []
     # get attendances for lectures, sorted by date
@@ -376,46 +358,33 @@ def student(request, student_id):
 
     return render(request, 'tool/student.html', {
         'student': student,
-        'student_module_attendances': student_module_attendances,
-        'user_type': user_type
+        'student_module_attendances': student_module_attendances
     })
 
 
 @login_required
 def lecture(request, lecture_id):
-    user_type = None
-    is_valid_user = False
+    user_type = get_user_type(request)
+    check_valid_user(user_type, request)
 
     try:
         lecture = Lecture.objects.get(id=lecture_id)
     except Lecture.DoesNotExist:
         raise Http404("Lecture does not exist")
 
-    if request.user.is_staff:
-        is_valid_user = True
+    if user_type == STUDENT_TYPE:
+        student = Student.objects.get(user__username=request.user.username)
+        if student not in lecture.module.students.all():
+            raise Http404("Not authorised to view this lecture")
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture], student=student).order_by(
+            'lecture__date')
     else:
-        try:
-            Staff.objects.get(user=request.user)
-            is_valid_user = True
-        except Staff.DoesNotExist:
-            pass
-
-        try:
-            Student.objects.get(user=request.user)
-            is_valid_user = True
-        except Student.DoesNotExist:
-            pass
-
-    if not is_valid_user:
-        return logout_and_redirect_login(request)
-
-    # get attendances for lectures, sorted by student then date
-    lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student', 'lecture__date')
+        # get attendances for lectures, sorted by student then date
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student', 'lecture__date')
 
     return render(request, 'tool/lecture.html', {
         'lecture': lecture,
-        'lecture_attendances': lecture_attendances,
-        'user_type': user_type
+        'lecture_attendances': lecture_attendances
     })
 
 
