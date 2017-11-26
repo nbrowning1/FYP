@@ -80,3 +80,11 @@ i.fa-times {
 .setting, #reset-password, .centre-link {
   display: block;
 }
+
+.panel-heading {
+  cursor: pointer;
+}
+
+.panel-heading:hover h4 {
+  text-decoration: underline;
+}

@@ -1,22 +1,18 @@
-from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.urls import reverse
-from django.views import generic
-from django.utils import timezone
-from django.contrib import messages
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
-
-from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
-
-from graphos.sources.simple import SimpleDataSource
-from graphos.renderers.gchart import LineChart
-
+import csv
+import io
+import types
 from collections import OrderedDict
 
-import csv, io, logging, types
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.db.models import F
+
+from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
+from ..models import Student, Staff, Module, Lecture, StudentAttendance
+
 
 @login_required
 def index(request):
@@ -227,8 +223,7 @@ def upload(request):
       # associate student with module if not already associated
       if not any(uploaded_student.user.username == saved_stu.user.username for saved_stu in module.students.all()):
         module.students.add(uploaded_student)
-        
-      
+
       for attendance_data in uploaded_data.attendances:
         session = attendance_data.session
         # TODO: extract outside so calls only performed once for lectures
@@ -279,10 +274,32 @@ def module(request, module_id):
   try:
     module = Module.objects.get(id=module_id)
   except Module.DoesNotExist:
-    raise Http404("Poll does not exist")
+    raise Http404("Module does not exist")
     
   lectures = Lecture.objects.filter(module=module)
+
+  student_attendances = []
+  # get attendances for lectures, sorted by student then date
+  lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures).order_by('student', 'lecture__date')
+  # group by student - tried many many variations of annotate etc. and nothing worked
+  grouped_attendances = OrderedDict()
+  for grouped_attendance in lecture_attendances:
+    grouped_attendances.setdefault(grouped_attendance.student, []).append(grouped_attendance)
+
+  # link students and attendances from dict back into list with percentage attended
+  for student in grouped_attendances:
+    student_attendance = types.SimpleNamespace()
+    student_attendance.student = student
+    student_attendance.attendances = []
+    num_attended = 0
+    for attendance in grouped_attendances[student]:
+      student_attendance.attendances.append(attendance)
+      if (attendance.attended):
+        num_attended += 1
+    student_attendance.percent_attended = (num_attended / len(student_attendance.attendances)) * 100
+    student_attendances.append(student_attendance)
   
+  lecturer = None
   try:
     lecturer = Staff.objects.get(user=request.user)
   except Staff.DoesNotExist:
@@ -316,9 +333,65 @@ def module(request, module_id):
     'module': module,
     'students': students,
     'lectures': lectures,
+    'student_attendances': student_attendances,
     'user_type': user_type
   })
+
+@login_required
+def student(request, student_id):
+  user_type = None
+  is_valid_user = False
   
+  try:
+    student = Student.objects.get(id=student_id)
+  except Student.DoesNotExist:
+    raise Http404("Student does not exist")
+
+  if request.user.is_staff:
+    is_valid_user = True
+  else:
+    lecturer = None
+    try:
+      Staff.objects.get(user=request.user)
+      is_valid_user = True
+    except Staff.DoesNotExist:
+      pass
+
+    try:
+      Student.objects.get(user=request.user)
+      is_valid_user = True
+    except Student.DoesNotExist:
+      pass
+
+  if not is_valid_user:
+    return logout_and_redirect_login(request)
+
+  student_module_attendances = []
+  # get attendances for lectures, sorted by student then date
+  lecture_attendances = StudentAttendance.objects.filter(student__in=[student]).order_by('lecture__date')
+  # group by student - tried many many variations of annotate etc. and nothing worked
+  grouped_attendances = OrderedDict()
+  for grouped_attendance in lecture_attendances:
+    grouped_attendances.setdefault(grouped_attendance.lecture.module, []).append(grouped_attendance)
+
+  # link students and attendances from dict back into list with percentage attended
+  for module in grouped_attendances:
+    student_module_attendance = types.SimpleNamespace()
+    student_module_attendance.module = module
+    student_module_attendance.attendances = []
+    num_attended = 0
+    for attendance in grouped_attendances[module]:
+      student_module_attendance.attendances.append(attendance)
+      if (attendance.attended):
+        num_attended += 1
+      student_module_attendance.percent_attended = (num_attended / len(student_module_attendance.attendances)) * 100
+    student_module_attendances.append(student_module_attendance)
+  
+  return render(request, 'tool/student.html', {
+    'student': student,
+    'student_module_attendances': student_module_attendances,
+    'user_type': user_type
+  })
 
 # workaround to pass message through redirect
 def redirect_with_error(request, redirect_url, error_msg):

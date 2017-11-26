@@ -1,7 +1,7 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
@@ -12,70 +12,59 @@
 
 <div id="content" class="container">
 
-<h2>{{ module.module_code }}</h2>
-  
-<hr>
+    <h2>{{ module.module_code }}</h2>
 
-<!-- STUDENTS -->
-{% if students %}
-  <div class="link-container">
-    <a href="#students-container" class="btn btn-info" data-toggle="collapse">Students</a>    
-  </div>
-  
-  <div id="students-container" class="collapse">
+    <hr>
+
+    <!-- ATTENDANCES -->
+    {% if student_attendances %}
+    <div class="link-container">
+        <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
+    </div>
+
+    <div id="attendance-container" class="collapse">
+        <br>
+        <table>
+            <tr class="double-header">
+                <th class="double-header-left-cell double-header-right-cell" rowspan="2">Student Code</th>
+                {% for attendance in student_attendances.0.attendances %}
+                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.date }}
+                </th>
+                {% endfor %}
+                <th class="double-header-right-cell" rowspan="2">% Attended</th>
+            </tr>
+            <tr class="double-header">
+                {% for attendance in student_attendances.0.attendances %}
+                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.session_id }}
+                </th>
+                {% endfor %}
+            </tr>
+            {% for student_attendance in student_attendances %}
+            {% if forloop.counter|divisibleby:2 %}
+            <tr>
+            {% else %}
+            <tr class="alt">
+            {% endif %}
+                <td>{{ student_attendance.student.user.username }}</td>
+                {% for attended in student_attendance.attendances %}
+                <td>
+                    {% if attended.attended %}
+                    <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+                    {% else %}
+                    <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td>{{ student_attendance.percent_attended|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
     <br>
-    <table>
-      <tr>
-        <th>Student Code</th>
-      </tr>
-    {% for student in students %}
-      {% if forloop.counter|divisibleby:2 %}
-        <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td>{{ student.user.username }}</td>
-      </tr>
-    {% endfor %}
-    </table>
-  </div>
-  <br>
-  <hr>
-  <br>
-{% elif user_type and user_type != "STUDENT" %}
-  <p>No students are available.</p>
-{% endif %}
-  
-<!-- LECTURES -->
-{% if lectures %}
-  <div class="link-container">
-    <a href="#lectures-container" class="btn btn-info" data-toggle="collapse">Lectures</a>    
-  </div>
-  
-  <div id="lectures-container" class="collapse">
+    <hr>
     <br>
-    <table>
-      <tr>
-        <th>Session ID</th>
-        <th>Date</th>
-      </tr>
-    {% for lecture in lectures %}
-      {% if forloop.counter|divisibleby:2 %}
-        <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td>{{ lecture.session_id }}</td>
-        <td>{{ lecture.date }}</td>
-      </tr>
-    {% endfor %}
-    </table>
-  </div>
-  <br>
-  <hr>
-  <br>
-{% else %}
-  <p>No lectures are available.</p>
-{% endif %}
+    {% else %}
+    <p>No attendances are available.</p>
+    {% endif %}
 
 </div>
