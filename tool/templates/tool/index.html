@@ -133,7 +133,7 @@
         <tr class="alt">
       {% endif %}
         <td>{{ lecture.module.module_code }}</td>
-        <td>{{ lecture.session_id }}</td>
+        <td><a href="{% url 'tool:lecture' lecture_id=lecture.id %}">{{ lecture.session_id }}</a></td>
         <td>{{ lecture.date }}</td>
       </tr>
     {% endfor %}

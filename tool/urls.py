@@ -36,6 +36,8 @@ urlpatterns = [
   url(r'^modules/(?P<module_id>[0-9]+)$', views.module, name='module'),
   
   url(r'^students/(?P<student_id>[0-9]+)$', views.student, name='student'),
+
+  url(r'^lectures/(?P<lecture_id>[0-9]+)$', views.lecture, name='lecture'),
   
   url(r'^settings/$', views.settings, name='settings'),
 ]

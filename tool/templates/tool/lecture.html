@@ -1,0 +1,57 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
+<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+
+<a href="{% url 'tool:index' %}">Home</a>
+<a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+<span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
+
+<div id="content" class="container">
+
+    <h2>{{ lecture.date }} - {{ lecture.session_id }}</h2>
+
+    <hr>
+
+    <!-- ATTENDANCES -->
+    {% if lecture_attendances %}
+    <div class="link-container">
+        <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
+    </div>
+
+    <div id="attendance-container" class="collapse">
+        <br>
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>Attended</th>
+            </tr>
+            {% for lecture_attendance in lecture_attendances %}
+            {% if forloop.counter|divisibleby:2 %}
+            <tr>
+            {% else %}
+            <tr class="alt">
+            {% endif %}
+                <td>{{ lecture_attendance.student.user.username }}</td>
+                <td>
+                    {% if lecture_attendance.attended %}
+                    <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+                    {% else %}
+                    <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <hr>
+    <br>
+    {% else %}
+    <p>No attendances are available.</p>
+    {% endif %}
+
+</div>
