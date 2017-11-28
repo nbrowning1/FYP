@@ -322,6 +322,40 @@ def module(request, module_id):
 
 
 @login_required
+def lecturer(request, lecturer_id):
+    user_type = get_user_type(request)
+    check_valid_user(user_type, request)
+
+    try:
+        lecturer = Staff.objects.get(id=lecturer_id)
+    except Staff.DoesNotExist:
+        raise Http404("Lecturer does not exist")
+
+    if user_type == STUDENT_TYPE:
+        raise Http404("Not authorised to view this lecturer")
+
+    modules = Module.objects.filter(lecturers__in=[lecturer])
+    module_attendances = []
+    for module in modules:
+        lectures = Lecture.objects.filter(module__in=[module])
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures)
+        num_attended = 0
+        for lecture_attendance in lecture_attendances:
+            if lecture_attendance.attended:
+                num_attended += 1
+        percent_attended = (num_attended / len(lecture_attendances)) * 100
+        module_attendance = types.SimpleNamespace()
+        module_attendance.module = module
+        module_attendance.percent_attended = percent_attended
+        module_attendances.append(module_attendance)
+
+    return render(request, 'tool/lecturer.html', {
+        'lecturer': lecturer,
+        'module_attendances': module_attendances
+    })
+
+
+@login_required
 def student(request, student_id):
     user_type = get_user_type(request)
     check_valid_user(user_type, request)
@@ -380,7 +414,8 @@ def lecture(request, lecture_id):
             'lecture__date')
     else:
         # get attendances for lectures, sorted by student then date
-        lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student', 'lecture__date')
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student',
+                                                                                               'lecture__date')
 
     return render(request, 'tool/lecture.html', {
         'lecture': lecture,

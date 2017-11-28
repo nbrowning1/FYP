@@ -39,6 +39,38 @@ class SingleModuleViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class SingleLecturerViewTests(TestCase):
+    def test_single_lecturer_view_admin(self):
+        authenticate_admin(self)
+        test_valid_lecturer_view(self, False)
+
+    def test_single_lecturer_view_staff(self):
+        this_lecturer = authenticate_staff(self)
+        test_valid_lecturer_view(self, False, this_lecturer=this_lecturer)
+
+    def test_single_lecturer_view_student(self):
+        this_student = authenticate_student(self)
+        test_valid_lecturer_view(self, True, this_student=this_student)
+
+    def test_lecturer_unauthenticated(self):
+        create_staff('e00123456')
+
+        # check module that exists
+        response = go_to_lecturer(self, 1)
+        self.assertRedirects(response, '/tool/login/?next=/tool/lecturers/1', status_code=302)
+
+        # check lecturer that doesnt exist - should be same response
+        response = go_to_lecturer(self, 10)
+        self.assertRedirects(response, '/tool/login/?next=/tool/lecturers/10', status_code=302)
+
+    def test_nonexistent_lecturer(self):
+        authenticate_admin(self)
+
+        create_staff('e00123456')
+        response = go_to_lecturer(self, 10)
+        self.assertEqual(response.status_code, 404)
+
+
 class SingleStudentViewTests(TestCase):
     def test_single_student_view_admin(self):
         authenticate_admin(self)
@@ -105,9 +137,9 @@ class SingleLectureViewTests(TestCase):
 
 def test_valid_module_view(self, should_see_students, **kwargs):
     if 'this_student' in kwargs:
-        setup_data(kwargs['this_student'])
+        setup_data(kwargs['this_student'], None)
     else:
-        setup_data(None)
+        setup_data(None, None)
 
     # should only see information relating to COM101 module - first created
     response = go_to_module(self, 1)
@@ -138,11 +170,39 @@ def test_valid_module_view(self, should_see_students, **kwargs):
         self.assertEqual(response.status_code, 404)
 
 
+def test_valid_lecturer_view(self, is_student, **kwargs):
+    if 'this_lecturer' in kwargs:
+        setup_data(None, kwargs['this_lecturer'])
+    else:
+        setup_data(None, None)
+
+    # should only see information relating to e00123456 lecturer - first created
+    response = go_to_lecturer(self, 1)
+    if is_student:
+        self.assertEqual(response.status_code, 404)
+    else:
+        self.assertContains(response, 'COM101')
+        self.assertNotContains(response, 'COM102')
+        self.assertContains(response, '50.00%')
+        if 'this_lecturer' in kwargs:
+            self.assertContains(response, 'test')
+        else:
+            self.assertContains(response, 'e00123456')
+        self.assertNotContains(response, 'e00987654')
+
+    # should only see information relating to e00987654 lecturer - second created
+    response = go_to_lecturer(self, 2)
+    if is_student:
+        self.assertEqual(response.status_code, 404)
+    else:
+        self.assertContains(response, 'No attendances are available.')
+
+
 def test_valid_student_view(self, is_student, **kwargs):
     if 'this_student' in kwargs:
-        setup_data(kwargs['this_student'])
+        setup_data(kwargs['this_student'], None)
     else:
-        setup_data(None)
+        setup_data(None, None)
 
     # should only see information relating to B00123456 student - first created (or this user if student)
     response = go_to_student(self, 1)
@@ -182,9 +242,9 @@ def test_valid_student_view(self, is_student, **kwargs):
 
 def test_valid_lecture_view(self, is_student, **kwargs):
     if 'this_student' in kwargs:
-        setup_data(kwargs['this_student'])
+        setup_data(kwargs['this_student'], None)
     else:
-        setup_data(None)
+        setup_data(None, None)
 
     module3 = create_module('COM333')
     student3 = create_student('B00555555')
@@ -225,7 +285,7 @@ def test_valid_lecture_view(self, is_student, **kwargs):
         self.assertEqual(response.status_code, 404)
 
 
-def setup_data(this_student):
+def setup_data(this_student, this_lecturer):
     module1 = create_module('COM101')
     create_module('COM102')
     create_student('B00123456')
@@ -233,15 +293,27 @@ def setup_data(this_student):
         student2 = this_student
     else:
         student2 = create_student('B00987654')
+
+    if this_lecturer:
+        lecturer1 = this_lecturer
+    else:
+        lecturer1 = create_staff('e00123456')
+    create_staff('e00987654')
     lecture1 = create_lecture(module1, 'Session 1')
     lecture2 = create_lecture(module1, 'Session 2')
     module1.students.add(student2)
+    module1.lecturers.add(lecturer1)
     create_attendance(student2, lecture1, True)
     create_attendance(student2, lecture2, False)
 
 
 def go_to_module(self, module_id):
     url = reverse('tool:module', kwargs={'module_id': module_id})
+    return self.client.get(url)
+
+
+def go_to_lecturer(self, lecturer_id):
+    url = reverse('tool:lecturer', kwargs={'lecturer_id': lecturer_id})
     return self.client.get(url)
 
 

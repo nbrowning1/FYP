@@ -70,7 +70,7 @@
       {% else %}
         <tr class="alt">
       {% endif %}
-        <td>{{ lecturer.user.username }}</td>
+      <td><a href="{% url 'tool:lecturer' lecturer_id=lecturer.id %}">{{ lecturer.user.username }}</a></td>
       </tr>
     {% endfor %}
     </table>
