@@ -5,6 +5,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    google.load("visualization", "1", {packages:["corechart"]});
+</script>
 
 <a href="{% url 'tool:index' %}">Home</a>
 <a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>

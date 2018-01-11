@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from graphos.renderers.gchart import LineChart, PieChart
+from graphos.sources.simple import SimpleDataSource
 
 from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
 from ..models import Student, Staff, Module, Lecture, StudentAttendance
@@ -84,51 +86,6 @@ def index(request):
         'lectures': lectures,
         'user_type': user_type
     })
-
-    """
-    mark_list = Mark.objects.order_by('-date')
-    error_msg = request.session.pop('error_message', '')
-    
-    students_distinct = set(mark.student.student_code for mark in mark_list)
-    
-    # initial value - y-axis for data
-    student_data = ['Date']
-    for student_code in students_distinct:
-      student_data.append(student_code)
-      
-    # order matters - we retrieved the dates in desc order, query could be changed but for now we'll just reverse since table still exists
-    dates_distinct = reversed(list(OrderedDict.fromkeys(mark.date for mark in mark_list)))
-    
-    # data format:
-  #  data =  [
-  #    ...[ Y-axis, ...X-axis ]
-  #  ]
-    data = [ student_data ]
-    for date in dates_distinct:
-      data_item = []
-      # y-axis value
-      data_item.append(date)
-      
-      # marks achieved by students on date
-      for student_code in students_distinct:
-        # try to get existing student mark
-        mark = Mark.objects.filter(student__student_code=student_code, date=date).first()
-        if mark is not None:
-          data_item.append(mark.mark)
-        else:
-          # set None (empty graph value)
-          data_item.append(None)
-  
-      data.append(data_item)
-  
-    chart = LineChart(SimpleDataSource(data=data), options={'title': 'Marks over time'})
-    
-    return render(request, 'tool/index.html', {
-      'mark_list': mark_list,
-      'error_message': error_msg,
-      'chart': chart
-    })
-    """
 
 
 @login_required
@@ -315,9 +272,32 @@ def module(request, module_id):
         student_attendance.percent_attended = (num_attended / len(student_attendance.attendances)) * 100
         student_attendances.append(student_attendance)
 
+    # pie chart visualisation
+    total_attendance_percentage = 0
+    for student_attendance in student_attendances:
+        total_attendance_percentage += student_attendance.percent_attended
+
+    attended_percent = (total_attendance_percentage / len(student_attendances)) \
+        if (len(student_attendances) > 0) else 0
+    non_attended_percent = 100 - attended_percent
+
+    # data format:
+    #  data =  [
+    #    ...[ Title, Value ]
+    #  ]
+    # initial values for what is shown, and value used
+    title_data = ['Attendance', 'Attended?']
+    attendance_data = ['Attended', attended_percent]
+    non_attendance_data = ['Absent', non_attended_percent]
+    chart_data = [title_data, non_attendance_data, attendance_data]
+
+    chart = PieChart(SimpleDataSource(data=chart_data),
+                     options={'title': 'Attendance', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+
     return render(request, 'tool/module.html', {
         'module': module,
-        'student_attendances': student_attendances
+        'student_attendances': student_attendances,
+        'chart': chart
     })
 
 
