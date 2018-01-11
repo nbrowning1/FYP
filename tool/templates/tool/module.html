@@ -1,22 +1,8 @@
-{% load static %}
+{% extends "tool/base_single_view.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}"/>
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}"/>
-<link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
-<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+{% block title %}{{ module.module_code }}{% endblock %}
 
-<a href="{% url 'tool:index' %}">Home</a>
-<a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
-<span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
-
-<div id="content" class="container">
-
-    <h2>{{ module.module_code }}</h2>
-
-    <hr>
-
-    <!-- ATTENDANCES -->
+{% block content %}
     {% if student_attendances %}
     <div class="link-container">
         <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
@@ -66,5 +52,4 @@
     {% else %}
     <p>No attendances are available.</p>
     {% endif %}
-
-</div>
+{% endblock %}

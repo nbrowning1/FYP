@@ -1,0 +1,20 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
+<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+
+<a href="{% url 'tool:index' %}">Home</a>
+<a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+<span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
+
+<div id="content" class="container">
+
+    <h2>{% block title %}Base Title{% endblock %}</h2>
+
+    <hr>
+
+    {% block content %}{% endblock %}
+</div>

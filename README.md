@@ -1,5 +1,6 @@
 # FYP
-Final Year Project for student attendance & feedback functions. [Build:](https://travis-ci.org/nbrowning1/FYP) ![build status](https://travis-ci.org/nbrowning1/FYP.svg?branch=master)
+Final Year Project for student attendance & feedback functions.
+[Build:](https://travis-ci.org/nbrowning1/FYP) ![build status](https://travis-ci.org/nbrowning1/FYP.svg?branch=master)
 ### Setup Instructions
 1. Make sure Python3 and pip are installed: https://www.python.org/downloads/
 2. Find a comfy directory, and clone this repository: `git clone https://github.com/nbrowning1/FYP.git`
