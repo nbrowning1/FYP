@@ -302,7 +302,7 @@ def get_module_pie_chart(student_attendances):
     chart_data = [title_data, non_attendance_data, attendance_data]
 
     return PieChart(SimpleDataSource(data=chart_data),
-                     options={'title': 'Module Attendance Breakdown', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+                     options={'title': 'Module Attendance Overview', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
 
 def get_module_line_chart(lecture_attendances, num_students):
     lecture_attendance_map = OrderedDict()
@@ -386,7 +386,7 @@ def get_lecturer_pie_chart(module_attendances):
     chart_data = [title_data, non_attendance_data, attendance_data]
 
     return PieChart(SimpleDataSource(data=chart_data),
-                     options={'title': 'Modules Attendance Breakdown', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+                     options={'title': 'Modules Attendance Overview', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
 
 def get_lecturer_bar_chart(module_attendances):
     # data format:
@@ -440,10 +440,35 @@ def student(request, student_id):
                 student_module_attendance.attendances)) * 100
         student_module_attendances.append(student_module_attendance)
 
+    pie_chart = get_student_pie_chart(student_module_attendances)
+
     return render(request, 'tool/student.html', {
         'student': student,
-        'student_module_attendances': student_module_attendances
+        'student_module_attendances': student_module_attendances,
+        'pie_chart': pie_chart
     })
+
+def get_student_pie_chart(student_module_attendances):
+    total_attendance_percentage = 0
+    for module_attendance in student_module_attendances:
+        total_attendance_percentage += module_attendance.percent_attended
+
+    attended_percent = (total_attendance_percentage / len(student_module_attendances)) \
+        if (len(student_module_attendances) > 0) else 0
+    non_attended_percent = 100 - attended_percent
+
+    # data format:
+    #  data =  [
+    #    ...[ Title, Value ]
+    #  ]
+    # initial values for what is shown, and value used
+    title_data = ['Attendance', 'Attended?']
+    attendance_data = ['Attended', attended_percent]
+    non_attendance_data = ['Absent', non_attended_percent]
+    chart_data = [title_data, non_attendance_data, attendance_data]
+
+    return PieChart(SimpleDataSource(data=chart_data),
+                     options={'title': 'Module Attendance Overview', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
 
 
 @login_required
@@ -467,10 +492,36 @@ def lecture(request, lecture_id):
         lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student',
                                                                                                'lecture__date')
 
+    pie_chart = get_lecture_pie_chart(lecture_attendances)
+
     return render(request, 'tool/lecture.html', {
         'lecture': lecture,
-        'lecture_attendances': lecture_attendances
+        'lecture_attendances': lecture_attendances,
+        'pie_chart': pie_chart
     })
+
+def get_lecture_pie_chart(lecture_attendances):
+    total_attendance = 0
+    for lecture_attendance in lecture_attendances:
+        if lecture_attendance.attended:
+            total_attendance += 1
+
+    attended_percent = (total_attendance / len(lecture_attendances)) * 100 \
+        if (len(lecture_attendances) > 0) else 0
+    non_attended_percent = 100 - attended_percent
+
+    # data format:
+    #  data =  [
+    #    ...[ Title, Value ]
+    #  ]
+    # initial values for what is shown, and value used
+    title_data = ['Attendance', 'Attended?']
+    attendance_data = ['Attended', attended_percent]
+    non_attendance_data = ['Absent', non_attended_percent]
+    chart_data = [title_data, non_attendance_data, attendance_data]
+
+    return PieChart(SimpleDataSource(data=chart_data),
+                     options={'title': 'Lecture Attendance Overview', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
 
 
 # workaround to pass message through redirect

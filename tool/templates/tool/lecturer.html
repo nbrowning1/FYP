@@ -30,10 +30,9 @@
     <br>
     <hr>
     <br>
+    {{ pie_chart.as_html }}
+    {{ bar_chart.as_html }}
     {% else %}
     <p>No attendances are available.</p>
     {% endif %}
-
-    {{ pie_chart.as_html }}
-    {{ bar_chart.as_html }}
 {% endblock %}
