@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from graphos.renderers.gchart import LineChart, PieChart
+from graphos.renderers.gchart import LineChart, PieChart, BarChart
 from graphos.sources.simple import SimpleDataSource
 
 from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
@@ -272,7 +272,17 @@ def module(request, module_id):
         student_attendance.percent_attended = (num_attended / len(student_attendance.attendances)) * 100
         student_attendances.append(student_attendance)
 
-    # pie chart visualisation
+    pie_chart = get_module_pie_chart(student_attendances)
+    line_chart = get_module_line_chart(lecture_attendances, len(grouped_attendances))
+
+    return render(request, 'tool/module.html', {
+        'module': module,
+        'student_attendances': student_attendances,
+        'pie_chart': pie_chart,
+        'line_chart': line_chart
+    })
+
+def get_module_pie_chart(student_attendances):
     total_attendance_percentage = 0
     for student_attendance in student_attendances:
         total_attendance_percentage += student_attendance.percent_attended
@@ -291,14 +301,31 @@ def module(request, module_id):
     non_attendance_data = ['Absent', non_attended_percent]
     chart_data = [title_data, non_attendance_data, attendance_data]
 
-    chart = PieChart(SimpleDataSource(data=chart_data),
-                     options={'title': 'Attendance', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+    return PieChart(SimpleDataSource(data=chart_data),
+                     options={'title': 'Module Attendance Breakdown', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
 
-    return render(request, 'tool/module.html', {
-        'module': module,
-        'student_attendances': student_attendances,
-        'chart': chart
-    })
+def get_module_line_chart(lecture_attendances, num_students):
+    lecture_attendance_map = OrderedDict()
+    for lecture_attendance in lecture_attendances:
+        key = str(lecture_attendance.lecture.date) + ': \n' + lecture_attendance.lecture.session_id
+        val = 1 if lecture_attendance.attended else 0
+        lecture_attendance_map.setdefault(key, 0)
+        lecture_attendance_map[key] = lecture_attendance_map[key] + val
+
+    # initial values for what is shown, and value used
+    title_data = ['Lecture', '% Attendance']
+
+    chart_data = [title_data]
+    for key, val in lecture_attendance_map.items():
+        percentage_val = (val / num_students) * 100
+        chart_data.append([key, percentage_val])
+
+    return LineChart(SimpleDataSource(data=chart_data),
+                    options={'title': 'Attendance per Lecture', 'pieHole': 0.4, 'colors': ['#3498db'],
+                             'hAxis': {
+                                 'title': "Lectures", 'titleTextStyle': { 'bold': True, 'italic': False }
+                             } }
+                     )
 
 
 @login_required
@@ -329,10 +356,53 @@ def lecturer(request, lecturer_id):
         module_attendance.percent_attended = percent_attended
         module_attendances.append(module_attendance)
 
+    pie_chart = get_lecturer_pie_chart(module_attendances)
+    bar_chart = get_lecturer_bar_chart(module_attendances)
+
     return render(request, 'tool/lecturer.html', {
         'lecturer': lecturer,
-        'module_attendances': module_attendances
+        'module_attendances': module_attendances,
+        'pie_chart': pie_chart,
+        'bar_chart': bar_chart
     })
+
+def get_lecturer_pie_chart(module_attendances):
+    total_attendance_percentage = 0
+    for module_attendance in module_attendances:
+        total_attendance_percentage += module_attendance.percent_attended
+
+    attended_percent = (total_attendance_percentage / len(module_attendances)) \
+        if (len(module_attendances) > 0) else 0
+    non_attended_percent = 100 - attended_percent
+
+    # data format:
+    #  data =  [
+    #    ...[ Title, Value ]
+    #  ]
+    # initial values for what is shown, and value used
+    title_data = ['Attendance', 'Attended?']
+    attendance_data = ['Attended', attended_percent]
+    non_attendance_data = ['Absent', non_attended_percent]
+    chart_data = [title_data, non_attendance_data, attendance_data]
+
+    return PieChart(SimpleDataSource(data=chart_data),
+                     options={'title': 'Modules Attendance Breakdown', 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+
+def get_lecturer_bar_chart(module_attendances):
+    # data format:
+    #  data =  [
+    #    ...[ Title, Value ]
+    #  ]
+    # initial values for what is shown, and value used
+    title_data = ['Module', '% Attendance']
+    chart_data = [title_data]
+    for module_attendance in module_attendances:
+        chart_data.append([module_attendance.module.module_code, module_attendance.percent_attended])
+
+    return BarChart(SimpleDataSource(data=chart_data),
+                    options={'title': 'Attendance per Module', 'colors': ['#3498db'],
+                             'hAxis': { 'maxValue': 100 }}
+                    )
 
 
 @login_required

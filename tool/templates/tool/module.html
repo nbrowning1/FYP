@@ -13,6 +13,7 @@
         <table>
             <tr class="double-header">
                 <th class="double-header-left-cell double-header-right-cell" rowspan="2">Student Code</th>
+                {# can use first here as we're only referring to lecture dates/titles - same for all students #}
                 {% for attendance in student_attendances.0.attendances %}
                 <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.date }}
                 </th>
@@ -53,5 +54,6 @@
     <p>No attendances are available.</p>
     {% endif %}
 
-    {{ chart.as_html }}
+    {{ pie_chart.as_html }}
+    {{ line_chart.as_html }}
 {% endblock %}
