@@ -11,8 +11,8 @@ from django.urls import reverse
 from graphos.renderers.gchart import LineChart, PieChart, BarChart
 from graphos.sources.simple import SimpleDataSource
 
-from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
 from ..models import Student, Staff, Module, Lecture, StudentAttendance
+from ..upload_data_save import DataSaver
 
 ADMIN_TYPE = "ADMIN"
 STAFF_TYPE = "STAFF"
@@ -92,7 +92,6 @@ def index(request):
 def upload(request):
     if request.method == 'POST' and request.FILES.get('upload-data', False):
 
-        uploaded_list = []
         csv_file = request.FILES['upload-data']
         if not (csv_file.name.lower().endswith('.csv')):
             # workaround to pass message through redirect
@@ -103,121 +102,14 @@ def upload(request):
         file_str = io.StringIO(decoded_file)
 
         reader = csv.reader(file_str)
+        saved_data = DataSaver(reader).save_uploaded_data()
 
-        module = None
-        staff = []
-
-        # finding module (step 1/3)
-        found_module = False
-        for counter, row in enumerate(reader):
-            if found_module:
-                module_data = ModuleRow(row)
-                error_msg = module_data.get_error_message()
-                if error_msg:
-                    return redirect_with_error(request, reverse('tool:index'), error_msg)
-
-                module = Module.objects.get(module_code=module_data.module)
-                break
-
-            if row[0] != 'Module Code':
-                continue
-            else:
-                found_module = True
-                continue
-
-        # finding staff (step 2/3)
-        found_staff = False
-        for counter, row in enumerate(reader):
-            if found_staff:
-                if row[0].strip() and row[0].strip() != 'Student Attendance':
-                    staff_data = StaffRow(row)
-                    error_msg = staff_data.get_error_message()
-                    if error_msg:
-                        return redirect_with_error(request, reverse('tool:index'), error_msg)
-
-                    staff.append(Staff.objects.get(user__username=staff_data.lecturer))
-                else:
-                    break
-
-            if row[0] != 'Lecturers':
-                continue
-            else:
-                found_staff = True
-                continue
-
-        # finally grabbing attendance data (step 3/3)
-        attendance_session_data = None
-        found_attendance = False
-        for counter, row in enumerate(reader):
-            # empty rows that can appear because of spreadsheet use
-            if not ''.join(row).strip():
-                continue
-
-            if found_attendance:
-                attendance_data = AttendanceRow(attendance_session_data, row)
-                error_msg = attendance_data.get_error_message()
-                if error_msg:
-                    error_occurred_msg = 'Error with inputs: [[%s]] at line %s' % (error_msg, counter)
-                    return redirect_with_error(request, reverse('tool:index'), error_occurred_msg)
-                else:
-                    uploaded_list.append(attendance_data)
-
-            if row[0] != 'Device ID(s)':
-                continue
-            else:
-                found_attendance = True
-                attendance_session_data = AttendanceSessionRow(row)
-                error_msg = attendance_session_data.get_error_message()
-                if error_msg:
-                    return redirect_with_error(request, reverse('tool:index'), error_msg)
-                continue
-
-        # associate lecturers with module if not already associated
-        for lecturer in staff:
-            if not any(lecturer.user.username == saved_lec.user.username for saved_lec in module.lecturers.all()):
-                module.lecturers.add(lecturer)
-
-        for uploaded_data in uploaded_list:
-            uploaded_student = uploaded_data.student
-
-            # associate student with module if not already associated
-            if not any(uploaded_student.user.username == saved_stu.user.username for saved_stu in
-                       module.students.all()):
-                module.students.add(uploaded_student)
-
-            for attendance_data in uploaded_data.attendances:
-                session = attendance_data.session
-                # TODO: extract outside so calls only performed once for lectures
-                # create lectures if not already created
-                lecture = Lecture.objects.filter(module=module,
-                                                 session_id=session.session_id,
-                                                 date=session.date).first()
-                if not lecture:
-                    new_lecture = Lecture(module=module, session_id=session.session_id, date=session.date)
-                    new_lecture.save()
-                    lecture = new_lecture
-
-                # create attendance or update existing
-                attended = attendance_data.attended
-                stud_attendance = StudentAttendance.objects.filter(student=uploaded_student,
-                                                                   lecture=lecture).first()
-                if stud_attendance:
-                    stud_attendance.attended = attended
-                    stud_attendance.save()
-                else:
-                    new_attendance = StudentAttendance(student=uploaded_student,
-                                                       lecture=lecture,
-                                                       attended=attended)
-                    new_attendance.save()
-
-        uploaded_data = types.SimpleNamespace()
-        uploaded_data.module = module
-        uploaded_data.staff = staff
-        uploaded_data.attendances = uploaded_list
-
-        return render(request, 'tool/upload.html', {
-            'uploaded_data': uploaded_data,
-        })
+        if hasattr(saved_data, 'error'):
+            return redirect_with_error(request, reverse('tool:index'), saved_data.error)
+        else:
+            return render(request, 'tool/upload.html', {
+                'uploaded_data': saved_data,
+            })
     else:
         # workaround to pass message through redirect
         request.session['error_message'] = "No file uploaded. Please upload a .csv file."
@@ -350,7 +242,8 @@ def lecturer(request, lecturer_id):
         for lecture_attendance in lecture_attendances:
             if lecture_attendance.attended:
                 num_attended += 1
-        percent_attended = (num_attended / len(lecture_attendances)) * 100
+        percent_attended = (num_attended / len(lecture_attendances)) * 100 \
+            if (len(lecture_attendances) > 0) else 0
         module_attendance = types.SimpleNamespace()
         module_attendance.module = module
         module_attendance.percent_attended = percent_attended
