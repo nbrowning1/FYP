@@ -22,7 +22,7 @@ class DataSaver:
                 module = Module.objects.get(module_code=module_data.module)
                 break
 
-            if row[0] != 'Module Code':
+            if row[0].strip() != 'Module Code':
                 continue
             else:
                 found_module = True
@@ -42,7 +42,7 @@ class DataSaver:
                 else:
                     break
 
-            if row[0] != 'Lecturers':
+            if row[0].strip() != 'Lecturers':
                 continue
             else:
                 found_staff = True
@@ -65,7 +65,7 @@ class DataSaver:
                 else:
                     uploaded_list.append(attendance_data)
 
-            if row[0] != 'Device ID(s)':
+            if row[0].strip() != 'Device ID(s)':
                 continue
             else:
                 found_attendance = True
