@@ -7,12 +7,13 @@
 
 {% if uploaded_data %}
   <h4>Saved data:</h4>
+  {% for data in uploaded_data %}
   <table>
     <tr>
       <th>Module Code</th>
     </tr>
     <tr>
-      <td>{{ uploaded_data.module.module_code }}</td>
+      <td>{{ data.module.module_code }}</td>
     </tr>
   </table>
   <br>
@@ -20,7 +21,7 @@
     <tr>
       <th>Lecturer</th>
     </tr>
-    {% for lecturer in uploaded_data.staff %}
+    {% for lecturer in data.staff %}
       {% if forloop.counter|divisibleby:2 %}
         <tr>
       {% else %}
@@ -35,16 +36,16 @@
     <tr class="double-header">
       <th class="double-header-left-cell" rowspan="2">Student Device ID</th>
       <th class="double-header-right-cell" rowspan="2">Student Code</th>
-      {% for attendance in uploaded_data.attendances.0.attendances %}
+      {% for attendance in data.attendances.0.attendances %}
         <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.session.date }}</th>
       {% endfor %}
     </tr>
     <tr class="double-header">
-      {% for attendance in uploaded_data.attendances.0.attendances %}
+      {% for attendance in data.attendances.0.attendances %}
         <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.session.session_id }}</th>
       {% endfor %}
     </tr>
-    {% for attendance in uploaded_data.attendances %}
+    {% for attendance in data.attendances %}
       {% if forloop.counter|divisibleby:2 %}
         <tr>
       {% else %}
@@ -64,6 +65,7 @@
       </tr>
     {% endfor %}
   </table>
+  {% endfor %}
   
 {% else %}
   <p>No upload information available.</p>

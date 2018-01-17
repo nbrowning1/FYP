@@ -92,24 +92,28 @@ def index(request):
 def upload(request):
     if request.method == 'POST' and request.FILES.get('upload-data', False):
 
-        csv_file = request.FILES['upload-data']
-        if not (csv_file.name.lower().endswith('.csv')):
-            # workaround to pass message through redirect
-            request.session['error_message'] = "Invalid file type. Only csv files are accepted."
-            return redirect(reverse('tool:index'), Permanent=True)
+        csv_files = request.FILES.getlist('upload-data')
+        for csv_file in csv_files:
+            if not (csv_file.name.lower().endswith('.csv')):
+                # workaround to pass message through redirect
+                request.session['error_message'] = "Invalid file type. Only csv files are accepted."
+                return redirect(reverse('tool:index'), Permanent=True)
 
-        decoded_file = csv_file.read().decode('utf-8')
-        file_str = io.StringIO(decoded_file)
+        saved_data = []
+        for csv_file in csv_files:
+            decoded_file = csv_file.read().decode('utf-8')
+            file_str = io.StringIO(decoded_file)
 
-        reader = csv.reader(file_str)
-        saved_data = DataSaver(reader).save_uploaded_data()
+            reader = csv.reader(file_str)
+            uploaded_data = DataSaver(reader).save_uploaded_data()
+            if hasattr(uploaded_data, 'error'):
+                error_msg = 'Error processing file ' + csv_file.name + ': ' + uploaded_data.error
+                return redirect_with_error(request, reverse('tool:index'), error_msg)
+            saved_data.append(uploaded_data)
 
-        if hasattr(saved_data, 'error'):
-            return redirect_with_error(request, reverse('tool:index'), saved_data.error)
-        else:
-            return render(request, 'tool/upload.html', {
-                'uploaded_data': saved_data,
-            })
+        return render(request, 'tool/upload.html', {
+            'uploaded_data': saved_data,
+        })
     else:
         # workaround to pass message through redirect
         request.session['error_message'] = "No file uploaded. Please upload a .csv file."
