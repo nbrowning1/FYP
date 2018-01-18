@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from .views import views
+from .views import views, single_entity_views
 
 from django.urls import reverse_lazy
 
@@ -49,13 +49,13 @@ urlpatterns = [
 
     url(r'^upload/$', views.upload, name='upload'),
 
-    url(r'^modules/(?P<module_id>[0-9]+)$', views.module, name='module'),
+    url(r'^modules/(?P<module_id>[0-9]+)$', single_entity_views.module, name='module'),
 
-    url(r'^lecturers/(?P<lecturer_id>[0-9]+)$', views.lecturer, name='lecturer'),
+    url(r'^lecturers/(?P<lecturer_id>[0-9]+)$', single_entity_views.lecturer, name='lecturer'),
 
-    url(r'^students/(?P<student_id>[0-9]+)$', views.student, name='student'),
+    url(r'^students/(?P<student_id>[0-9]+)$', single_entity_views.student, name='student'),
 
-    url(r'^lectures/(?P<lecture_id>[0-9]+)$', views.lecture, name='lecture'),
+    url(r'^lectures/(?P<lecture_id>[0-9]+)$', single_entity_views.lecture, name='lecture'),
 
     url(r'^settings/$', views.settings, name='settings'),
 ]
