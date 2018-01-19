@@ -22,7 +22,18 @@
             <tr class="alt">
             {% endif %}
             <td><a href="{% url 'tool:module' module_id=module_attendance.module.id %}">{{ module_attendance.module.module_code }}</a></td>
-            <td>{{ module_attendance.percent_attended|floatformat:2 }}%</td>
+
+            {% if module_attendance.percent_attended < 25 %}
+            <td class="attendance_low">
+            {% elif module_attendance.percent_attended < 50 %}
+            <td class="attendance_midlow">
+            {% elif module_attendance.percent_attended < 75 %}
+            <td class="attendance_midhigh">
+            {% else %}
+            <td class="attendance_high">
+            {% endif %}
+                {{ module_attendance.percent_attended|floatformat:2 }}%
+            </td>
             </tr>
             {% endfor %}
         </table>

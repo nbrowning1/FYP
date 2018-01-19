@@ -45,7 +45,18 @@
                                 {% endif %}
                             </td>
                             {% endfor %}
-                            <td>{{ student_module_attendance.percent_attended|floatformat:2 }}%</td>
+
+                            {% if student_module_attendance.percent_attended < 25 %}
+                            <td class="attendance_low">
+                            {% elif student_module_attendance.percent_attended < 50 %}
+                            <td class="attendance_midlow">
+                            {% elif student_module_attendance.percent_attended < 75 %}
+                            <td class="attendance_midhigh">
+                            {% else %}
+                            <td class="attendance_high">
+                            {% endif %}
+                                {{ student_module_attendance.percent_attended|floatformat:2 }}%
+                            </td>
                         </tr>
                     </table>
                 </div>
