@@ -22,7 +22,7 @@
             <tr class="alt">
             {% endif %}
             <td><a href="{% url 'tool:module' module_id=module_attendance.module.id %}">{{ module_attendance.module.module_code }}</a></td>
-                <td>{{ module_attendance.percent_attended|floatformat:2 }}%</td>
+            <td>{{ module_attendance.percent_attended|floatformat:2 }}%</td>
             </tr>
             {% endfor %}
         </table>

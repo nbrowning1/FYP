@@ -15,14 +15,16 @@
                 <th class="double-header-left-cell double-header-right-cell" rowspan="2">Student Code</th>
                 {# can use first here as we're only referring to lecture dates/titles - same for all students #}
                 {% for attendance in student_attendances.0.attendances %}
-                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.date }}
+                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                    <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.date }}</a>
                 </th>
                 {% endfor %}
                 <th class="double-header-right-cell" rowspan="2">% Attended</th>
             </tr>
             <tr class="double-header">
                 {% for attendance in student_attendances.0.attendances %}
-                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.session_id }}
+                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                    <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.session_id }}</a>
                 </th>
                 {% endfor %}
             </tr>
@@ -32,7 +34,7 @@
             {% else %}
             <tr class="alt">
             {% endif %}
-                <td>{{ student_attendance.student.user.username }}</td>
+            <td><a href="{% url 'tool:student' student_id=student_attendance.student.id %}">{{ student_attendance.student.user.username }}</a></td>
                 {% for attended in student_attendance.attendances %}
                 <td>
                     {% if attended.attended %}

@@ -19,19 +19,23 @@
                         <tr class="double-header">
                             <th class="double-header-left-cell double-header-right-cell" rowspan="2">Module Code</th>
                             {% for attendance in student_module_attendance.attendances %}
-                            <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.date }}
+                            <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                                <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.date }}</a>
                             </th>
                             {% endfor %}
                             <th class="double-header-right-cell" rowspan="2">% Attended</th>
                         </tr>
                         <tr class="double-header">
                             {% for attendance in student_module_attendance.attendances %}
-                            <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>{{ attendance.lecture.session_id }}
+                            <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                                <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.session_id }}</a>
                             </th>
                             {% endfor %}
                         </tr>
                         <tr class="alt">
-                            <td>{{ student_module_attendance.module.module_code }}</td>
+                            <td>
+                                <a href="{% url 'tool:module' module_id=student_module_attendance.module.id %}">{{ student_module_attendance.module.module_code }}</a>
+                            </td>
                             {% for attended in student_module_attendance.attendances %}
                             <td>
                                 {% if attended.attended %}
