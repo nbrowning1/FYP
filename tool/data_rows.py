@@ -80,7 +80,7 @@ class AttendanceSessionRow:
 class AttendanceRow:
     def __init__(self, attendance_session_row, data):
         self.error_message = ''
-        self.student_device_id = data[0].strip()
+        self.student_id = data[0].strip()
         self.attendances = []
 
         # -1 because first column isn't a session
@@ -90,12 +90,17 @@ class AttendanceRow:
             return
 
         # student validation
+        # try finding by device ID first
         try:
-            self.student = Student.objects.get(device_id=self.student_device_id)
+            self.student = Student.objects.get(device_id=self.student_id)
         except Student.DoesNotExist:
-            if self.error_message:
-                self.error_message += ', '
-            self.error_message += 'Unrecognised student: ' + self.student_device_id
+            # then try to find by student code
+            try:
+                self.student = Student.objects.get(user__username=self.student_id)
+            except Student.DoesNotExist:
+                if self.error_message:
+                    self.error_message += ', '
+                self.error_message += 'Unrecognised student: ' + self.student_id
 
         for i in range(1, len(data)):
             attended_val = str(data[i]).strip()
@@ -103,8 +108,8 @@ class AttendanceRow:
             if not (attended_val.lower() in ['y', 'n', '1', '0', '✔', '✘', 'âœ”', 'âœ˜']):
                 if self.error_message:
                     self.error_message += ', '
-                self.error_message += 'Unrecognised attendance value for ' + self.student_device_id + ': ' + attended_val + ' at column ' + str(
-                    i)
+                self.error_message += 'Unrecognised attendance value for ' + self.student_id + ': ' + attended_val + ' at column ' + \
+                                      str(i)
             else:
                 attendance = types.SimpleNamespace()
                 attendance.session = attendance_session_row.sessions[i - 1]
