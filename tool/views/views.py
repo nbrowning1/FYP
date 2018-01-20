@@ -1,13 +1,16 @@
 import csv
 import io
+import os
 from collections import OrderedDict
 
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
+from .views_utils import *
 from ..models import *
 from ..upload_data_save import DataSaver
 
@@ -21,7 +24,7 @@ def index(request):
         lecturers = Staff.objects.all()
         students = Student.objects.all()
         lectures = Lecture.objects.all()
-        user_type = 'ADMIN'
+        user_type = UserType.ADMIN_TYPE.value
     else:
         is_valid_user = False
 
@@ -39,7 +42,7 @@ def index(request):
             lectures = Lecture.objects.filter(module__in=modules)
 
             is_valid_user = True
-            user_type = 'STAFF'
+            user_type = UserType.STAFF_TYPE.value
         except Staff.DoesNotExist:
             pass
 
@@ -57,7 +60,7 @@ def index(request):
             lectures = Lecture.objects.filter(module__in=modules)
             is_valid_user = True
 
-            user_type = 'STUDENT'
+            user_type = UserType.STUDENT_TYPE.value
         except Student.DoesNotExist:
             pass
 
@@ -65,18 +68,24 @@ def index(request):
         if not is_valid_user:
             return logout_and_redirect_login(request)
 
+    upload_example_filepath = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.csv')
+
     return render(request, 'tool/index.html', {
         'error_message': error_msg,
         'modules': modules,
         'lecturers': lecturers,
         'students': students,
         'lectures': lectures,
-        'user_type': user_type
+        'user_type': user_type,
+        'upload_example_filepath': upload_example_filepath
     })
 
 
 @login_required
 def upload(request):
+    if not request.user.is_staff:
+        raise PermissionDenied("Insufficient permissions")
+
     if request.method == 'POST' and request.FILES.get('upload-data', False):
 
         csv_files = request.FILES.getlist('upload-data')
@@ -105,6 +114,19 @@ def upload(request):
         # workaround to pass message through redirect
         request.session['error_message'] = "No file uploaded. Please upload a .csv file."
         return redirect(reverse('tool:index'), Permanent=True)
+
+
+@login_required
+def download(request, path):
+    if not request.user.is_staff:
+        raise PermissionDenied("Insufficient permissions")
+
+    if os.path.exists(path):
+        with open(path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="text/csv")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
+            return response
+    raise Http404
 
 
 @login_required

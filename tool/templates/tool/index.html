@@ -5,10 +5,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script type="text/javascript">
-    google.load("visualization", "1", {packages:["corechart"]});
-</script>
+<script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
 <a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
@@ -157,6 +154,12 @@
     </label>
     <input type="submit" class="btn btn-info" value="Submit">
   </form>
+
+  <hr>
+
+  <div class="download-container">
+    <a class="btn btn-success" role="button" href="{% url 'tool:download' path=upload_example_filepath %}">Download Template</a>
+  </div>
 {% endif %}
   
 {% if error_message %}

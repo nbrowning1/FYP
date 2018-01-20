@@ -49,6 +49,8 @@ urlpatterns = [
 
     url(r'^upload/$', views.upload, name='upload'),
 
+    url(r'^download/(?P<path>.*)$', views.download, name='download'),
+
     url(r'^modules/(?P<module_id>[0-9]+)$', single_entity_views.module, name='module'),
 
     url(r'^lecturers/(?P<lecturer_id>[0-9]+)$', single_entity_views.lecturer, name='lecturer'),

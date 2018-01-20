@@ -11,6 +11,10 @@ h1, h2, h3, h4, h5, h6, form, .link-container, p, a {
   text-align: center;
 }
 
+div.download-container {
+  text-align: center;
+}
+
 .login-form-label, .register-form-label {
   width: 125px;
 }
