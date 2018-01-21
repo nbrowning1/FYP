@@ -1,10 +1,46 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/pagination.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/pagination.min.js' %}"></script>
+<script type="text/javascript">
+  /* populate entities in JS to enable pagination */
+  
+  var modules = [];
+  var lecturers = [];
+  var students = [];
+  var lectures = [];
+  {% for module in modules %}
+  modules.push({
+    url: "{% url 'tool:module' module_id=module.id %}",
+    name: "{{ module.module_code }}"
+  });
+  {% endfor %}
+  {% for lecturer in lecturers %}
+  lecturers.push({
+    url: "{% url 'tool:lecturer' lecturer_id=lecturer.id %}",
+    name: "{{ lecturer.user.username }}"
+  });
+  {% endfor %}
+  {% for student in students %}
+  students.push({
+    url: "{% url 'tool:student' student_id=student.id %}",
+    name: "{{ student.user.username }}"
+  });
+  {% endfor %}
+  {% for lecture in lectures %}
+  lectures.push({
+    url: "{% url 'tool:lecture' lecture_id=lecture.id %}",
+    module_code: "{{ lecture.module.module_code }}",
+    session_id: "{{ lecture.session_id }}",
+    date: "{{ lecture.date }}"
+  });
+  {% endfor %}
+</script>
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
@@ -25,20 +61,17 @@
   
   <div id="modules-container" class="collapse">
     <br>
-    <table>
-      <tr>
-        <th>Module Code</th>
-      </tr>
-    {% for module in modules %}
-      {% if forloop.counter|divisibleby:2 %}
+    <table id="modules-tbl">
+      <thead>
         <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td><a href="{% url 'tool:module' module_id=module.id %}">{{ module.module_code }}</a></td>
-      </tr>
-    {% endfor %}
+          <th>Module Code</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
+    <br>
+    <div id="modules-pagination" class="pagination-container"></div>
   </div>
   <br>
   <hr>
@@ -55,20 +88,17 @@
   
   <div id="lecturers-container" class="collapse">
     <br>
-    <table>
-      <tr>
-        <th>Lecturer Code</th>
-      </tr>
-    {% for lecturer in lecturers %}
-      {% if forloop.counter|divisibleby:2 %}
+    <table id="lecturers-tbl">
+      <thead>
         <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-      <td><a href="{% url 'tool:lecturer' lecturer_id=lecturer.id %}">{{ lecturer.user.username }}</a></td>
-      </tr>
-    {% endfor %}
+          <th>Lecturer Code</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
+    <br>
+    <div id="lecturers-pagination" class="pagination-container"></div>
   </div>
   <br>
   <hr>
@@ -85,20 +115,17 @@
   
   <div id="students-container" class="collapse">
     <br>
-    <table>
-      <tr>
-        <th>Student Code</th>
-      </tr>
-    {% for student in students %}
-      {% if forloop.counter|divisibleby:2 %}
+    <table id="students-tbl">
+      <thead>
         <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td><a href="{% url 'tool:student' student_id=student.id %}">{{ student.user.username }}</a></td>
-      </tr>
-    {% endfor %}
+          <th>Student Code</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
+    <br>
+    <div id="students-pagination" class="pagination-container"></div>
   </div>
   <br>
   <hr>
@@ -115,24 +142,19 @@
   
   <div id="lectures-container" class="collapse">
     <br>
-    <table>
-      <tr>
-        <th>Module</th>
-        <th>Session ID</th>
-        <th>Date</th>
-      </tr>
-    {% for lecture in lectures %}
-      {% if forloop.counter|divisibleby:2 %}
+    <table id="lectures-tbl">
+      <thead>
         <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td>{{ lecture.module.module_code }}</td>
-        <td><a href="{% url 'tool:lecture' lecture_id=lecture.id %}">{{ lecture.session_id }}</a></td>
-        <td>{{ lecture.date }}</td>
-      </tr>
-    {% endfor %}
+          <th>Module</th>
+          <th>Session ID</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
+    <br>
+    <div id="lectures-pagination" class="pagination-container"></div>
   </div>
   <br>
   <hr>

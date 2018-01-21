@@ -11,7 +11,7 @@ h1, h2, h3, h4, h5, h6, form, .link-container, p, a {
   text-align: center;
 }
 
-div.download-container {
+div.download-container, div.pagination-container {
   text-align: center;
 }
 
