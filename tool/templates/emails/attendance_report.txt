@@ -1,0 +1,10 @@
+Your attendance report for {{ from_date }} to {{ to_date }}:
+
+{% if modules %}
+
+{% endif %}
+
+
+{% if students %}
+
+{% endif %}
