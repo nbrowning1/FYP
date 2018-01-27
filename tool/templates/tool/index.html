@@ -17,7 +17,8 @@
   {% for module in modules %}
   modules.push({
     url: "{% url 'tool:module' module_id=module.id %}",
-    name: "{{ module.module_code }}"
+    code: "{{ module.module_code }}",
+    crn: "{{ module.module_crn }}"
   });
   {% endfor %}
   {% for lecturer in lecturers %}
@@ -44,7 +45,7 @@
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
-<a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+<a class="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
 <span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
 
 <div id="content" class="container">
@@ -60,11 +61,13 @@
   </div>
   
   <div id="modules-container" class="collapse">
+    <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
     <br>
     <table id="modules-tbl">
       <thead>
         <tr>
           <th>Module Code</th>
+          <th>CRN</th>
         </tr>
       </thead>
       <tbody>
@@ -103,7 +106,7 @@
   <br>
   <hr>
   <br>
-{% elif user_type and user_type != "STAFF" %}
+{% elif user_type and user_type == "ADMIN" %}
   <p>No lecturers are available.</p>
 {% endif %}
   

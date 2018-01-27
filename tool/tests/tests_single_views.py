@@ -1,10 +1,9 @@
 import datetime
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
+from ..models import *
 
 
 class SingleModuleViewTests(TestCase):
@@ -302,7 +301,7 @@ def setup_data(this_student, this_lecturer):
     lecture1 = create_lecture(module1, 'Session 1')
     lecture2 = create_lecture(module1, 'Session 2')
     module1.students.add(student2)
-    module1.lecturers.add(lecturer1)
+    lecturer1.modules.add(module1)
     create_attendance(student2, lecture1, True)
     create_attendance(student2, lecture2, False)
 
@@ -345,9 +344,16 @@ def authenticate_staff(self):
     return staff
 
 
+def create_course(course_code):
+    course = Course(course_code=course_code)
+    course.save()
+    return course
+
+
 def create_student(username):
     user = User.objects.create_user(username=username, password='12345')
-    student = Student(user=user)
+    course = create_course('Course Code')
+    student = Student(user=user, course=course)
     student.save()
     return student
 

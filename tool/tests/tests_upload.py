@@ -1,10 +1,9 @@
 import os
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
+from ..models import *
 
 
 class UploadTests(TestCase):
@@ -225,9 +224,16 @@ def create_db_props():
     create_module('COM999')
 
 
+def create_course(course_code):
+    course = Course(course_code=course_code)
+    course.save()
+    return course
+
+
 def create_student(username, device_id):
     user = User.objects.create_user(username=username, password='12345')
-    student = Student(user=user, device_id=device_id)
+    course = create_course('Course Code')
+    student = Student(user=user, device_id=device_id, course=course)
     student.save()
     return student
 

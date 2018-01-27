@@ -1,6 +1,13 @@
-from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django.db import models
+
+
+class Course(models.Model):
+    course_code = models.CharField(max_length=100)
+
+    def __str__(self):
+        return 'Course: ' + str(self.course_code)
 
 
 class Student(models.Model):
@@ -8,27 +15,31 @@ class Student(models.Model):
     device_id = models.CharField(
         validators=[RegexValidator(regex='^[A-Za-z0-9]{6}$', message='Must be a valid device ID e.g. 10101C')],
         max_length=6)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
         return 'Student: ' + self.user.username
 
 
-class Staff(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return 'Staff: ' + self.user.username
-
-
 class Module(models.Model):
-    lecturers = models.ManyToManyField(Staff)
     students = models.ManyToManyField(Student)
+    courses = models.ManyToManyField(Course)
     module_code = models.CharField(
         validators=[RegexValidator(regex='^[A-Z]{3,4}[0-9]{3}$', message='Must be a valid module code e.g. COM101')],
         max_length=7)
+    module_crn = models.CharField(max_length=50)
 
     def __str__(self):
-        return 'Module: ' + self.module_code
+        return 'Module: ' + str(self.module_code)
+
+
+class Staff(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    modules = models.ManyToManyField(Module)
+    courses = models.ManyToManyField(Course)
+
+    def __str__(self):
+        return 'Staff: ' + self.user.username
 
 
 class Lecture(models.Model):

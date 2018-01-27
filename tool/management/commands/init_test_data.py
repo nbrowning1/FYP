@@ -114,6 +114,7 @@ def load_students(self):
         if counter == 0:
             continue
 
+        data_course_code = row[1]
         data_device_id = row[5]
         data_username = row[6]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
@@ -124,8 +125,16 @@ def load_students(self):
             user.delete()
         except Student.DoesNotExist:
             pass
+
+        # create course if not already created
+        try:
+            course = Course.objects.get(course_code=data_course_code)
+        except Course.DoesNotExist:
+            course = Course(course_code=data_course_code)
+            course.save()
+
         user = User.objects.create_user(username=data_username, password='Django123')
-        student = Student(user=user, device_id=data_device_id)
+        student = Student(user=user, device_id=data_device_id, course=course)
         student.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded students'))
@@ -166,15 +175,16 @@ def load_modules(self):
             continue
 
         data_module_id = row[0]
+        data_module_crn = row[1]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_module_id))
         try:
-            module = Module.objects.get(module_code=data_module_id)
+            module = Module.objects.get(module_code=data_module_id, module_crn=data_module_crn)
             # delete if already exists so new data can act as overwrite if data needs changed
             module.delete()
         except Module.DoesNotExist:
             pass
 
-        module = Module(module_code=data_module_id)
+        module = Module(module_code=data_module_id, module_crn=data_module_crn)
         module.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded modules'))
@@ -227,13 +237,13 @@ def load_staff_to_modules(self):
 
         data_staff_id = row[1]
         try:
-            staff = Staff.objects.get(user__username=data_staff_id)
+            lecturer = Staff.objects.get(user__username=data_staff_id)
         except Staff.DoesNotExist:
             raise CommandError('Staff "%s" does not exist' % data_staff_id)
 
-        if Module.objects.filter(lecturers__id__exact=staff.id).count() == 0:
-            self.stdout.write(self.style.SUCCESS("Linking " + staff.user.username + " to " + module.module_code))
-            module.lecturers.add(staff)
+        if module not in lecturer.modules.all():
+            self.stdout.write(self.style.SUCCESS("Linking " + lecturer.user.username + " to " + module.module_code))
+            lecturer.modules.add(module)
 
     self.stdout.write(self.style.SUCCESS('Linked staff to modules'))
 

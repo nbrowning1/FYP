@@ -15,11 +15,15 @@ div.download-container, div.pagination-container {
   text-align: center;
 }
 
+.checkbox-cell {
+  text-align: center;
+}
+
 .login-form-label, .register-form-label {
   width: 125px;
 }
 
-#username-indicator, #settings {
+#username-indicator, .settings {
   float: right;
 }
 

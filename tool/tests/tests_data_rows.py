@@ -1,35 +1,31 @@
-import datetime
-
 from django.test import TestCase
 
-from django.contrib.auth.models import User
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
-
 from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
+from ..models import *
 
 
 class ModuleRowTests(TestCase):
     def test_valid_row(self):
-        setup_test_db('B00112233', 'S00112233', 'COM101')
+        setup_test_db()
         data = setup_input_data_module('COM101')
         self.assertEqual(data.get_error_message(), '')
         self.assertEqual(data.module, 'COM101')
 
     def test_invalid_module(self):
-        setup_test_db('B00112233', 'S00112233', 'COM101')
+        setup_test_db()
         data = setup_input_data_module('COM999')
         self.assertEqual(data.get_error_message(), 'Unrecognised module: COM999')
 
 
 class StaffRowTests(TestCase):
     def test_valid_row(self):
-        setup_test_db('B00112233', 'S00112233', 'COM101')
+        setup_test_db()
         data = setup_input_data_staff('S00112233')
         self.assertEqual(data.get_error_message(), '')
         self.assertEqual(data.lecturer, 'S00112233')
 
     def test_invalid_module(self):
-        setup_test_db('B00112233', 'S00112233', 'COM101')
+        setup_test_db()
         data = setup_input_data_staff('S00998877')
         self.assertEqual(data.get_error_message(), 'Unrecognised lecturer: S00998877')
 
@@ -96,7 +92,7 @@ class AttendanceRowTests(TestCase):
     def test_valid_row(self):
         attendance_session_row = AttendanceSessionRow(
             ['Device ID(s)', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID', 'Y', 'N')
 
         self.assertEqual(data.get_error_message(), '')
@@ -111,7 +107,7 @@ class AttendanceRowTests(TestCase):
     def test_student_by_username_and_device_id(self):
         attendance_session_row = AttendanceSessionRow(
             ['Device ID(s)', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
 
         # device ID should find student
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID', 'Y', 'N')
@@ -124,7 +120,7 @@ class AttendanceRowTests(TestCase):
     def test_invalid_student_message(self):
         attendance_session_row = AttendanceSessionRow(
             ['Device ID(s)', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID2', 'Y', 'N')
 
         self.assertEqual(data.get_error_message(), 'Unrecognised student: DeviceID2')
@@ -132,7 +128,7 @@ class AttendanceRowTests(TestCase):
     def test_invalid_multiple(self):
         attendance_session_row = AttendanceSessionRow(
             ['Device ID(s)', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID2', 'Y', 'donkey')
 
         self.assertEqual(data.get_error_message(),
@@ -141,7 +137,7 @@ class AttendanceRowTests(TestCase):
     def test_it_trims_spaces(self):
         attendance_session_row = AttendanceSessionRow(
             ['Device ID(s)', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, '  DeviceID ', 'Y ', ' N')
 
         self.assertEqual(data.get_error_message(), '')
@@ -155,7 +151,7 @@ class AttendanceRowTests(TestCase):
 
     def test_incorrect_column_count(self):
         attendance_session_row = AttendanceSessionRow(['Device ID(s)', '01/01/2017\nFirst Session ID'])
-        setup_test_student('B00112233', 'DeviceID')
+        setup_test_student()
 
         # too many
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID', 'Y', 'N')
@@ -168,25 +164,24 @@ class AttendanceRowTests(TestCase):
                          'Number of data columns doesn\'t match number of sessions. Expected 1 but found 0')
 
 
-def setup_test_db(student_code, staff_code, module_code):
-    student_user = User.objects.create_user(username=student_code, email='test@email.com',
-                                            password='CorrectHorseBatteryStaple')
-    student = Student(user=student_user)
-    student.save()
+def setup_test_db():
+    setup_test_student()
 
-    staff_user = User.objects.create_user(username=staff_code, email='test@email.com',
+    staff_user = User.objects.create_user(username='S00112233', email='test@email.com',
                                           password='CorrectHorseBatteryStaple')
     lecturer = Staff(user=staff_user)
     lecturer.save()
 
-    module = Module(module_code=module_code)
+    module = Module(module_code='COM101')
     module.save()
 
 
-def setup_test_student(username, device_id):
-    student_user = User.objects.create_user(username=username, email='test@email.com',
+def setup_test_student():
+    student_user = User.objects.create_user(username='B00112233', email='test@email.com',
                                             password='CorrectHorseBatteryStaple')
-    student = Student(user=student_user, device_id=device_id)
+    course = Course(course_code='Course Code')
+    course.save()
+    student = Student(user=student_user, device_id='DeviceID', course=course)
     student.save()
 
 

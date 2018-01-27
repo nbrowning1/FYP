@@ -75,11 +75,6 @@ class DataSaver:
                     return error_response(error_msg)
                 continue
 
-        # associate lecturers with module if not already associated
-        for lecturer in staff:
-            if not any(lecturer.user.username == saved_lec.user.username for saved_lec in module.lecturers.all()):
-                module.lecturers.add(lecturer)
-
         for uploaded_data in uploaded_list:
             uploaded_student = uploaded_data.student
 

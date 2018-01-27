@@ -102,7 +102,7 @@ def lecturer(request, lecturer_id):
     if user_type == UserType.STUDENT_TYPE:
         raise Http404("Not authorised to view this lecturer")
 
-    modules = Module.objects.filter(lecturers__in=[lecturer])
+    modules = lecturer.modules.all()
     module_attendances = []
     for module in modules:
         lectures = Lecture.objects.filter(module__in=[module])

@@ -60,4 +60,9 @@ urlpatterns = [
     url(r'^lectures/(?P<lecture_id>[0-9]+)$', single_entity_views.lecture, name='lecture'),
 
     url(r'^settings/$', views.settings, name='settings'),
+
+    url(r'^module-course-view-settings/$', views.module_course_view_settings, name='module_course_view_settings'),
+
+    url(r'^save-module-course-settings/$', views.save_module_course_settings, name='save_module_course_settings'),
+
 ]

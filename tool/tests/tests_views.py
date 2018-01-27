@@ -1,8 +1,9 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
-from django.urls import reverse
 import datetime
+
+from django.test import TestCase
+from django.urls import reverse
+
+from ..models import *
 
 
 class ViewsTests(TestCase):
@@ -68,9 +69,9 @@ class ViewsTests(TestCase):
 
         response = go_to_index(self)
 
-        # shouldn't see mention of 'students'
+        # shouldn't see mention of 'students' or 'lecturers' - student doesn't need to see their lecturers
         self.assertContains(response, 'No modules are available.')
-        self.assertContains(response, 'No lecturers are available.')
+        self.assertNotContains(response, 'No lecturers are available.')
         self.assertNotContains(response, 'No students are available.')
         self.assertContains(response, 'No lectures are available.')
 
@@ -115,7 +116,7 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'No lectures are available.')
 
         # link module to 1 student and this staff member
-        module_1.lecturers.add(test_staff)
+        test_staff.modules.add(module_1)
         module_1.students.add(student_1)
 
         # linked items should now appear
@@ -141,18 +142,16 @@ class ViewsTests(TestCase):
 
         # nothing should appear when nothing is linked to staff
         response = go_to_index(self)
-        self.assertContains(response, 'No lecturers are available.')
+        self.assertNotContains(response, 'No lecturers are available.')
         self.assertContains(response, 'No modules are available.')
         self.assertContains(response, 'No lectures are available.')
 
         # link module to 1 student and this staff member
-        module_1.lecturers.add(staff_1)
+        staff_1.modules.add(module_1)
         module_1.students.add(test_student)
 
         # linked items should now appear
         response = go_to_index(self)
-        self.assertContains(response, 'test_staff_1')
-        self.assertNotContains(response, 'test_staff_2')
         self.assertContains(response, 'COM101')
         self.assertNotContains(response, 'COM999')
         self.assertContains(response, 'Lectures')
@@ -189,9 +188,16 @@ def authenticate_staff(self):
     return user
 
 
+def create_course(course_code):
+    course = Course(course_code=course_code)
+    course.save()
+    return course
+
+
 def create_student(username):
     user = User.objects.create_user(username=username, password='12345')
-    student = Student(user=user)
+    course = create_course('Course Code')
+    student = Student(user=user, course=course)
     student.save()
     return student
 

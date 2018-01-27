@@ -1,22 +1,36 @@
 $(document).ready(function() {
-    $('#modules-pagination').pagination(
-        build_pagination(modules, '#modules-tbl', regular_row)
-    )
+    if ($('#modules-pagination').length) {
+        $('#modules-pagination').pagination(
+            build_pagination(modules, '#modules-tbl', module_row)
+        )
+    }
 
-    $('#lecturers-pagination').pagination(
-        build_pagination(lecturers, '#lecturers-tbl', regular_row)
-    )
+    if ($('#lecturers-pagination').length) {
+        $('#lecturers-pagination').pagination(
+            build_pagination(lecturers, '#lecturers-tbl', regular_row)
+        )
+    }
 
-    $('#students-pagination').pagination(
-        build_pagination(students, '#students-tbl', regular_row)
-    )
+    if ($('#students-pagination').length) {
+        $('#students-pagination').pagination(
+            build_pagination(students, '#students-tbl', regular_row)
+        )
+    }
 
-    $('#lectures-pagination').pagination(
-        build_pagination(lectures, '#lectures-tbl', lecture_row)
-    )
+    if ($('#lectures-pagination').length) {
+        $('#lectures-pagination').pagination(
+            build_pagination(lectures, '#lectures-tbl', lecture_row)
+        )
+    }
 
     function regular_row(item) {
         return '<td><a href="' + item.url + '">' + item.name + '</a></td>';
+    }
+
+    function module_row(item) {
+        data = '<td><a href="' + item.url + '">' + item.code + '</a></td>';
+        data += '<td><a href="' + item.url + '">' + item.crn + '</a></td>';
+        return data;
     }
 
     function lecture_row(item) {

@@ -1,14 +1,13 @@
 import csv
 import io
 import os
+import types
 from collections import OrderedDict
 
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
-from django.urls import reverse
 
 from .views_utils import *
 from ..models import *
@@ -21,6 +20,7 @@ def index(request):
 
     if request.user.is_staff:
         modules = Module.objects.all()
+        courses = Course.objects.all()
         lecturers = Staff.objects.all()
         students = Student.objects.all()
         lectures = Lecture.objects.all()
@@ -32,7 +32,8 @@ def index(request):
         try:
             lecturer = Staff.objects.get(user=request.user)
 
-            modules = Module.objects.filter(lecturers__id__exact=lecturer.id)
+            modules = lecturer.modules.all()
+            courses = lecturer.courses.all()
             lecturers = []
             students = []
             for module in modules:
@@ -51,11 +52,8 @@ def index(request):
             student = Student.objects.get(user=request.user)
 
             modules = Module.objects.filter(students__id__exact=student.id)
+            courses = []
             lecturers = []
-            for module in modules:
-                for lecturer in module.lecturers.all():
-                    lecturers.append(lecturer)
-            lecturers = list(OrderedDict.fromkeys(lecturers))
             students = []
             lectures = Lecture.objects.filter(module__in=modules)
             is_valid_user = True
@@ -73,6 +71,7 @@ def index(request):
     return render(request, 'tool/index.html', {
         'error_message': error_msg,
         'modules': modules,
+        'courses': courses,
         'lecturers': lecturers,
         'students': students,
         'lectures': lectures,
@@ -132,6 +131,69 @@ def download(request, path):
 @login_required
 def settings(request):
     return render(request, 'tool/settings.html')
+
+
+@login_required
+def module_course_view_settings(request):
+    # only works for lecturers to configure which modules / courses they see
+    try:
+        lecturer = Staff.objects.get(user=request.user)
+
+        # create list of all modules with lecturer-displayed ones listed first
+        all_modules = list(Module.objects.all())
+        lecturer_modules = lecturer.modules.all()
+        modules = []
+        for module in lecturer_modules:
+            data_module = types.SimpleNamespace()
+            data_module.module = module
+            data_module.displayed = True
+            modules.append(data_module)
+            all_modules.remove(module)
+        for module in all_modules:
+            data_module = types.SimpleNamespace()
+            data_module.module = module
+            data_module.displayed = False
+            modules.append(data_module)
+
+        # same for courses
+        all_courses = list(Course.objects.all())
+        lecturer_courses = lecturer.courses.all()
+        courses = []
+        for course in lecturer_courses:
+            data_course = types.SimpleNamespace()
+            data_course.course = course
+            data_course.displayed = True
+            all_courses.remove(course)
+            courses.append(data_course)
+        for course in all_courses:
+            data_course = types.SimpleNamespace()
+            data_course.course = course
+            data_course.displayed = False
+            courses.append(data_course)
+
+        return render(request, 'tool/module_course_view_settings.html', {
+            'modules': modules,
+            'courses': courses
+        })
+    except Staff.DoesNotExist:
+        raise Http404
+
+
+@login_required
+def save_module_course_settings(request):
+    # only works for lecturers to configure which modules / courses they see
+    try:
+        Staff.objects.get(user=request.user)
+
+        if request.method == 'POST':
+            module_checkbox_vals = request.POST.getlist('modules[]')
+            course_checkbox_vals = request.POST.getlist('courses[]')
+            print(module_checkbox_vals)
+            print(course_checkbox_vals)
+
+        return redirect(reverse('tool:index'), Permanent=True)
+    except Staff.DoesNotExist:
+        raise Http404
 
 
 # workaround to pass message through redirect
