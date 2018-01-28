@@ -3,19 +3,12 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
-class Course(models.Model):
-    course_code = models.CharField(max_length=100)
-
-    def __str__(self):
-        return 'Course: ' + str(self.course_code)
-
-
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     device_id = models.CharField(
         validators=[RegexValidator(regex='^[A-Za-z0-9]{6}$', message='Must be a valid device ID e.g. 10101C')],
         max_length=6)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
 
     def __str__(self):
         return 'Student: ' + self.user.username
@@ -23,7 +16,6 @@ class Student(models.Model):
 
 class Module(models.Model):
     students = models.ManyToManyField(Student)
-    courses = models.ManyToManyField(Course)
     module_code = models.CharField(
         validators=[RegexValidator(regex='^[A-Z]{3,4}[0-9]{3}$', message='Must be a valid module code e.g. COM101')],
         max_length=7)
@@ -31,6 +23,14 @@ class Module(models.Model):
 
     def __str__(self):
         return 'Module: ' + str(self.module_code)
+
+
+class Course(models.Model):
+    course_code = models.CharField(max_length=100)
+    modules = models.ManyToManyField(Module)
+
+    def __str__(self):
+        return 'Course: ' + str(self.course_code)
 
 
 class Staff(models.Model):

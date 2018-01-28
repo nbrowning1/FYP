@@ -53,6 +53,8 @@ urlpatterns = [
 
     url(r'^modules/(?P<module_id>[0-9]+)$', single_entity_views.module, name='module'),
 
+    url(r'^courses/(?P<course_id>[0-9]+)$', single_entity_views.course, name='course'),
+
     url(r'^lecturers/(?P<lecturer_id>[0-9]+)$', single_entity_views.lecturer, name='lecturer'),
 
     url(r'^students/(?P<student_id>[0-9]+)$', single_entity_views.student, name='student'),

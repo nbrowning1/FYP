@@ -41,6 +41,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            '--load-modules-courses',
+            action='store_true',
+            dest='load-modules-courses',
+            help='Links modules to courses - allows to only reload this data',
+        )
+
+        parser.add_argument(
             '--load-modules-students',
             action='store_true',
             dest='load-modules-students',
@@ -73,6 +80,7 @@ class Command(BaseCommand):
             load_students(self)
             load_staff(self)
             load_modules(self)
+            load_modules_to_courses(self)
             load_students_to_modules(self)
             load_staff_to_modules(self)
             load_lectures(self)
@@ -87,6 +95,9 @@ class Command(BaseCommand):
                 args_supplied = True
             if options['load-modules']:
                 load_modules(self)
+                args_supplied = True
+            if options['load-modules-courses']:
+                load_modules_to_courses(self)
                 args_supplied = True
             if options['load-modules-students']:
                 load_students_to_modules(self)
@@ -188,6 +199,35 @@ def load_modules(self):
         module.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded modules'))
+
+
+def load_modules_to_courses(self):
+    self.stdout.write(self.style.NOTICE('Linking modules to courses...'))
+
+    reader = open_file('Course_Modules_Load_Data.csv')
+
+    for counter, row in enumerate(reader):
+        if counter == 0:
+            continue
+
+        data_course_code = row[0]
+
+        try:
+            course = Course.objects.get(course_code=data_course_code)
+        except Course.DoesNotExist:
+            raise CommandError('Course "%s" does not exist' % data_course_code)
+
+        data_module_code = row[1]
+        try:
+            module = Module.objects.get(module_code=data_module_code)
+        except Module.DoesNotExist:
+            raise CommandError('Module "%s" does not exist' % data_module_code)
+
+        if module not in course.modules.all():
+            self.stdout.write(self.style.SUCCESS("Linking " + module.module_code + " to " + course.course_code))
+            course.modules.add(module)
+
+    self.stdout.write(self.style.SUCCESS('Linked modules to courses'))
 
 
 def load_students_to_modules(self):

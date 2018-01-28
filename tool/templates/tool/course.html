@@ -1,0 +1,48 @@
+{% extends "tool/base_single_view.html" %}
+
+{% block title %}{{ course.course_code }}{% endblock %}
+
+{% block content %}
+    {% if module_attendances %}
+    <div class="link-container">
+        <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
+    </div>
+
+    <div id="attendance-container" class="collapse">
+        <br>
+        <table>
+            <tr class="double-header">
+                <th>Module</th>
+                <th>% Attendance</th>
+            </tr>
+            {% for module_attendance in module_attendances %}
+            {% if forloop.counter|divisibleby:2 %}
+            <tr>
+            {% else %}
+            <tr class="alt">
+            {% endif %}
+            <td><a href="{% url 'tool:module' module_id=module_attendance.module.id %}">{{ module_attendance.module.module_code }}</a></td>
+
+            {% if module_attendance.percent_attended < 25 %}
+            <td class="attendance_low">
+            {% elif module_attendance.percent_attended < 50 %}
+            <td class="attendance_midlow">
+            {% elif module_attendance.percent_attended < 75 %}
+            <td class="attendance_midhigh">
+            {% else %}
+            <td class="attendance_high">
+            {% endif %}
+                {{ module_attendance.percent_attended|floatformat:2 }}%
+            </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <hr>
+    <br>
+    {{ pie_chart.as_html }}
+    {% else %}
+    <p>No attendances are available.</p>
+    {% endif %}
+{% endblock %}

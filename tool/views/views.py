@@ -36,6 +36,7 @@ def index(request):
             courses = lecturer.courses.all()
             lecturers = []
             students = []
+            # TODO: add students from courses
             for module in modules:
                 for student in module.students.all():
                     students.append(student)
@@ -183,13 +184,36 @@ def module_course_view_settings(request):
 def save_module_course_settings(request):
     # only works for lecturers to configure which modules / courses they see
     try:
-        Staff.objects.get(user=request.user)
+        lecturer = Staff.objects.get(user=request.user)
 
         if request.method == 'POST':
+            # clear down values to re-populate with data from form
+            lecturer.modules = []
+            lecturer.courses = []
+
             module_checkbox_vals = request.POST.getlist('modules[]')
             course_checkbox_vals = request.POST.getlist('courses[]')
-            print(module_checkbox_vals)
-            print(course_checkbox_vals)
+
+            # save checked modules to lecturer
+            for val in module_checkbox_vals:
+                code = val.split("code_")[1].split("crn_")[0].strip()
+                crn = val.split("crn_")[1].strip()
+
+                try:
+                    module = Module.objects.get(module_code=code, module_crn=crn)
+                    lecturer.modules.add(module)
+                except Module.DoesNotExist:
+                    print("Could not find module with code: " + code + " crn: " + crn)
+
+            # save checked courses to lecturer
+            for val in course_checkbox_vals:
+                code = val.split("code_")[1].strip()
+
+                try:
+                    course = Course.objects.get(course_code=code)
+                    lecturer.courses.add(course)
+                except Course.DoesNotExist:
+                    print("Could not find course with code: " + code)
 
         return redirect(reverse('tool:index'), Permanent=True)
     except Staff.DoesNotExist:

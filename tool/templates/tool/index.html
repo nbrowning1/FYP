@@ -11,6 +11,7 @@
   /* populate entities in JS to enable pagination */
   
   var modules = [];
+  var courses = [];
   var lecturers = [];
   var students = [];
   var lectures = [];
@@ -19,6 +20,12 @@
     url: "{% url 'tool:module' module_id=module.id %}",
     code: "{{ module.module_code }}",
     crn: "{{ module.module_crn }}"
+  });
+  {% endfor %}
+  {% for course in courses %}
+  courses.push({
+    url: "{% url 'tool:course' course_id=course.id %}",
+    name: "{{ course.course_code }}"
   });
   {% endfor %}
   {% for lecturer in lecturers %}
@@ -61,7 +68,9 @@
   </div>
   
   <div id="modules-container" class="collapse">
+    {% if user_type and user_type == "STAFF" %}
     <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+    {% endif %}
     <br>
     <table id="modules-tbl">
       <thead>
@@ -79,8 +88,46 @@
   <br>
   <hr>
   <br>
+{% elif user_type and user_type == "STAFF" %}
+  <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+  <p>No modules added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
+  <br>
 {% else %}
   <p>No modules are available.</p>
+{% endif %}
+
+<!-- COURSES -->
+{% if courses %}
+  <div class="link-container">
+    <a href="#courses-container" class="btn btn-info" data-toggle="collapse">Courses</a>
+  </div>
+
+  <div id="courses-container" class="collapse">
+    {% if user_type and user_type == "STAFF" %}
+    <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+    {% endif %}
+    <br>
+    <table id="courses-tbl">
+      <thead>
+        <tr>
+          <th>Course</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <br>
+    <div id="courses-pagination" class="pagination-container"></div>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% elif user_type and user_type == "STAFF" %}
+  <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+  <p>No courses added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
+  <br>
+{% elif user_type and user_type != "STUDENT" %}
+  <p>No courses are available.</p>
 {% endif %}
   
 <!-- LECTURERS -->

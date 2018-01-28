@@ -5,6 +5,12 @@ $(document).ready(function() {
         )
     }
 
+    if ($('#courses-pagination').length) {
+        $('#courses-pagination').pagination(
+            build_pagination(courses, '#courses-tbl', regular_row)
+        )
+    }
+
     if ($('#lecturers-pagination').length) {
         $('#lecturers-pagination').pagination(
             build_pagination(lecturers, '#lecturers-tbl', regular_row)
