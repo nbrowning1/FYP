@@ -188,8 +188,8 @@ def save_module_course_settings(request):
 
         if request.method == 'POST':
             # clear down values to re-populate with data from form
-            lecturer.modules = []
-            lecturer.courses = []
+            lecturer.modules.set([])
+            lecturer.courses.set([])
 
             module_checkbox_vals = request.POST.getlist('modules[]')
             course_checkbox_vals = request.POST.getlist('courses[]')
