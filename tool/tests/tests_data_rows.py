@@ -1,33 +1,7 @@
 from django.test import TestCase
 
-from ..data_rows import ModuleRow, StaffRow, AttendanceSessionRow, AttendanceRow
+from ..data_rows import AttendanceSessionRow, AttendanceRow
 from ..models import *
-
-
-class ModuleRowTests(TestCase):
-    def test_valid_row(self):
-        setup_test_db()
-        data = setup_input_data_module('COM101')
-        self.assertEqual(data.get_error_message(), '')
-        self.assertEqual(data.module, 'COM101')
-
-    def test_invalid_module(self):
-        setup_test_db()
-        data = setup_input_data_module('COM999')
-        self.assertEqual(data.get_error_message(), 'Unrecognised module: COM999')
-
-
-class StaffRowTests(TestCase):
-    def test_valid_row(self):
-        setup_test_db()
-        data = setup_input_data_staff('S00112233')
-        self.assertEqual(data.get_error_message(), '')
-        self.assertEqual(data.lecturer, 'S00112233')
-
-    def test_invalid_module(self):
-        setup_test_db()
-        data = setup_input_data_staff('S00998877')
-        self.assertEqual(data.get_error_message(), 'Unrecognised lecturer: S00998877')
 
 
 class AttendanceSessionRowTest(TestCase):
@@ -183,14 +157,6 @@ def setup_test_student():
     course.save()
     student = Student(user=student_user, device_id='DeviceID', course=course)
     student.save()
-
-
-def setup_input_data_module(module_code):
-    return ModuleRow([module_code])
-
-
-def setup_input_data_staff(staff_code):
-    return StaffRow([staff_code])
 
 
 def setup_input_data_attendance(attendance_session_row, *attendances):

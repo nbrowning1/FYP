@@ -86,22 +86,45 @@ def upload(request):
     if not request.user.is_staff:
         raise PermissionDenied("Insufficient permissions")
 
-    if request.method == 'POST' and request.FILES.get('upload-data', False):
+    if request.method == 'POST':
+        number_of_uploads = 0
+        # figure out how many uploads from number of files
+        while request.FILES.getlist('upload-data-' + str(number_of_uploads)):
+            number_of_uploads += 1
 
-        csv_files = request.FILES.getlist('upload-data')
-        for csv_file in csv_files:
-            if not (csv_file.name.lower().endswith('.csv')):
-                # workaround to pass message through redirect
-                request.session['error_message'] = "Invalid file type. Only csv files are accepted."
-                return redirect(reverse('tool:index'), Permanent=True)
+        if number_of_uploads == 0:
+            return redirect_to_home_with_error(request, "No file uploaded. Please upload a .csv file.")
 
         saved_data = []
-        for csv_file in csv_files:
+        for i in range(number_of_uploads):
+            # for error messages. #1 makes more sense than #0
+            error_index = i + 1
+            module = None
+            module_str = request.POST.get("module-" + str(i))
+            if not module_str:
+                return redirect_to_home_with_error(request, "No module selected for upload #" + str(error_index) + ". Please select a module from the list.")
+            else:
+                try:
+                    code = module_str.split("code_")[1].split("crn_")[0].strip()
+                    crn = module_str.split("crn_")[1].strip()
+                except Exception:
+                    return redirect_to_home_with_error(request,
+                                                       "Invalid module selection for upload #" + str(error_index) + ". Please select a module from the list.")
+
+                try:
+                    module = Module.objects.get(module_code=code, module_crn=crn)
+                except Module.DoesNotExist:
+                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(error_index) + ". Please select a module from the list.")
+
+            csv_file = request.FILES['upload-data-' + str(i)]
+            if not (csv_file.name.lower().endswith('.csv')):
+                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(error_index) + ". Only csv files are accepted.")
+
             decoded_file = csv_file.read().decode('utf-8')
             file_str = io.StringIO(decoded_file)
 
             reader = csv.reader(file_str)
-            uploaded_data = DataSaver(reader).save_uploaded_data()
+            uploaded_data = DataSaver(reader).save_uploaded_data(module)
             if hasattr(uploaded_data, 'error'):
                 error_msg = 'Error processing file ' + csv_file.name + ': ' + uploaded_data.error
                 return redirect_with_error(request, reverse('tool:index'), error_msg)
@@ -111,9 +134,13 @@ def upload(request):
             'uploaded_data': saved_data,
         })
     else:
-        # workaround to pass message through redirect
-        request.session['error_message'] = "No file uploaded. Please upload a .csv file."
-        return redirect(reverse('tool:index'), Permanent=True)
+        return HttpResponseRedirect(reverse('tool:index'))
+
+
+def redirect_to_home_with_error(request, error_msg):
+    # workaround to pass message through redirect
+    request.session['error_message'] = error_msg
+    return redirect(reverse('tool:index'), Permanent=True)
 
 
 @login_required

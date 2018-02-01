@@ -3,37 +3,6 @@ import datetime
 import types
 
 
-# TODO: remove unrecogised restriction?
-class ModuleRow:
-    def __init__(self, data):
-        self.module = data[0].strip()
-
-    def get_error_message(self):
-        error_message = ''
-
-        try:
-            valid_module = Module.objects.get(module_code=self.module)
-        except Module.DoesNotExist:
-            error_message += 'Unrecognised module: ' + self.module
-
-        return error_message
-
-
-class StaffRow:
-    def __init__(self, data):
-        self.lecturer = data[0].strip()
-
-    def get_error_message(self):
-        error_message = ''
-
-        try:
-            valid_lecturer = Staff.objects.get(user__username=self.lecturer)
-        except Staff.DoesNotExist:
-            error_message += 'Unrecognised lecturer: ' + self.lecturer
-
-        return error_message
-
-
 # one row, the column headers for attendance which give session id & date
 class AttendanceSessionRow:
     def __init__(self, data):

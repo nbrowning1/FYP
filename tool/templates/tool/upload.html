@@ -11,24 +11,22 @@
   <table>
     <tr>
       <th>Module Code</th>
+      <th>Module CRN</th>
     </tr>
     <tr>
       <td>{{ data.module.module_code }}</td>
+      <td>{{ data.module.module_crn }}</td>
     </tr>
   </table>
   <br>
   <table>
     <tr>
-      <th>Lecturer</th>
+      <th>Courses</th>
     </tr>
-    {% for lecturer in data.staff %}
-      {% if forloop.counter|divisibleby:2 %}
-        <tr>
-      {% else %}
-        <tr class="alt">
-      {% endif %}
-        <td>{{ lecturer.user.username }}</td>
-      </tr>
+    {% for course in data.courses %}
+    <tr>
+      <td>{{ course.course_code }}</td>
+    </tr>
     {% endfor %}
   </table>
   <br>

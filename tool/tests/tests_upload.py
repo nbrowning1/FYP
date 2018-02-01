@@ -14,7 +14,7 @@ class UploadTests(TestCase):
         # initial check that module is not linked to student
         self.assertEqual(get_module_student_count('EEE312'), 0)
 
-        test_upload(self, 'upload_test_valid.csv', None)
+        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
 
         # post-upload check to assert that upload process linked module with students
         linked_module = Module.objects.get(module_code='EEE312')
@@ -29,57 +29,55 @@ class UploadTests(TestCase):
     def test_sequential_upload_replaces(self):
         authenticate_admin(self)
         create_db_props()
-        test_upload(self, 'upload_test_valid.csv', None)
+        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
         validate_valid_data(self, False)
 
         # upload same data, nothing should change in DB
-        test_upload(self, 'upload_test_valid.csv', None)
+        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
         validate_valid_data(self, False)
 
         # upload slightly altered data, should replace attendances that changed
-        test_upload(self, 'upload_test_valid_replacement.csv', None)
+        test_upload(self, 'upload_test_valid_replacement.csv', 'code_EEE312 crn_EEE312-1', None)
         validate_valid_data(self, True)
 
     def test_upload_unrecognised_module(self):
         authenticate_admin(self)
         # uploading valid data but without full DB setup
-        test_upload(self, 'upload_test_valid.csv',
-                    'Error processing file upload_test_valid.csv: Unrecognised module: EEE312')
-
-    def test_upload_unrecognised_lecturer(self):
-        authenticate_admin(self)
-        create_module('EEE312')
-        # uploading valid data but without full DB setup
-        test_upload(self, 'upload_test_valid.csv',
-                    'Error processing file upload_test_valid.csv: Unrecognised lecturer: e00987654')
+        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1',
+                    'Unrecognised module for upload #1. Please select a module from the list.')
 
     def test_upload_unrecognised_student(self):
         authenticate_admin(self)
         create_staff('e00123456')
         create_staff('e00987654')
-        create_module('EEE312')
+        create_module('EEE312', 'EEE312-1')
         # uploading valid data but without full DB setup
-        test_upload(self, 'upload_test_valid.csv',
-                    'Error processing file upload_test_valid.csv: Error with inputs: [[Unrecognised student: 10519C]] at line 2')
+        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1',
+                    'Error processing file upload_test_valid.csv: Error with inputs: [[Unrecognised student: 10519C]] at line 5')
 
     def test_upload_invalid_attendance_data(self):
         authenticate_admin(self)
         create_db_props()
-        test_upload(self, 'upload_test_invalid.csv',
-                    'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 2')
+        test_upload(self, 'upload_test_invalid.csv', 'code_EEE312 crn_EEE312-1',
+                    'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 5')
 
     def test_upload_incorrect_file_extension(self):
         authenticate_admin(self)
-        test_upload(self, 'upload_test_wrong_ext.txt', 'Invalid file type. Only csv files are accepted.')
+        create_db_props()
+        test_upload(self, 'upload_test_wrong_ext.txt', 'code_EEE312 crn_EEE312-1',
+                    'Invalid file type for upload #1. Only csv files are accepted.')
 
     def test_upload_no_file(self):
         authenticate_admin(self)
-        test_upload(self, None, 'No file uploaded. Please upload a .csv file.')
+        create_db_props()
+        test_upload(self, None, 'code_EEE312 crn_EEE312-1', 'No file uploaded. Please upload a .csv file.')
 
     def test_upload_multiple_files(self):
         authenticate_admin(self)
         create_db_props()
-        test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_valid_2.csv'], None)
+        test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_valid_2.csv'],
+                            ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
+                             None)
         validate_multiple_data(self)
 
     # tests valid and invalid file, and tests that valid file was still uploaded
@@ -88,7 +86,8 @@ class UploadTests(TestCase):
         create_db_props()
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_invalid.csv'],
-                             'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 2')
+                             ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
+                             'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 5')
         # make sure the valid file was still uploaded
         self.assertEqual(len(StudentAttendance.objects.all()), 12)
 
@@ -117,12 +116,12 @@ class UploadTests(TestCase):
 
         res_path = os.path.join(this_dir, 'resources', 'upload_test_valid.csv')
         with open(res_path) as fp:
-            response = self.client.post(reverse('tool:upload'), {'upload-data': fp}, follow=True)
+            response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp}, follow=True)
 
         self.assertRedirects(response, '/tool/login/?next=/tool/upload/', status_code=302)
 
 
-def test_upload(self, file_path, expected_error_msg):
+def test_upload(self, file_path, module_str, expected_error_msg):
     response = self.client.get(reverse('tool:index'))
     self.assertEqual(response.status_code, 200)
     if expected_error_msg:
@@ -133,7 +132,7 @@ def test_upload(self, file_path, expected_error_msg):
     if file_path:
         res_path = os.path.join(this_dir, 'resources', file_path)
         with open(res_path) as fp:
-            response = self.client.post(reverse('tool:upload'), {'upload-data': fp}, follow=True)
+            response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp, 'module-0': module_str}, follow=True)
     else:
         response = self.client.post(reverse('tool:upload'), follow=True)
 
@@ -149,7 +148,7 @@ def test_upload(self, file_path, expected_error_msg):
     return response
 
 
-def test_multiple_upload(self, file_paths, expected_error_msg):
+def test_multiple_upload(self, file_paths, module_strs, expected_error_msg):
     response = self.client.get(reverse('tool:index'))
     self.assertEqual(response.status_code, 200)
     if expected_error_msg:
@@ -157,11 +156,14 @@ def test_multiple_upload(self, file_paths, expected_error_msg):
 
     this_dir = os.path.dirname(os.path.abspath(__file__))
 
-    files = []
-    for file_path in file_paths:
+    post_data = {}
+    for i, file_path in enumerate(file_paths):
         res_path = os.path.join(this_dir, 'resources', file_path)
-        files.append(open(res_path))
-    response = self.client.post(reverse('tool:upload'), {'upload-data': files}, follow=True)
+        post_data["upload-data-" + str(i)] = (open(res_path))
+    for i, module_str in enumerate(module_strs):
+        post_data["module-" + str(i)] = module_str
+
+    response = self.client.post(reverse('tool:upload'), post_data, follow=True)
 
     self.assertEqual(response.status_code, 200)
 
@@ -183,7 +185,8 @@ def test_usertype_upload(self, expected_status_code):
 
     res_path = os.path.join(this_dir, 'resources', 'upload_test_valid.csv')
     with open(res_path) as fp:
-        response = self.client.post(reverse('tool:upload'), {'upload-data': fp}, follow=True)
+        response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp, 'module-0': 'code_EEE312 crn_EEE312-1'},
+                                    follow=True)
 
     self.assertEqual(response.status_code, expected_status_code)
 
@@ -220,8 +223,8 @@ def create_db_props():
     create_staff('e00987654')
     create_staff('e00555555')
     create_staff('e00666666')
-    create_module('EEE312')
-    create_module('COM999')
+    create_module('EEE312', 'EEE312-1')
+    create_module('COM999', 'COM999-1')
 
 
 def create_course(course_code):
@@ -245,8 +248,8 @@ def create_staff(username):
     return staff
 
 
-def create_module(module_code):
-    module = Module(module_code=module_code)
+def create_module(module_code, module_crn):
+    module = Module(module_code=module_code, module_crn=module_crn)
     module.save()
     return module
 

@@ -116,3 +116,36 @@ i.fa-times {
 #attendance-container {
   overflow: auto;
 }
+
+#placeholder {
+  display: none;
+}
+
+#add-upload-row-container, .delete-upload-row-container {
+  height: 30px;
+}
+
+#add-upload-row, .delete-upload-row {
+  float: right;
+  cursor: pointer;
+}
+
+.upload-row {
+  border: 1px solid #2e6da4;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
+
+/* Bootstrap overrides */
+@media (min-width: 768px){
+  .container{
+    max-width:100%;
+  }
+}
+
+@media (min-width: 992px){
+  .container{
+    max-width:100%;
+  }
+}

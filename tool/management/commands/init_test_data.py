@@ -321,9 +321,18 @@ def load_lectures(self):
 def load_attendances(self):
     self.stdout.write(self.style.NOTICE('Loading attendances...'))
 
+    attendance_data_modules = []
+    attendance_data_modules.append(Module.objects.get(module_code="COM332"))
+    attendance_data_modules.append(Module.objects.get(module_code="COM367"))
+    attendance_data_modules.append(Module.objects.get(module_code="EEE289"))
+    attendance_data_modules.append(Module.objects.get(module_code="EEE123"))
+    attendance_data_modules.append(Module.objects.get(module_code="BIO645"))
+    attendance_data_modules.append(Module.objects.get(module_code="BIO922"))
+    attendance_data_modules.append(Module.objects.get(module_code="ENG122"))
+
     for i in range(1, 8):
         reader = open_file('Attendance_Load_Data_Module' + str(i) + '.csv')
-        response = DataSaver(reader).save_uploaded_data()
+        response = DataSaver(reader).save_uploaded_data(attendance_data_modules[i-1])
         if hasattr(response, 'error'):
             raise CommandError(response.error)
         else:
