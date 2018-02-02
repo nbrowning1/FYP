@@ -13,6 +13,8 @@ class UploadTests(TestCase):
 
         # initial check that module is not linked to student
         self.assertEqual(get_module_student_count('EEE312'), 0)
+        # and that course has no linked modules
+        self.assertEqual(len(get_course_modules('Course Code')), 0)
 
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
 
@@ -21,6 +23,11 @@ class UploadTests(TestCase):
         self.assertEqual(len(linked_module.students.all()), 2)
         self.assertEqual(linked_module.students.all()[0].user.username, 'B00123456')
         self.assertEqual(linked_module.students.all()[1].user.username, 'B00987654')
+
+        # module should now be linked to course that students are part of
+        course_modules = get_course_modules('Course Code')
+        self.assertEqual(len(course_modules), 1)
+        self.assertEqual(course_modules[0], linked_module)
 
         validate_valid_data(self, False)
 
@@ -193,9 +200,14 @@ def test_usertype_upload(self, expected_status_code):
     self.assertEqual(response.request['PATH_INFO'], '/tool/upload/')
 
 
-def get_module_student_count(self):
-    module = Module.objects.get(module_code='EEE312')
+def get_module_student_count(module_code):
+    module = Module.objects.get(module_code=module_code)
     return len(module.students.all())
+
+
+def get_course_modules(course_code):
+    course = Course.objects.get(course_code=course_code)
+    return course.modules.all()
 
 
 def authenticate_admin(self):
@@ -227,15 +239,19 @@ def create_db_props():
     create_module('COM999', 'COM999-1')
 
 
-def create_course(course_code):
-    course = Course(course_code=course_code)
-    course.save()
-    return course
+def get_course(course_code):
+    try:
+        course = Course.objects.get(course_code=course_code)
+        return course
+    except Course.DoesNotExist:
+        course = Course(course_code=course_code)
+        course.save()
+        return course
 
 
 def create_student(username, device_id):
     user = User.objects.create_user(username=username, password='12345')
-    course = create_course('Course Code')
+    course = get_course('Course Code')
     student = Student(user=user, device_id=device_id, course=course)
     student.save()
     return student
