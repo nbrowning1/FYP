@@ -41,6 +41,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            '--load-modules-courses',
+            action='store_true',
+            dest='load-modules-courses',
+            help='Links modules to courses - allows to only reload this data',
+        )
+
+        parser.add_argument(
             '--load-modules-students',
             action='store_true',
             dest='load-modules-students',
@@ -73,6 +80,7 @@ class Command(BaseCommand):
             load_students(self)
             load_staff(self)
             load_modules(self)
+            load_modules_to_courses(self)
             load_students_to_modules(self)
             load_staff_to_modules(self)
             load_lectures(self)
@@ -87,6 +95,9 @@ class Command(BaseCommand):
                 args_supplied = True
             if options['load-modules']:
                 load_modules(self)
+                args_supplied = True
+            if options['load-modules-courses']:
+                load_modules_to_courses(self)
                 args_supplied = True
             if options['load-modules-students']:
                 load_students_to_modules(self)
@@ -114,6 +125,7 @@ def load_students(self):
         if counter == 0:
             continue
 
+        data_course_code = row[1]
         data_device_id = row[5]
         data_username = row[6]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
@@ -124,8 +136,16 @@ def load_students(self):
             user.delete()
         except Student.DoesNotExist:
             pass
+
+        # create course if not already created
+        try:
+            course = Course.objects.get(course_code=data_course_code)
+        except Course.DoesNotExist:
+            course = Course(course_code=data_course_code)
+            course.save()
+
         user = User.objects.create_user(username=data_username, password='Django123')
-        student = Student(user=user, device_id=data_device_id)
+        student = Student(user=user, device_id=data_device_id, course=course)
         student.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded students'))
@@ -166,18 +186,48 @@ def load_modules(self):
             continue
 
         data_module_id = row[0]
+        data_module_crn = row[1]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_module_id))
         try:
-            module = Module.objects.get(module_code=data_module_id)
+            module = Module.objects.get(module_code=data_module_id, module_crn=data_module_crn)
             # delete if already exists so new data can act as overwrite if data needs changed
             module.delete()
         except Module.DoesNotExist:
             pass
 
-        module = Module(module_code=data_module_id)
+        module = Module(module_code=data_module_id, module_crn=data_module_crn)
         module.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded modules'))
+
+
+def load_modules_to_courses(self):
+    self.stdout.write(self.style.NOTICE('Linking modules to courses...'))
+
+    reader = open_file('Course_Modules_Load_Data.csv')
+
+    for counter, row in enumerate(reader):
+        if counter == 0:
+            continue
+
+        data_course_code = row[0]
+
+        try:
+            course = Course.objects.get(course_code=data_course_code)
+        except Course.DoesNotExist:
+            raise CommandError('Course "%s" does not exist' % data_course_code)
+
+        data_module_code = row[1]
+        try:
+            module = Module.objects.get(module_code=data_module_code)
+        except Module.DoesNotExist:
+            raise CommandError('Module "%s" does not exist' % data_module_code)
+
+        if module not in course.modules.all():
+            self.stdout.write(self.style.SUCCESS("Linking " + module.module_code + " to " + course.course_code))
+            course.modules.add(module)
+
+    self.stdout.write(self.style.SUCCESS('Linked modules to courses'))
 
 
 def load_students_to_modules(self):
@@ -227,13 +277,13 @@ def load_staff_to_modules(self):
 
         data_staff_id = row[1]
         try:
-            staff = Staff.objects.get(user__username=data_staff_id)
+            lecturer = Staff.objects.get(user__username=data_staff_id)
         except Staff.DoesNotExist:
             raise CommandError('Staff "%s" does not exist' % data_staff_id)
 
-        if Module.objects.filter(lecturers__id__exact=staff.id).count() == 0:
-            self.stdout.write(self.style.SUCCESS("Linking " + staff.user.username + " to " + module.module_code))
-            module.lecturers.add(staff)
+        if module not in lecturer.modules.all():
+            self.stdout.write(self.style.SUCCESS("Linking " + lecturer.user.username + " to " + module.module_code))
+            lecturer.modules.add(module)
 
     self.stdout.write(self.style.SUCCESS('Linked staff to modules'))
 
@@ -271,9 +321,18 @@ def load_lectures(self):
 def load_attendances(self):
     self.stdout.write(self.style.NOTICE('Loading attendances...'))
 
+    attendance_data_modules = []
+    attendance_data_modules.append(Module.objects.get(module_code="COM332"))
+    attendance_data_modules.append(Module.objects.get(module_code="COM367"))
+    attendance_data_modules.append(Module.objects.get(module_code="EEE289"))
+    attendance_data_modules.append(Module.objects.get(module_code="EEE123"))
+    attendance_data_modules.append(Module.objects.get(module_code="BIO645"))
+    attendance_data_modules.append(Module.objects.get(module_code="BIO922"))
+    attendance_data_modules.append(Module.objects.get(module_code="ENG122"))
+
     for i in range(1, 8):
         reader = open_file('Attendance_Load_Data_Module' + str(i) + '.csv')
-        response = DataSaver(reader).save_uploaded_data()
+        response = DataSaver(reader).save_uploaded_data(attendance_data_modules[i-1])
         if hasattr(response, 'error'):
             raise CommandError(response.error)
         else:

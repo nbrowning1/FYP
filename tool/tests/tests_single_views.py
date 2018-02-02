@@ -1,10 +1,9 @@
 import datetime
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
+from ..models import *
 
 
 class SingleModuleViewTests(TestCase):
@@ -39,6 +38,38 @@ class SingleModuleViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class SingleCourseViewTests(TestCase):
+    def test_single_course_view_admin(self):
+        authenticate_admin(self)
+        test_valid_course_view(self, True)
+
+    def test_single_course_view_staff(self):
+        authenticate_staff(self)
+        test_valid_course_view(self, True)
+
+    def test_single_course_view_student(self):
+        authenticate_student(self)
+        test_valid_course_view(self, False)
+
+    def test_course_unauthenticated(self):
+        create_course('Course Code')
+
+        # check course that exists
+        response = go_to_course(self, 1)
+        self.assertRedirects(response, '/tool/login/?next=/tool/courses/1', status_code=302)
+
+        # check course that doesnt exist - should be same response
+        response = go_to_course(self, 10)
+        self.assertRedirects(response, '/tool/login/?next=/tool/courses/10', status_code=302)
+
+    def test_nonexistent_course(self):
+        authenticate_staff(self)
+
+        create_course('Course Code')
+        response = go_to_course(self, 10)
+        self.assertEqual(response.status_code, 404)
+
+
 class SingleLecturerViewTests(TestCase):
     def test_single_lecturer_view_admin(self):
         authenticate_admin(self)
@@ -55,7 +86,7 @@ class SingleLecturerViewTests(TestCase):
     def test_lecturer_unauthenticated(self):
         create_staff('e00123456')
 
-        # check module that exists
+        # check lecturer that exists
         response = go_to_lecturer(self, 1)
         self.assertRedirects(response, '/tool/login/?next=/tool/lecturers/1', status_code=302)
 
@@ -168,6 +199,21 @@ def test_valid_module_view(self, should_see_students, **kwargs):
         self.assertNotContains(response, 'Dec. 1, 2017')
     else:
         self.assertEqual(response.status_code, 404)
+
+
+def test_valid_course_view(self, is_staff):
+    setup_data(None, None)
+
+    response = go_to_course(self, 1)
+    # should only see if staff
+    if is_staff:
+        self.assertContains(response, 'COM101')
+        self.assertNotContains(response, 'COM102')
+    else:
+        self.assertEqual(response.status_code, 404)
+
+    response = go_to_course(self, 2)
+    self.assertEqual(response.status_code, 404)
 
 
 def test_valid_lecturer_view(self, is_student, **kwargs):
@@ -294,6 +340,9 @@ def setup_data(this_student, this_lecturer):
     else:
         student2 = create_student('B00987654')
 
+    course = Course.objects.get(course_code='Course Code')
+    course.modules.add(module1)
+
     if this_lecturer:
         lecturer1 = this_lecturer
     else:
@@ -302,13 +351,18 @@ def setup_data(this_student, this_lecturer):
     lecture1 = create_lecture(module1, 'Session 1')
     lecture2 = create_lecture(module1, 'Session 2')
     module1.students.add(student2)
-    module1.lecturers.add(lecturer1)
+    lecturer1.modules.add(module1)
     create_attendance(student2, lecture1, True)
     create_attendance(student2, lecture2, False)
 
 
 def go_to_module(self, module_id):
     url = reverse('tool:module', kwargs={'module_id': module_id})
+    return self.client.get(url)
+
+
+def go_to_course(self, course_id):
+    url = reverse('tool:course', kwargs={'course_id': course_id})
     return self.client.get(url)
 
 
@@ -345,9 +399,20 @@ def authenticate_staff(self):
     return staff
 
 
+def create_course(course_code):
+    try:
+        course = Course.objects.get(course_code=course_code)
+        return course
+    except Course.DoesNotExist:
+        course = Course(course_code=course_code)
+        course.save()
+        return course
+
+
 def create_student(username):
     user = User.objects.create_user(username=username, password='12345')
-    student = Student(user=user)
+    course = create_course('Course Code')
+    student = Student(user=user, course=course)
     student.save()
     return student
 

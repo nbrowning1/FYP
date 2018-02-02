@@ -1,0 +1,85 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+
+<a href="{% url 'tool:index' %}">Home</a>
+
+<h2>Module / Course View Settings</h2>
+<br>
+
+<!-- MODULES -->
+<form action="{% url 'tool:save_module_course_settings' %}" method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+{% if modules %}
+  <div class="link-container">
+    <a href="#modules-container" class="btn btn-info" data-toggle="collapse">Modules</a>
+  </div>
+
+  <div id="modules-container" class="collapse">
+    <br>
+    <table>
+      <thead>
+        <tr>
+          <th>Module Code</th>
+          <th>CRN</th>
+          <th>Display</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for module in modules %}
+        <tr>
+            <td>{{ module.module.module_code }}</td>
+            <td>{{ module.module.module_crn }}</td>
+            <td class="checkbox-cell">
+                <input {% if module.displayed %} checked {% endif %} type="checkbox" name="modules[]" value="code_{{ module.module.module_code }} crn_{{ module.module.module_crn }}">
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% else %}
+  <p>No modules are available.</p>
+{% endif %}
+
+<!-- COURSES -->
+{% if courses %}
+  <div class="link-container">
+    <a href="#courses-container" class="btn btn-info" data-toggle="collapse">Courses</a>
+  </div>
+
+  <div id="courses-container" class="collapse">
+    <br>
+    <table>
+      <thead>
+        <tr>
+          <th>Course Code</th>
+          <th>Display</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr>
+            <td>{{ course.course.course_code }}</td>
+            <td class="checkbox-cell">
+                <input {% if course.displayed %} checked {% endif %} type="checkbox" name="courses[]" value="code_{{ course.course.course_code }}">
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% else %}
+  <p>No courses are available.</p>
+{% endif %}
+<input type="submit" class="btn btn-success" value="Save">
+</form>

@@ -1,54 +1,16 @@
 from .data_rows import *
 from .models import *
 
+
 class DataSaver:
     def __init__(self, file_reader):
         self.file_reader = file_reader
 
-    def save_uploaded_data(self):
-        module = None
-        staff = []
+    def save_uploaded_data(self, module):
         uploaded_list = []
+        courses = []
 
-        # finding module (step 1/3)
-        found_module = False
-        for counter, row in enumerate(self.file_reader):
-            if found_module:
-                module_data = ModuleRow(row)
-                error_msg = module_data.get_error_message()
-                if error_msg:
-                    return error_response(error_msg)
-
-                module = Module.objects.get(module_code=module_data.module)
-                break
-
-            if row[0].strip() != 'Module Code':
-                continue
-            else:
-                found_module = True
-                continue
-
-        # finding staff (step 2/3)
-        found_staff = False
-        for counter, row in enumerate(self.file_reader):
-            if found_staff:
-                if row[0].strip() and row[0].strip() != 'Student Attendance':
-                    staff_data = StaffRow(row)
-                    error_msg = staff_data.get_error_message()
-                    if error_msg:
-                        return error_response(error_msg)
-
-                    staff.append(Staff.objects.get(user__username=staff_data.lecturer))
-                else:
-                    break
-
-            if row[0].strip() != 'Lecturers':
-                continue
-            else:
-                found_staff = True
-                continue
-
-        # finally grabbing attendance data (step 3/3)
+        # grabbing attendance data
         attendance_session_data = None
         found_attendance = False
         for counter, row in enumerate(self.file_reader):
@@ -75,13 +37,9 @@ class DataSaver:
                     return error_response(error_msg)
                 continue
 
-        # associate lecturers with module if not already associated
-        for lecturer in staff:
-            if not any(lecturer.user.username == saved_lec.user.username for saved_lec in module.lecturers.all()):
-                module.lecturers.add(lecturer)
-
         for uploaded_data in uploaded_list:
             uploaded_student = uploaded_data.student
+            courses.append(uploaded_student.course)
 
             # associate student with module if not already associated
             if not any(uploaded_student.user.username == saved_stu.user.username for saved_stu in
@@ -113,11 +71,19 @@ class DataSaver:
                                                        attended=attended)
                     new_attendance.save()
 
+        # remove duplicates
+        courses = list(set(courses))
+        # link module with any new courses from students
+        for course in courses:
+            if module not in course.modules.all():
+                course.modules.add(module)
+
         uploaded_data = types.SimpleNamespace()
         uploaded_data.module = module
-        uploaded_data.staff = staff
         uploaded_data.attendances = uploaded_list
+        uploaded_data.courses = courses
         return uploaded_data
+
 
 def error_response(msg):
     response = types.SimpleNamespace()
