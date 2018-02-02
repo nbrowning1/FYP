@@ -3,21 +3,31 @@
 <link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'tool/pagination.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/chosen.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/pagination.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/chosen.jquery.min.js' %}"></script>
 <script type="text/javascript">
   /* populate entities in JS to enable pagination */
   
   var modules = [];
+  var courses = [];
   var lecturers = [];
   var students = [];
   var lectures = [];
   {% for module in modules %}
   modules.push({
     url: "{% url 'tool:module' module_id=module.id %}",
-    name: "{{ module.module_code }}"
+    code: "{{ module.module_code }}",
+    crn: "{{ module.module_crn }}"
+  });
+  {% endfor %}
+  {% for course in courses %}
+  courses.push({
+    url: "{% url 'tool:course' course_id=course.id %}",
+    name: "{{ course.course_code }}"
   });
   {% endfor %}
   {% for lecturer in lecturers %}
@@ -44,7 +54,7 @@
 <script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
-<a id="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+<a class="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
 <span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
 
 <div id="content" class="container">
@@ -60,11 +70,15 @@
   </div>
   
   <div id="modules-container" class="collapse">
+    {% if user_type and user_type == "STAFF" %}
+    <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+    {% endif %}
     <br>
     <table id="modules-tbl">
       <thead>
         <tr>
           <th>Module Code</th>
+          <th>CRN</th>
         </tr>
       </thead>
       <tbody>
@@ -76,8 +90,46 @@
   <br>
   <hr>
   <br>
+{% elif user_type and user_type == "STAFF" %}
+  <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+  <p>No modules added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
+  <br>
 {% else %}
   <p>No modules are available.</p>
+{% endif %}
+
+<!-- COURSES -->
+{% if courses %}
+  <div class="link-container">
+    <a href="#courses-container" class="btn btn-info" data-toggle="collapse">Courses</a>
+  </div>
+
+  <div id="courses-container" class="collapse">
+    {% if user_type and user_type == "STAFF" %}
+    <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+    {% endif %}
+    <br>
+    <table id="courses-tbl">
+      <thead>
+        <tr>
+          <th>Course</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <br>
+    <div id="courses-pagination" class="pagination-container"></div>
+  </div>
+  <br>
+  <hr>
+  <br>
+{% elif user_type and user_type == "STAFF" %}
+  <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
+  <p>No courses added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
+  <br>
+{% elif user_type and user_type != "STUDENT" %}
+  <p>No courses are available.</p>
 {% endif %}
   
 <!-- LECTURERS -->
@@ -103,7 +155,7 @@
   <br>
   <hr>
   <br>
-{% elif user_type and user_type != "STAFF" %}
+{% elif user_type and user_type == "ADMIN" %}
   <p>No lecturers are available.</p>
 {% endif %}
   
@@ -167,24 +219,58 @@
   <hr>
   <h3>Admin Panel</h3>
   <h4>Upload Marks</h4>
-  
-  <form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <!-- pretty file-upload -->
-    <label class="btn btn-default">
-      Upload CSV <input type="file" name="upload-data" style="display:none;" multiple>
-    </label>
-    <input type="submit" class="btn btn-info" value="Submit">
-  </form>
 
-  <hr>
+  <div class="link-container">
+    <a href="#upload-container" class="btn btn-primary" data-toggle="collapse">Upload</a>
+  </div>
 
-  <div class="download-container">
-    <a class="btn btn-success" role="button" href="{% url 'tool:download' path=upload_example_filepath %}">Download Template</a>
+  <div id="upload-container" class="collapse">
+    <div id="add-upload-row-container">
+      <i id="add-upload-row" class="fa fa-plus-circle fa-3x" aria-hidden="true"></i>
+    </div>
+    <br>
+    <div>
+      <form action="{% url 'tool:upload' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div id="upload-rows-container">
+          {# placeholder upload - uploads are added using this as a base from script.js #}
+          <div class="container upload-row" id="placeholder">
+            <br>
+            <div class="delete-upload-row-container">
+              <i id="placeholder-delete" class="fa fa-minus-circle fa-2x delete-upload-row" aria-hidden="true"></i>
+            </div>
+            <!-- pretty file-upload -->
+            <input type="file" name="file" id="placeholder-file" class="file-upload" style="display:none;">
+            <label class="btn btn-default" for="placeholder-file">Upload CSV</label>
+            <p id="filename-text"></p>
+            <br><br>
+            <span>Module</span>
+            <br>
+            <select id="placeholder-module" class="module-select" name="module-placeholder">
+              {% if modules %}
+              {% for module in modules %}
+              <option value="code_{{ module.module_code }} crn_{{ module.module_crn }}">{{ module.module_code }} - {{ module.module_crn }}</option>
+              {% endfor %}
+              {% endif %}
+            </select>
+            <br><br>
+          </div>
+        </div>
+        <br><br>
+        <input type="submit" class="btn btn-info" value="Submit">
+      </form>
+    </div>
+
+    <hr>
+
+    <div class="download-container">
+      <a class="btn btn-success" role="button" href="{% url 'tool:download' path=upload_example_filepath %}">Download Template</a>
+    </div>
   </div>
 {% endif %}
   
 {% if error_message %}
+  <br>
   <p>{{ error_message }}</p>
 {% endif %}
 

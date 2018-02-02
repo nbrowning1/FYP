@@ -21,7 +21,7 @@
             {% else %}
             <tr class="alt">
             {% endif %}
-            <td><a href="{% url 'tool:student' student_id=lecture_attendance.student.id %}">{{ lecture_attendance.student.user.username }}</a></td>
+                <td><a href="{% url 'tool:student' student_id=lecture_attendance.student.id %}">{{ lecture_attendance.student.user.username }}</a></td>
                 <td>
                     {% if lecture_attendance.attended %}
                     <i class="fa fa-check fa-lg" aria-hidden="true"></i>

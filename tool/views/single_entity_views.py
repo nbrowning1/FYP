@@ -16,6 +16,7 @@ def module(request, module_id):
     user_type = ViewsUtils.get_user_type(request)
     ViewsUtils.check_valid_user(user_type, request)
 
+    student = None
     if user_type == UserType.STUDENT_TYPE:
         student = Student.objects.get(user__username=request.user.username)
 
@@ -27,39 +28,14 @@ def module(request, module_id):
     except Module.DoesNotExist:
         raise Http404("Module does not exist")
 
-    lectures = Lecture.objects.filter(module=module)
+    module_data = get_module_data(module, user_type, student)
 
-    student_attendances = []
-    # get attendances for lectures, sorted by student then date
-    if (user_type == UserType.STUDENT_TYPE):
-        lecture_attendances = StudentAttendance.objects.filter(student__in=[student]).order_by('lecture__date')
-    else:
-        lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures).order_by('student',
-                                                                                              'lecture__date')
-    # group by student - tried many many variations of annotate etc. and nothing worked
-    grouped_attendances = OrderedDict()
-    for grouped_attendance in lecture_attendances:
-        grouped_attendances.setdefault(grouped_attendance.student, []).append(grouped_attendance)
-
-    # link students and attendances from dict back into list with percentage attended
-    for student in grouped_attendances:
-        student_attendance = types.SimpleNamespace()
-        student_attendance.student = student
-        student_attendance.attendances = []
-        num_attended = 0
-        for attendance in grouped_attendances[student]:
-            student_attendance.attendances.append(attendance)
-            if (attendance.attended):
-                num_attended += 1
-        student_attendance.percent_attended = (num_attended / len(student_attendance.attendances)) * 100
-        student_attendances.append(student_attendance)
-
-    pie_chart = get_attendance_pie_chart_from_percentages(student_attendances, 'Module Attendance Overview')
-    line_chart = get_module_line_chart(lecture_attendances, len(grouped_attendances))
+    pie_chart = get_attendance_pie_chart_from_percentages(module_data.student_attendances, 'Module Attendance Overview')
+    line_chart = get_module_line_chart(module_data.lecture_attendances, len(module_data.student_attendances))
 
     return render(request, 'tool/module.html', {
         'module': module,
-        'student_attendances': student_attendances,
+        'student_attendances': module_data.student_attendances,
         'pie_chart': pie_chart,
         'line_chart': line_chart
     })
@@ -90,6 +66,71 @@ def get_module_line_chart(lecture_attendances, num_students):
 
 
 @login_required
+def course(request, course_id):
+    user_type = ViewsUtils.get_user_type(request)
+    ViewsUtils.check_valid_user(user_type, request)
+
+    if user_type == UserType.STUDENT_TYPE:
+        raise Http404("Not authorised to view this lecturer")
+
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        raise Http404("Course does not exist")
+
+    modules = course.modules.all()
+    module_attendances = []
+    for module in modules:
+        module_data = get_module_data(module, user_type, student)
+        module_attendance = types.SimpleNamespace()
+        module_attendance.module = module
+        module_attendance.percent_attended = get_attendance_percentage(module_data.student_attendances)
+        module_attendances.append(module_attendance)
+
+    pie_chart = get_attendance_pie_chart_from_percentages(module_attendances, 'Course Attendance Overview')
+
+    return render(request, 'tool/course.html', {
+        'course': course,
+        'module_attendances': module_attendances,
+        'pie_chart': pie_chart
+    })
+
+
+def get_module_data(module, user_type, student):
+    lectures = Lecture.objects.filter(module=module)
+
+    # get attendances for lectures, sorted by student then date
+    if (user_type == UserType.STUDENT_TYPE):
+        lecture_attendances = StudentAttendance.objects.filter(student__in=[student]).order_by('lecture__date')
+    else:
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures).order_by('student',
+                                                                                              'lecture__date')
+    # group by student - tried many many variations of annotate etc. and nothing worked
+    grouped_attendances = OrderedDict()
+    for grouped_attendance in lecture_attendances:
+        grouped_attendances.setdefault(grouped_attendance.student, []).append(grouped_attendance)
+
+    # link students and attendances from dict back into list with percentage attended
+    student_attendances = []
+    for student in grouped_attendances:
+        student_attendance = types.SimpleNamespace()
+        student_attendance.student = student
+        student_attendance.attendances = []
+        num_attended = 0
+        for attendance in grouped_attendances[student]:
+            student_attendance.attendances.append(attendance)
+            if (attendance.attended):
+                num_attended += 1
+        student_attendance.percent_attended = (num_attended / len(student_attendance.attendances)) * 100
+        student_attendances.append(student_attendance)
+
+    data = types.SimpleNamespace()
+    data.lecture_attendances = lecture_attendances
+    data.student_attendances = student_attendances
+    return data
+
+
+@login_required
 def lecturer(request, lecturer_id):
     user_type = ViewsUtils.get_user_type(request)
     ViewsUtils.check_valid_user(user_type, request)
@@ -102,7 +143,7 @@ def lecturer(request, lecturer_id):
     if user_type == UserType.STUDENT_TYPE:
         raise Http404("Not authorised to view this lecturer")
 
-    modules = Module.objects.filter(lecturers__in=[lecturer])
+    modules = lecturer.modules.all()
     module_attendances = []
     for module in modules:
         lectures = Lecture.objects.filter(module__in=[module])
@@ -221,14 +262,19 @@ def lecture(request, lecture_id):
 
 
 def get_attendance_pie_chart_from_percentages(attendances, title):
+    attended_percent = get_attendance_percentage(attendances)
+    non_attended_percent = 100 - attended_percent
+    return build_attendance_pie_chart(attended_percent, non_attended_percent, title)
+
+
+def get_attendance_percentage(attendances):
     total_attendance_percentage = 0
     for attendance in attendances:
         total_attendance_percentage += attendance.percent_attended
 
     attended_percent = (total_attendance_percentage / len(attendances)) \
         if (len(attendances) > 0) else 0
-    non_attended_percent = 100 - attended_percent
-    return build_attendance_pie_chart(attended_percent, non_attended_percent, title)
+    return attended_percent
 
 
 def get_attendance_pie_chart_from_absolute_vals(attendances, title):

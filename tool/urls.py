@@ -53,6 +53,8 @@ urlpatterns = [
 
     url(r'^modules/(?P<module_id>[0-9]+)$', single_entity_views.module, name='module'),
 
+    url(r'^courses/(?P<course_id>[0-9]+)$', single_entity_views.course, name='course'),
+
     url(r'^lecturers/(?P<lecturer_id>[0-9]+)$', single_entity_views.lecturer, name='lecturer'),
 
     url(r'^students/(?P<student_id>[0-9]+)$', single_entity_views.student, name='student'),
@@ -60,4 +62,9 @@ urlpatterns = [
     url(r'^lectures/(?P<lecture_id>[0-9]+)$', single_entity_views.lecture, name='lecture'),
 
     url(r'^settings/$', views.settings, name='settings'),
+
+    url(r'^module-course-view-settings/$', views.module_course_view_settings, name='module_course_view_settings'),
+
+    url(r'^save-module-course-settings/$', views.save_module_course_settings, name='save_module_course_settings'),
+
 ]
