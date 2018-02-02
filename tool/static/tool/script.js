@@ -1,8 +1,41 @@
 $(document).ready(function() {
 
     var uploadsCounter = 0;
-    setup_file_uploads();
     setup_pagination();
+    setup_file_uploads();
+
+    /* Sets up pagination for containers using objects stored in JS */
+    function setup_pagination() {
+        if ($('#modules-pagination').length) {
+            $('#modules-pagination').pagination(
+                build_pagination(modules, '#modules-tbl', module_row)
+            )
+        }
+
+        if ($('#courses-pagination').length) {
+            $('#courses-pagination').pagination(
+                build_pagination(courses, '#courses-tbl', regular_row)
+            )
+        }
+
+        if ($('#lecturers-pagination').length) {
+            $('#lecturers-pagination').pagination(
+                build_pagination(lecturers, '#lecturers-tbl', regular_row)
+            )
+        }
+
+        if ($('#students-pagination').length) {
+            $('#students-pagination').pagination(
+                build_pagination(students, '#students-tbl', regular_row)
+            )
+        }
+
+        if ($('#lectures-pagination').length) {
+            $('#lectures-pagination').pagination(
+                build_pagination(lectures, '#lectures-tbl', lecture_row)
+            )
+        }
+    }
 
     /* Sets up file uploads so that styled uploads contain filename
         when a file is uploaded.
@@ -10,6 +43,9 @@ $(document).ready(function() {
         associated row-adding functionality. */
     function setup_file_uploads() {
         var uploadRowsContainer = document.getElementById("upload-rows-container");
+        if (!uploadRowsContainer) {
+            return;
+        }
         add_upload_row();
 
         $('#add-upload-row').click(function() {
@@ -74,39 +110,6 @@ $(document).ready(function() {
             })(newFileUpload);
 
             uploadsCounter++;
-        }
-    }
-
-    /* Sets up pagination for containers using objects stored in JS */
-    function setup_pagination() {
-        if ($('#modules-pagination').length) {
-            $('#modules-pagination').pagination(
-                build_pagination(modules, '#modules-tbl', module_row)
-            )
-        }
-
-        if ($('#courses-pagination').length) {
-            $('#courses-pagination').pagination(
-                build_pagination(courses, '#courses-tbl', regular_row)
-            )
-        }
-
-        if ($('#lecturers-pagination').length) {
-            $('#lecturers-pagination').pagination(
-                build_pagination(lecturers, '#lecturers-tbl', regular_row)
-            )
-        }
-
-        if ($('#students-pagination').length) {
-            $('#students-pagination').pagination(
-                build_pagination(students, '#students-tbl', regular_row)
-            )
-        }
-
-        if ($('#lectures-pagination').length) {
-            $('#lectures-pagination').pagination(
-                build_pagination(lectures, '#lectures-tbl', lecture_row)
-            )
         }
     }
 

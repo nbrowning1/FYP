@@ -94,6 +94,8 @@
   <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
   <p>No modules added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
   <br>
+  <hr>
+  <br>
 {% else %}
   <p>No modules are available.</p>
 {% endif %}
@@ -127,6 +129,8 @@
 {% elif user_type and user_type == "STAFF" %}
   <a class="settings" href="{% url 'tool:module_course_view_settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
   <p>No courses added. Click <a href="{% url 'tool:module_course_view_settings' %}">here</a> or the cog on the right to add some.</p>
+  <br>
+  <hr>
   <br>
 {% elif user_type and user_type != "STUDENT" %}
   <p>No courses are available.</p>
