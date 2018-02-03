@@ -1,3 +1,5 @@
+import types
+
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
@@ -20,6 +22,55 @@ class Module(models.Model):
         validators=[RegexValidator(regex='^[A-Z]{3,4}[0-9]{3}$', message='Must be a valid module code e.g. COM101')],
         max_length=7)
     module_crn = models.CharField(max_length=50)
+
+    """
+    Returns object with properties:
+    'attendance': Overall module attendance,
+    'lecture_attendances[]':
+        'lecture': Lecture object,
+        'attendance': Attendance % for lecture
+    """
+    def get_data(self, from_date=None, to_date=None, student=None):
+        attendance_overall = 0
+        if from_date and to_date:
+            lectures = Lecture.objects.filter(module=self, date__range=[from_date, to_date])
+        else:
+            lectures = Lecture.objects.filter(module=self)
+
+        lecture_attendances = []
+        for lecture in lectures:
+            if student:
+                attendances = StudentAttendance.objects.filter(lecture=lecture, student=student) \
+                    .order_by('lecture__date')
+            else:
+                attendances = StudentAttendance.objects.filter(lecture=lecture) \
+                    .order_by('lecture__date')
+
+            if not attendances:
+                continue
+
+            total_attendance = 0
+            for attendance in attendances:
+                if attendance.attended:
+                    total_attendance += 1
+
+            attended_percent = (total_attendance / len(attendances)) * 100 \
+                if (len(attendances) > 0) else 0
+            attendance_overall += attended_percent
+
+            lecture_attendance = types.SimpleNamespace()
+            lecture_attendance.lecture = lecture
+            lecture_attendance.attendance = attended_percent
+            lecture_attendances.append(lecture_attendance)
+
+        if len(lecture_attendances) > 0:
+            attendance_overall = attendance_overall / len(lecture_attendances)
+
+        data = types.SimpleNamespace()
+        data.lecture_attendances = lecture_attendances
+        data.attendance = attendance_overall
+
+        return data
 
     def __str__(self):
         return 'Module: ' + str(self.module_code)

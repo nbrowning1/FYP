@@ -1,6 +1,4 @@
 import datetime
-import types
-from collections import OrderedDict
 from enum import Enum
 
 from django.conf import settings
@@ -50,6 +48,11 @@ class Command(BaseCommand):
                             dest='test-only',
                             help='For testing purposes - won\'t actually send emails')
 
+        parser.add_argument('--test-date',
+                            action='store',
+                            dest='test-date',
+                            help='For testing purposes - specify the date (in DD/MM/YYYY format) for when this command is called, where default is today')
+
     def handle(self, *args, **options):
         users = []
         if options['all-users']:
@@ -78,76 +81,98 @@ class Command(BaseCommand):
             test_only = True
             self.stdout.write('TEST MODE, No emails will actually be sent.')
 
+        to_date = None
+        if options['test-date']:
+            to_date = datetime.datetime.strptime(options['test-date'], "%Y-%m-%d").date()
+
         # uses SMTP server specified in settings.py
         # get and open one connection for all emails
         connection = get_connection()
         connection.open()
 
         for user in users:
-            email_attendance_report(self, user, time_period, connection, test_only)
+            if not isinstance(user, User):
+                # unpack user from model object
+                user = user.user
+            email_attendance_report(self, user, time_period, connection, test_only, to_date)
 
         # cleaning up opened connection
         connection.close()
 
 
-def email_attendance_report(self, user, time_period, connection, test_only):
+def email_attendance_report(self, user, time_period, connection, test_only, to_date):
     # should check whether user is actually active before processing on them
     # (won't send email if they don't have updates but cuts down on work done)
 
-    context_dict = OrderedDict()
+    user_type_found = False
 
     # try student first
     try:
         student = Student.objects.get(user=user)
-        context_dict = get_student_attendance_report(self, student, time_period)
+        email_details = get_student_attendance_report(self, student, time_period, to_date)
+        email_details.is_student = True
+        user_type_found = True
     except Student.DoesNotExist:
         pass
 
-    # fall back to staff
-    try:
-        lecturer = Staff.objects.get(user=user)
-        context_dict = get_staff_attendance_report(self, lecturer, time_period)
-    except Staff.DoesNotExist:
-        pass
+    if not user_type_found:
+        # fall back to staff
+        try:
+            lecturer = Staff.objects.get(user=user)
+            email_details = get_staff_attendance_report(self, lecturer, time_period, to_date)
+            email_details.is_student = False
+            user_type_found = True
+        except Staff.DoesNotExist:
+            pass
 
-    # finally check if admin user
-    if user.is_staff:
-        context_dict = get_admin_attendance_report(self, user, time_period)
-    else:
-        self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
+    if not user_type_found:
+        # finally check if admin user
+        if user.is_staff:
+            email_details = get_admin_attendance_report(self, time_period, to_date)
+            email_details.is_student = False
+        else:
+            self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
+            return
 
-    context_dict.email = user.email
-    context_dict.username = user.username
-    send_email(self, context_dict, connection, test_only)
-
-
-def get_student_attendance_report(self, student, time_period):
-    print("Student")
-
-
-def get_staff_attendance_report(self, lecturer, time_period):
-    print("Staff")
+    email_details.email = user.email
+    email_details.username = user.username
+    send_email(self, email_details, connection, test_only)
 
 
-def get_admin_attendance_report(self, user, time_period):
+def get_student_attendance_report(self, student, time_period, to_date):
+    modules = Module.objects.filter(students__in=[student])
+    return get_report_data(self, time_period, modules, to_date, student)
+
+
+def get_staff_attendance_report(self, lecturer, time_period, to_date):
+    modules = lecturer.modules.all()
+    return get_report_data(self, time_period, modules, to_date, None)
+
+
+def get_admin_attendance_report(self, time_period, to_date):
     # for admins, get everything
     modules = Module.objects.all()
-    return get_report_data(self, time_period, modules)
+    return get_report_data(self, time_period, modules, to_date, None)
 
 
-def get_report_data(self, time_period, modules):
-    today = datetime.date.today()
-    from_date = get_from_date(self, today, time_period)
+def get_report_data(self, time_period, modules, to_date_override, student):
+    to_date = datetime.date.today() if to_date_override == None else to_date_override
+    from_date = get_from_date(self, to_date, time_period)
 
-    report_data = OrderedDict()
+    report_data = types.SimpleNamespace()
+    report_data.from_date = from_date
+    report_data.to_date = to_date
     report_data.modules = []
 
     for module in modules:
         module_data = types.SimpleNamespace()
         module_data.module_code = module.module_code
-        module_data.lectures = Lecture.objects.filter(module=module, date__range=[from_date, today])
+        module_data.module_crn = module.module_crn
+        module_data.module_data = module.get_data(from_date, to_date, student)
 
         report_data.modules.append(module_data)
+
+    report_data.students = []
 
     return report_data
 
@@ -163,15 +188,22 @@ def get_from_date(self, today, time_period):
         raise CommandError('Unrecognised time period')
 
 
-def send_email(self, context_dict, connection, test_only):
-
+def send_email(self, email_details, connection, test_only):
     plaintext = get_template('emails/attendance_report.txt')
     html = get_template('emails/attendance_report.html')
 
     email_subject = 'Attendance report'
 
     from_email = settings.EMAIL_FROM
-    to_email = context_dict.email
+    to_email = email_details.email
+
+    context_dict = {
+        'from_date': email_details.from_date,
+        'to_date': email_details.to_date,
+        'modules': email_details.modules,
+        'students': email_details.students,
+        'is_student': email_details.is_student
+    }
 
     text_content = plaintext.render(context_dict)
     html_content = html.render(context_dict)
@@ -182,7 +214,7 @@ def send_email(self, context_dict, connection, test_only):
     if not test_only:
         email.send()
     else:
-        self.stdout.write('Email sent to {} <{}>'.format(str(context_dict.username), to_email))
+        self.stdout.write('Email sent to {} <{}>'.format(str(email_details.username), to_email))
     return True
 
 
