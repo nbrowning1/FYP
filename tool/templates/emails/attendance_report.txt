@@ -1,0 +1,16 @@
+Your attendance report for {{ from_date }} to {{ to_date }}:
+
+{% if modules %}
+Modules:
+--------
+{% for module in modules %} {% if module.module_data.lecture_attendances %}
+{{ module.module_code }} - {{ module.module_crn }}: {{ module.module_data.attendance }}% Attendance
+{% if not is_student %}
+    Lectures:
+    ---------
+    {% for lecture_data in module.module_data.lecture_attendances %}{{ lecture_data.lecture.session_id }} -- {{ lecture_data.lecture.date }}: {{ lecture_data.attendance }}% Attendance
+    {% endfor %}
+{% endif %}
+{% endif %} {% endfor %}
+{% else %}
+No attendances to report. {% endif %}
