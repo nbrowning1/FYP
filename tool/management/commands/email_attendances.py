@@ -101,6 +101,7 @@ class Command(BaseCommand):
 
 
 def email_attendance_report(self, user, time_period, connection, test_only, to_date):
+    # TODO:
     # should check whether user is actually active before processing on them
     # (won't send email if they don't have updates but cuts down on work done)
 
@@ -134,6 +135,12 @@ def email_attendance_report(self, user, time_period, connection, test_only, to_d
             self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
             return
 
+    # if no attendance data for email, don't send it
+    if not email_details.modules:
+        if test_only:
+            self.stdout.write('Email not sent to {} <{}>'.format(str(user.username), user.email))
+        return
+
     email_details.email = user.email
     email_details.username = user.username
     send_email(self, email_details, connection, test_only)
@@ -141,28 +148,28 @@ def email_attendance_report(self, user, time_period, connection, test_only, to_d
 
 def get_student_attendance_report(self, student, time_period, to_date):
     modules = Module.objects.filter(students__in=[student])
-    return get_report_data(self, time_period, modules, to_date, student)
+    return get_email_details(self, time_period, modules, to_date, student)
 
 
 def get_staff_attendance_report(self, lecturer, time_period, to_date):
     modules = lecturer.modules.all()
-    return get_report_data(self, time_period, modules, to_date, None)
+    return get_email_details(self, time_period, modules, to_date, None)
 
 
 def get_admin_attendance_report(self, time_period, to_date):
     # for admins, get everything
     modules = Module.objects.all()
-    return get_report_data(self, time_period, modules, to_date, None)
+    return get_email_details(self, time_period, modules, to_date, None)
 
 
-def get_report_data(self, time_period, modules, to_date_override, student):
+def get_email_details(self, time_period, modules, to_date_override, student):
     to_date = datetime.date.today() if to_date_override == None else to_date_override
     from_date = get_from_date(self, to_date, time_period)
 
-    report_data = types.SimpleNamespace()
-    report_data.from_date = from_date
-    report_data.to_date = to_date
-    report_data.modules = []
+    email_details = types.SimpleNamespace()
+    email_details.from_date = from_date
+    email_details.to_date = to_date
+    email_details.modules = []
 
     for module in modules:
         module_data = types.SimpleNamespace()
@@ -170,11 +177,9 @@ def get_report_data(self, time_period, modules, to_date_override, student):
         module_data.module_crn = module.module_crn
         module_data.module_data = module.get_data(from_date, to_date, student)
 
-        report_data.modules.append(module_data)
+        email_details.modules.append(module_data)
 
-    report_data.students = []
-
-    return report_data
+    return email_details
 
 
 def get_from_date(self, today, time_period):
@@ -201,7 +206,6 @@ def send_email(self, email_details, connection, test_only):
         'from_date': email_details.from_date,
         'to_date': email_details.to_date,
         'modules': email_details.modules,
-        'students': email_details.students,
         'is_student': email_details.is_student
     }
 

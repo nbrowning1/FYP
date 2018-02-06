@@ -54,17 +54,13 @@ class EmailAttendanceReportTest(TestCase):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)
         call_command('email_attendances', '--staff', '--weekly')
-        # 2 emails because 2 lecturers
-        self.assertEqual(len(mail.outbox), 2)
+        # 1 emails because only 1 lecturer has modules/courses linked
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Attendance report')
-        self.assertEqual(mail.outbox[1].subject, 'Attendance report')
         # sent to both lecturers
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(mail.outbox[0].to[0], 'teststaff1@mail.com')
-        self.assertEqual(len(mail.outbox[1].to), 1)
-        self.assertEqual(mail.outbox[1].to[0], 'teststaff2@mail.com')
         print(mail.outbox[0].body)
-        print(mail.outbox[1].body)
 
         # lecturer should see modules linked to them, and lectures for time range
         lecturer1_email_body = mail.outbox[0].body
@@ -76,15 +72,6 @@ class EmailAttendanceReportTest(TestCase):
         self.assertNotIn('COM101', lecturer1_email_body)
         self.assertIn('COM202 - COM202-1: 75.0% Attendance', lecturer1_email_body)
 
-        # should see nothing - lecturer has no modules / courses linked
-        lecturer2_email_body = mail.outbox[1].body
-        self.assertNotIn('id1', lecturer2_email_body)
-        self.assertNotIn('id2', lecturer2_email_body)
-        self.assertNotIn('id3', lecturer2_email_body)
-        self.assertNotIn('id4', lecturer2_email_body)
-        self.assertNotIn('COM101', lecturer2_email_body)
-        self.assertNotIn('COM202', lecturer2_email_body)
-        self.assertIn('No attendances to report.', lecturer2_email_body)
 
     def test_student_report(self):
         setup_test_data_weekly()
@@ -122,14 +109,12 @@ class EmailAttendanceReportTest(TestCase):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)
         call_command('email_attendances', '--all-users', '--weekly')
-        # everybody - 1 admin, 2 staff, 2 students
-        self.assertEqual(len(mail.outbox), 5)
-        # sent to both lecturers
+        # everybody except staff with no modules/courses - 1 admin, 1 staff, 2 students
+        self.assertEqual(len(mail.outbox), 4)
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(len(mail.outbox[1].to), 1)
         self.assertEqual(len(mail.outbox[2].to), 1)
         self.assertEqual(len(mail.outbox[3].to), 1)
-        self.assertEqual(len(mail.outbox[4].to), 1)
 
     def test_test_only(self):
         setup_test_data_weekly()
@@ -142,7 +127,9 @@ class EmailAttendanceReportTest(TestCase):
         self.assertIn('Email sent to teststudent1 <teststudent1@mail.com>', out.getvalue())
         self.assertIn('Email sent to teststudent2 <teststudent2@mail.com>', out.getvalue())
         self.assertIn('Email sent to teststaff1 <teststaff1@mail.com>', out.getvalue())
-        self.assertIn('Email sent to teststaff2 <teststaff2@mail.com>', out.getvalue())
+        # no lectures/modules - should not receive email
+        self.assertNotIn('Email sent to teststaff2 <teststaff2@mail.com>', out.getvalue())
+        self.assertIn('Email not sent to teststaff2 <teststaff2@mail.com>', out.getvalue())
 
 
 def get_django_template_format_date(date):
