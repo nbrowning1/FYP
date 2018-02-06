@@ -15,3 +15,9 @@ Final Year Project for student attendance & feedback functions.
 ### Testing
 ##### Running unit tests
 Run command: `python manage.py test tool/`
+
+### Libraries Used
+##### Graphos
+https://github.com/agiliq/django-graphos
+##### xlrd
+https://github.com/python-excel/xlrd
