@@ -1,1 +1,2 @@
 django-graphos==0.3.41
+xlrd==1.1.0
