@@ -7,31 +7,14 @@ from ..models import *
 
 
 class UploadTests(TestCase):
-    def test_upload_valid_data(self):
-        authenticate_admin(self)
-        create_db_props()
+    def test_upload_valid_data_csv(self):
+        test_upload_valid_data(self, 'upload_test_valid.csv')
 
-        # initial check that module is not linked to student
-        self.assertEqual(get_module_student_count('EEE312'), 0)
-        # and that course has no linked modules
-        self.assertEqual(len(get_course_modules('Course Code')), 0)
+    def test_upload_valid_data_xls(self):
+        test_upload_valid_data(self, 'Attendance_Test_xls.xls')
 
-        test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
-
-        # post-upload check to assert that upload process linked module with students
-        linked_module = Module.objects.get(module_code='EEE312')
-        self.assertEqual(len(linked_module.students.all()), 2)
-        self.assertEqual(linked_module.students.all()[0].user.username, 'B00123456')
-        self.assertEqual(linked_module.students.all()[1].user.username, 'B00987654')
-
-        # module should now be linked to course that students are part of
-        course_modules = get_course_modules('Course Code')
-        self.assertEqual(len(course_modules), 1)
-        self.assertEqual(course_modules[0], linked_module)
-
-        validate_valid_data(self, False)
-
-        # TODO: assert upload confirmation page
+    def test_upload_valid_data_xlsx(self):
+        test_upload_valid_data(self, 'Attendance_Test_xlsx.xlsx')
 
     def test_sequential_upload_replaces(self):
         authenticate_admin(self)
@@ -66,13 +49,13 @@ class UploadTests(TestCase):
         authenticate_admin(self)
         create_db_props()
         test_upload(self, 'upload_test_invalid.csv', 'code_EEE312 crn_EEE312-1',
-                    'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 5')
+                    'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 4, Unrecognised attendance value for 10519C: no at column 7]] at line 5')
 
     def test_upload_incorrect_file_extension(self):
         authenticate_admin(self)
         create_db_props()
         test_upload(self, 'upload_test_wrong_ext.txt', 'code_EEE312 crn_EEE312-1',
-                    'Invalid file type for upload #1. Only csv files are accepted.')
+                    'Invalid file type for upload #1. Only csv, xls, xlsx files are accepted.')
 
     def test_upload_no_file(self):
         authenticate_admin(self)
@@ -83,7 +66,7 @@ class UploadTests(TestCase):
         authenticate_admin(self)
         create_db_props()
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_valid_2.csv'],
-                            ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
+                             ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
                              None)
         validate_multiple_data(self)
 
@@ -94,7 +77,7 @@ class UploadTests(TestCase):
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_invalid.csv'],
                              ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
-                             'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 1, Unrecognised attendance value for 10519C: no at column 4]] at line 5')
+                             'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 4, Unrecognised attendance value for 10519C: no at column 7]] at line 5')
         # make sure the valid file was still uploaded
         self.assertEqual(len(StudentAttendance.objects.all()), 12)
 
@@ -128,6 +111,33 @@ class UploadTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/upload/', status_code=302)
 
 
+def test_upload_valid_data(self, resource_path):
+    authenticate_admin(self)
+    create_db_props()
+
+    # initial check that module is not linked to student
+    self.assertEqual(get_module_student_count('EEE312'), 0)
+    # and that course has no linked modules
+    self.assertEqual(len(get_course_modules('Course Code')), 0)
+
+    test_upload(self, resource_path, 'code_EEE312 crn_EEE312-1', None)
+
+    # post-upload check to assert that upload process linked module with students
+    linked_module = Module.objects.get(module_code='EEE312')
+    self.assertEqual(len(linked_module.students.all()), 2)
+    self.assertEqual(linked_module.students.all()[0].user.username, 'B00123456')
+    self.assertEqual(linked_module.students.all()[1].user.username, 'B00987654')
+
+    # module should now be linked to course that students are part of
+    course_modules = get_course_modules('Course Code')
+    self.assertEqual(len(course_modules), 1)
+    self.assertEqual(course_modules[0], linked_module)
+
+    validate_valid_data(self, False)
+
+    # TODO: assert upload confirmation page
+
+
 def test_upload(self, file_path, module_str, expected_error_msg):
     response = self.client.get(reverse('tool:index'))
     self.assertEqual(response.status_code, 200)
@@ -138,8 +148,9 @@ def test_upload(self, file_path, module_str, expected_error_msg):
     # if no path specified, post without any upload data
     if file_path:
         res_path = os.path.join(this_dir, 'resources', file_path)
-        with open(res_path) as fp:
-            response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp, 'module-0': module_str}, follow=True)
+        with open(res_path, "rb") as fp:
+            response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp, 'module-0': module_str},
+                                        follow=True)
     else:
         response = self.client.post(reverse('tool:upload'), follow=True)
 
@@ -192,7 +203,8 @@ def test_usertype_upload(self, expected_status_code):
 
     res_path = os.path.join(this_dir, 'resources', 'upload_test_valid.csv')
     with open(res_path) as fp:
-        response = self.client.post(reverse('tool:upload'), {'upload-data-0': fp, 'module-0': 'code_EEE312 crn_EEE312-1'},
+        response = self.client.post(reverse('tool:upload'),
+                                    {'upload-data-0': fp, 'module-0': 'code_EEE312 crn_EEE312-1'},
                                     follow=True)
 
     self.assertEqual(response.status_code, expected_status_code)

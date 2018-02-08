@@ -11,7 +11,7 @@ class DownloadTests(TestCase):
         authenticate_admin(self)
         response = test_download(self)
 
-        self.assertEquals(response.get('Content-Disposition'), "inline; filename=upload_example.csv")
+        self.assertEquals(response.get('Content-Disposition'), "inline; filename=upload_example.xlsx")
 
     def test_download_nonexistent_file(self):
         authenticate_admin(self)
@@ -37,7 +37,7 @@ class DownloadTests(TestCase):
 
 
 def test_download(self):
-    path = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.csv')
+    path = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.xlsx')
     return self.client.get(reverse('tool:download', kwargs={'path': path}), follow=True)
 
 

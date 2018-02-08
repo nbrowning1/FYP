@@ -1,53 +1,53 @@
-"Course Attendance Report						",,,,,,
-"Module						",,,,,,
-"Module Code						",,,,,,
-"COM367						",,,,,,
-"						",,,,,,
-Staff,,,,,,
-"Lecturers						",,,,,,
-"e00659586						",,,,,,
-"e00664731						",,,,,,
-"e00665145						",,,,,,
-"e00666080						",,,,,,
-"						",,,,,,
-"Student Attendance						",,,,,,
-Device ID(s),"25/09/2017 
+"Course Attendance Report						",,,,,,,,
+"Module						",,,,,,,,
+"Module Code						",,,,,,,,
+"COM367						",,,,,,,,
+"						",,,,,,,,
+Staff,,,,,,,,
+"Lecturers						",,,,,,,,
+"e00659586						",,,,,,,,
+"e00664731						",,,,,,,,
+"e00665145						",,,,,,,,
+"e00666080						",,,,,,,,
+"						",,,,,,,,
+"Student Attendance						",,,,,,,,
+Device ID(s),Last Name,First Name,"25/09/2017
 170925 1228","26/09/2017 
 EEE122 170926 1138","02/10/2017 
 EEE122 171002 1211","03/10/2017 
 EEE122/3-10-2017 171003 1526","03/10/2017 
 EEE122_Lecture 171003 1010","05/10/2017 
 EEE122/171005 0949"
-"10519D	",N,N,Y,N,Y,N
-"1051A9	",Y,Y,Y,N,Y,N
-"1051A7	",Y,Y,Y,N,Y,N
-"104CB4	",Y,N,Y,Y,Y,N
-"104676	",Y,Y,Y,N,Y,Y
-"104CB5	",Y,Y,Y,N,Y,N
-"1051A5	",Y,Y,N,N,N,N
-"1051A1	",N,N,N,N,Y,N
-"1051B9	",N,N,N,N,Y,N
-"1051AF	",Y,Y,Y,Y,Y,N
-"1051B8	",N,N,Y,N,N,N
-"1051B7	",N,N,Y,N,N,N
-"104CBE	",N,N,N,N,N,N
-"1051B0	",Y,Y,Y,N,N,N
-"105194	",Y,Y,Y,N,N,N
-"105192	",Y,Y,Y,N,Y,N
-"1051B5	",Y,N,Y,N,Y,N
-"104CC0	",Y,Y,Y,N,Y,N
-"105195	",Y,Y,Y,N,Y,N
-"105191	",Y,Y,Y,N,N,Y
-"105193	",Y,N,Y,N,Y,N
-"103F11	",Y,Y,Y,N,Y,Y
-"1052C8	",Y,Y,Y,N,Y,N
-"1052CF	",N,N,N,N,Y,N
-"1052CB	",Y,Y,Y,Y,Y,N
-"1052CA	",Y,Y,Y,N,Y,N
-"105279	",Y,Y,Y,N,Y,N
-"1051B6	",Y,Y,Y,N,Y,N
-"1052C4	",Y,Y,Y,N,Y,N
-"10529E	",Y,Y,Y,N,Y,N
+"10519D	",,,N,N,Y,N,Y,N
+"1051A9	",,,Y,Y,Y,N,Y,N
+"1051A7	",,,Y,Y,Y,N,Y,N
+"104CB4	",,,Y,N,Y,Y,Y,N
+"104676	",,,Y,Y,Y,N,Y,Y
+"104CB5	",,,Y,Y,Y,N,Y,N
+"1051A5	",,,Y,Y,N,N,N,N
+"1051A1	",,,N,N,N,N,Y,N
+"1051B9	",,,N,N,N,N,Y,N
+"1051AF	",,,Y,Y,Y,Y,Y,N
+"1051B8	",,,N,N,Y,N,N,N
+"1051B7	",,,N,N,Y,N,N,N
+"104CBE	",,,N,N,N,N,N,N
+"1051B0	",,,Y,Y,Y,N,N,N
+"105194	",,,Y,Y,Y,N,N,N
+"105192	",,,Y,Y,Y,N,Y,N
+"1051B5	",,,Y,N,Y,N,Y,N
+"104CC0	",,,Y,Y,Y,N,Y,N
+"105195	",,,Y,Y,Y,N,Y,N
+"105191	",,,Y,Y,Y,N,N,Y
+"105193	",,,Y,N,Y,N,Y,N
+"103F11	",,,Y,Y,Y,N,Y,Y
+"1052C8	",,,Y,Y,Y,N,Y,N
+"1052CF	",,,N,N,N,N,Y,N
+"1052CB	",,,Y,Y,Y,Y,Y,N
+"1052CA	",,,Y,Y,Y,N,Y,N
+"105279	",,,Y,Y,Y,N,Y,N
+"1051B6	",,,Y,Y,Y,N,Y,N
+"1052C4	",,,Y,Y,Y,N,Y,N
+"10529E	",,,Y,Y,Y,N,Y,N
 "						",,,,,,
 "						",,,,,,
 "						",,,,,,
