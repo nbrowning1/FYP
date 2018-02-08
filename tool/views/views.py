@@ -67,7 +67,7 @@ def index(request):
         if not is_valid_user:
             return logout_and_redirect_login(request)
 
-    upload_example_filepath = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.csv')
+    upload_example_filepath = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.xlsx')
 
     return render(request, 'tool/index.html', {
         'error_message': error_msg,
@@ -158,7 +158,7 @@ def download(request, path):
 
     if os.path.exists(path):
         with open(path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="text/csv")
+            response = HttpResponse(fh.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
             return response
     raise Http404

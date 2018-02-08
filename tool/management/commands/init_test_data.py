@@ -330,13 +330,27 @@ def load_attendances(self):
     attendance_data_modules.append(Module.objects.get(module_code="BIO922"))
     attendance_data_modules.append(Module.objects.get(module_code="ENG122"))
 
-    for i in range(1, 8):
-        reader = open_file('Attendance_Load_Data_Module' + str(i) + '.csv')
-        response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i-1])
+    attendance_file_names = []
+    attendance_file_names.append('Attendance_Load_Data_Module1.csv')
+    attendance_file_names.append('Attendance_Load_Data_Module2.csv')
+    attendance_file_names.append('Attendance_Load_Data_Module3.csv')
+    attendance_file_names.append('Attendance_Load_Data_Module4.xlsx')
+    attendance_file_names.append('Attendance_Load_Data_Module5.xlsx')
+    attendance_file_names.append('Attendance_Load_Data_Module6.xls')
+    attendance_file_names.append('Attendance_Load_Data_Module7.xls')
+
+    for i, filename in enumerate(attendance_file_names):
+        if filename.endswith("csv"):
+            reader = open_file(filename)
+            response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i-1])
+        else:
+            file_contents = open_xls_file(filename).read()
+            response = DataSaver().save_uploaded_data_excel(file_contents, attendance_data_modules[i-1])
+
         if hasattr(response, 'error'):
             raise CommandError(response.error)
         else:
-            self.stdout.write(self.style.SUCCESS('Loaded attendance for module file ' + str(i)))
+            self.stdout.write(self.style.SUCCESS('Loaded attendance for module file ' + filename))
 
     self.stdout.write(self.style.SUCCESS('Loaded attendances'))
 
@@ -344,3 +358,8 @@ def open_file(filename):
     filepath = os.path.join(os.path.dirname(__file__), '../../test_data/' + filename)
     file = open(filepath)
     return csv.reader(file)
+
+def open_xls_file(filename):
+    filepath = os.path.join(os.path.dirname(__file__), '../../test_data/' + filename)
+    file = open(filepath, "rb")
+    return file
