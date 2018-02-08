@@ -4,7 +4,8 @@ import types
 from django.test import TestCase
 from xlrd import open_workbook
 
-
+# Doesn't actually test any components but is good playground for excel parsing
+# with xlrd
 class ExcelParserTests(TestCase):
     def test_parse_xls(self):
         rows = get_rows('Attendance_Test_xls.xls')
