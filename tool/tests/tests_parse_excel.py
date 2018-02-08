@@ -20,7 +20,9 @@ class ExcelParserTests(TestCase):
 
 
 def get_rows(filename):
-    workbook = open_workbook(get_resource(filename))
+    test = open(get_resource(filename), "rb")
+    contents=test.read()
+    workbook = open_workbook(file_contents=contents)
     sheet = workbook.sheet_by_index(0)
     ret_val = []
     for row_index in range(sheet.nrows):

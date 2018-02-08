@@ -116,17 +116,25 @@ def upload(request):
                 except Module.DoesNotExist:
                     return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(error_index) + ". Please select a module from the list.")
 
-            csv_file = request.FILES['upload-data-' + str(i)]
-            if not (csv_file.name.lower().endswith('.csv')):
-                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(error_index) + ". Only csv files are accepted.")
+            upload_file = request.FILES['upload-data-' + str(i)]
+            comparison_name = upload_file.name.lower()
+            is_csv_file = comparison_name.endswith('.csv')
+            is_excel_file = comparison_name.endswith('.xls') or comparison_name.endswith('.xlsx')
 
-            decoded_file = csv_file.read().decode('utf-8')
-            file_str = io.StringIO(decoded_file)
+            if not (is_csv_file or is_excel_file):
+                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(error_index) + ". Only csv, xls, xlsx files are accepted.")
 
-            reader = csv.reader(file_str)
-            uploaded_data = DataSaver(reader).save_uploaded_data(module)
+            if is_csv_file:
+                decoded_file = upload_file.read().decode('utf-8')
+                file_str = io.StringIO(decoded_file)
+                reader = csv.reader(file_str)
+                uploaded_data = DataSaver().save_uploaded_data_csv(reader, module)
+            else:
+                contents = upload_file.read()
+                uploaded_data = DataSaver().save_uploaded_data_excel(contents, module)
+
             if hasattr(uploaded_data, 'error'):
-                error_msg = 'Error processing file ' + csv_file.name + ': ' + uploaded_data.error
+                error_msg = 'Error processing file ' + upload_file.name + ': ' + uploaded_data.error
                 return redirect_with_error(request, reverse('tool:index'), error_msg)
             saved_data.append(uploaded_data)
 

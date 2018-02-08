@@ -332,7 +332,7 @@ def load_attendances(self):
 
     for i in range(1, 8):
         reader = open_file('Attendance_Load_Data_Module' + str(i) + '.csv')
-        response = DataSaver(reader).save_uploaded_data(attendance_data_modules[i-1])
+        response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i-1])
         if hasattr(response, 'error'):
             raise CommandError(response.error)
         else:
