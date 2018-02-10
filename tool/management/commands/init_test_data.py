@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from tool.models import *
 from tool.upload_data_save import DataSaver
 
+
 class Command(BaseCommand):
     help = 'Initialises test data in the app for development purposes'
 
@@ -75,6 +76,13 @@ class Command(BaseCommand):
             help='Loads attendances - allows only to reload modules if changes are made to load data',
         )
 
+        parser.add_argument(
+            '--load-feedback',
+            action='store_true',
+            dest='load-feedback',
+            help='Loads module feedback - allows only to reload feedback if changes are made to load data',
+        )
+
     def handle(self, *args, **options):
         if options['load-all']:
             load_students(self)
@@ -85,6 +93,7 @@ class Command(BaseCommand):
             load_staff_to_modules(self)
             load_lectures(self)
             load_attendances(self)
+            load_feedback(self)
         else:
             args_supplied = False
             if options['load-students']:
@@ -110,6 +119,9 @@ class Command(BaseCommand):
                 args_supplied = True
             if options['load-attendances']:
                 load_attendances(self)
+                args_supplied = True
+            if options['load-feedback']:
+                load_feedback(self)
                 args_supplied = True
 
             if not args_supplied:
@@ -312,11 +324,13 @@ def load_lectures(self):
         except Lecture.DoesNotExist:
             pass
 
-        self.stdout.write(self.style.SUCCESS("Loading lecture " + data_lecture_sessionid + " for " + module.module_code))
+        self.stdout.write(
+            self.style.SUCCESS("Loading lecture " + data_lecture_sessionid + " for " + module.module_code))
         lecture = Lecture(module=module, date=data_lecture_date, session_id=data_lecture_sessionid)
         lecture.save()
 
     self.stdout.write(self.style.SUCCESS('Loaded lectures'))
+
 
 def load_attendances(self):
     self.stdout.write(self.style.NOTICE('Loading attendances...'))
@@ -342,10 +356,10 @@ def load_attendances(self):
     for i, filename in enumerate(attendance_file_names):
         if filename.endswith("csv"):
             reader = open_file(filename)
-            response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i-1])
+            response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i - 1])
         else:
             file_contents = open_xls_file(filename).read()
-            response = DataSaver().save_uploaded_data_excel(file_contents, attendance_data_modules[i-1])
+            response = DataSaver().save_uploaded_data_excel(file_contents, attendance_data_modules[i - 1])
 
         if hasattr(response, 'error'):
             raise CommandError(response.error)
@@ -354,10 +368,56 @@ def load_attendances(self):
 
     self.stdout.write(self.style.SUCCESS('Loaded attendances'))
 
+
+def load_feedback(self):
+    self.stdout.write(self.style.NOTICE('Loading feedback...'))
+
+    reader = open_file('Module_Feedback_Load_Data.csv')
+
+    for counter, row in enumerate(reader):
+        if counter == 0:
+            continue
+
+        data_module_id = row[0]
+        try:
+            module = Module.objects.get(module_code=data_module_id)
+        except Module.DoesNotExist:
+            raise CommandError('Module "%s" does not exist' % data_module_id)
+
+        data_student_code = row[1]
+        try:
+            student = Student.objects.get(user__username=data_student_code)
+        except Student.DoesNotExist:
+            raise CommandError('Student "%s" does not exist' % data_student_code)
+
+        data_feedback_general = row[2]
+        data_feedback_positive = row[3]
+        data_feedback_constructive = row[4]
+        data_feedback_other = row[5]
+        data_feedback_date = row[6]
+        data_anonymous = True if row[7] == "Y" else False
+
+        self.stdout.write(
+            self.style.SUCCESS("Loading feedback for " + module.module_code + " by " + student.user.username)
+        )
+        feedback = ModuleFeedback(student=student,
+                                  module=module,
+                                  feedback_general=data_feedback_general,
+                                  feedback_positive=data_feedback_positive,
+                                  feedback_constructive=data_feedback_constructive,
+                                  feedback_other=data_feedback_other,
+                                  date=data_feedback_date,
+                                  anonymous=data_anonymous)
+        feedback.save()
+
+    self.stdout.write(self.style.SUCCESS('Loaded feedback'))
+
+
 def open_file(filename):
     filepath = os.path.join(os.path.dirname(__file__), '../../test_data/' + filename)
     file = open(filepath)
     return csv.reader(file)
+
 
 def open_xls_file(filename):
     filepath = os.path.join(os.path.dirname(__file__), '../../test_data/' + filename)

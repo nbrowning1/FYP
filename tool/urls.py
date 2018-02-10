@@ -51,7 +51,9 @@ urlpatterns = [
 
     url(r'^download/(?P<path>.*)$', views.download, name='download'),
 
-    url(r'^modules/(?P<module_id>[0-9]+)$', single_entity_views.module, name='module'),
+    url(r'^modules/(?P<module_id>[0-9]+)/feedback/$', single_entity_views.module, name='module'),
+
+    url(r'^modules/(?P<module_id>[0-9]+)/$', single_entity_views.module, name='module'),
 
     url(r'^courses/(?P<course_id>[0-9]+)$', single_entity_views.course, name='course'),
 

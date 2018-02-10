@@ -130,12 +130,19 @@ i.fa-times {
   cursor: pointer;
 }
 
-.upload-row {
+.upload-row, .feedback-row {
   border: 1px solid #2e6da4;
   border-radius: 15px;
   margin-top: 10px;
 }
 
+.feedback-user {
+  font-style: italic;
+}
+
+.feedback-title {
+  font-weight: bold;
+}
 
 /* Bootstrap overrides */
 @media (min-width: 768px){

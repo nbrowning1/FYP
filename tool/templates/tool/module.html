@@ -3,69 +3,107 @@
 {% block title %}{{ module.module_code }}{% endblock %}
 
 {% block content %}
-    {% if student_attendances %}
-    <div class="link-container">
-        <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
-    </div>
+    <ul class="nav nav-tabs">
+      <li class="active"><a data-toggle="tab" href="#attendance-tab">Attendance</a></li>
+      <li><a data-toggle="tab" href="#feedback-tab">Feedback</a></li>
+    </ul>
 
-    <div id="attendance-container" class="collapse">
-        <br>
-        <table>
-            <tr class="double-header">
-                <th class="double-header-left-cell double-header-right-cell" rowspan="2">Student Code</th>
-                {# can use first here as we're only referring to lecture dates/titles - same for all students #}
-                {% for attendance in student_attendances.0.attendances %}
-                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
-                    <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.date }}</a>
-                </th>
-                {% endfor %}
-                <th class="double-header-right-cell" rowspan="2">% Attended</th>
-            </tr>
-            <tr class="double-header">
-                {% for attendance in student_attendances.0.attendances %}
-                <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
-                    <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.session_id }}</a>
-                </th>
-                {% endfor %}
-            </tr>
-            {% for student_attendance in student_attendances %}
-            {% if forloop.counter|divisibleby:2 %}
-            <tr>
-            {% else %}
-            <tr class="alt">
-            {% endif %}
-            <td><a href="{% url 'tool:student' student_id=student_attendance.student.id %}">{{ student_attendance.student.user.username }}</a></td>
-                {% for attended in student_attendance.attendances %}
-                <td>
-                    {% if attended.attended %}
-                    <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+    <div class="tab-content">
+        <div id="attendance-tab" class="tab-pane fade in active">
+            <br>
+            {% if student_attendances %}
+            <div class="link-container">
+                <a href="#attendance-container" class="btn btn-info" data-toggle="collapse">Attendance</a>
+            </div>
+
+            <div id="attendance-container" class="collapse">
+                <br>
+                <table>
+                    <tr class="double-header">
+                        <th class="double-header-left-cell double-header-right-cell" rowspan="2">Student Code</th>
+                        {# can use first here as we're only referring to lecture dates/titles - same for all students #}
+                        {% for attendance in student_attendances.0.attendances %}
+                        <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                            <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.date }}</a>
+                        </th>
+                        {% endfor %}
+                        <th class="double-header-right-cell" rowspan="2">% Attended</th>
+                    </tr>
+                    <tr class="double-header">
+                        {% for attendance in student_attendances.0.attendances %}
+                        <th {% if forloop.last %} class="double-header-right-cell" {% endif %}>
+                            <a href="{% url 'tool:lecture' lecture_id=attendance.lecture.id %}">{{ attendance.lecture.session_id }}</a>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                    {% for student_attendance in student_attendances %}
+                    {% if forloop.counter|divisibleby:2 %}
+                    <tr>
                     {% else %}
-                    <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+                    <tr class="alt">
                     {% endif %}
-                </td>
-                {% endfor %}
+                    <td><a href="{% url 'tool:student' student_id=student_attendance.student.id %}">{{ student_attendance.student.user.username }}</a></td>
+                        {% for attended in student_attendance.attendances %}
+                        <td>
+                            {% if attended.attended %}
+                            <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+                            {% else %}
+                            <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
 
-                {% if student_attendance.percent_attended < 25 %}
-                <td class="attendance_low">
-                {% elif student_attendance.percent_attended < 50 %}
-                <td class="attendance_midlow">
-                {% elif student_attendance.percent_attended < 75 %}
-                <td class="attendance_midhigh">
+                        {% if student_attendance.percent_attended < 25 %}
+                        <td class="attendance_low">
+                        {% elif student_attendance.percent_attended < 50 %}
+                        <td class="attendance_midlow">
+                        {% elif student_attendance.percent_attended < 75 %}
+                        <td class="attendance_midhigh">
+                        {% else %}
+                        <td class="attendance_high">
+                        {% endif %}
+                            {{ student_attendance.percent_attended|floatformat:2 }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <br>
+            <hr>
+            <br>
+            {{ pie_chart.as_html }}
+            {{ line_chart.as_html }}
+            {% else %}
+            <p>No attendances are available.</p>
+            {% endif %}
+        </div>
+        <div id="feedback-tab" class="tab-pane fade in active">
+            <br>
+            {% if module_feedback %}
+            {% for feedback_item in module_feedback %}
+            <div class="container feedback-row">
+                <br>
+                {% if feedback_item.anonymous %}
+                <p class="feedback-user">Anonymous</p>
                 {% else %}
-                <td class="attendance_high">
+                <p class="feedback-user">{{ feedback_item.student.user.username }}</p>
                 {% endif %}
-                    {{ student_attendance.percent_attended|floatformat:2 }}%
-                </td>
-            </tr>
+                <p class="feedback-date">{{ feedback_item.date }}</p>
+                <hr>
+                <p class="feedback-title">General Feedback</p>
+                <p>{{ feedback_item.feedback_general }}</p>
+                <p class="feedback-title">Positive Feedback</p>
+                <p>{{ feedback_item.feedback_positive }}</p>
+                <p class="feedback-title">Constructive Feedback</p>
+                <p>{{ feedback_item.feedback_constructive }}</p>
+                <p class="feedback-title">Other Feedback</p>
+                <p>{{ feedback_item.feedback_other }}</p>
+            </div>
+            <br>
             {% endfor %}
-        </table>
+            {% else %}
+            <p>No feedback is available.</p>
+            {% endif %}
+        </div>
     </div>
-    <br>
-    <hr>
-    <br>
-    {{ pie_chart.as_html }}
-    {{ line_chart.as_html }}
-    {% else %}
-    <p>No attendances are available.</p>
-    {% endif %}
 {% endblock %}
