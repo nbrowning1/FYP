@@ -31,6 +31,12 @@ class ViewsTests(TestCase):
         response = go_to_module_feedback(self, 1)
         self.assertEqual(response.status_code, 200)
 
+    def test_student_unlinked_module(self):
+        setup_data()
+        authenticate_student(self)
+        response = go_to_module_feedback(self, 2)
+        self.assertEqual(response.status_code, 404)
+
     def test_valid_data(self):
         self.assertEqual(len(get_feedbacks()), 0)
 
