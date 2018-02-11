@@ -136,12 +136,51 @@ i.fa-times {
   margin-top: 10px;
 }
 
+#add-feedback-container {
+  text-align: right;
+}
+
 .feedback-user {
   font-style: italic;
 }
 
 .feedback-title {
   font-weight: bold;
+}
+
+.form-table {
+  margin: 0 auto;
+}
+
+.form-table, .form-table tr {
+  border: none;
+  border-collapse: collapse;
+  outline: none;
+}
+
+.feedback-form-question, textarea.feedback-form-answer {
+  width: 100%;
+  display: block;
+  margin-bottom: 10px;
+}
+
+textarea.feedback-form-answer {
+  resize: none;
+  height: 100px;
+}
+
+#feedback-anonymous-container-outer {
+  text-align: center;
+}
+
+#feedback-anonymous-container-inner {
+  text-align: left;
+  margin: 0 auto;
+  display: table;
+}
+
+.form-error {
+  color: red;
 }
 
 /* Bootstrap overrides */

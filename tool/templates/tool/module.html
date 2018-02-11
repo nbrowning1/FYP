@@ -77,7 +77,13 @@
             <p>No attendances are available.</p>
             {% endif %}
         </div>
-        <div id="feedback-tab" class="tab-pane fade in active">
+        <div id="feedback-tab" class="tab-pane fade in">
+            {% if user_type and user_type == "STUDENT" %}
+            <br>
+            <div id="add-feedback-container">
+                <a class="btn btn-primary" role="button" href="{% url 'tool:module_feedback' module_id=module.id %}">Give Feedback</a>
+            </div>
+            {% endif %}
             <br>
             {% if module_feedback %}
             {% for feedback_item in module_feedback %}

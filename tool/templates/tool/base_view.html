@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
 <script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
+{% block extrascripts %}{% endblock %}
 
 <a href="{% url 'tool:index' %}">Home</a>
 <a class="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>

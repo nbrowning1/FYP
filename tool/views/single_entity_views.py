@@ -35,6 +35,7 @@ def module(request, module_id):
     line_chart = get_module_line_chart(module_data.lecture_attendances, len(module_data.student_attendances))
 
     return render(request, 'tool/module.html', {
+        'user_type': user_type.value,
         'module': module,
         'student_attendances': module_data.student_attendances,
         'module_feedback': module_feedback,

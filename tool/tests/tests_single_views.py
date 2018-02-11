@@ -184,12 +184,15 @@ def test_valid_module_view(self, **kwargs):
         self.assertContains(response, "Student 1 Module 1 Feedback")
         self.assertContains(response, "Student 2 Module 1 Feedback")
         self.assertNotContains(response, "Student 1 Module 2 Feedback")
+        # staff can't give feedback for module
+        self.assertNotContains(response, 'Give Feedback')
     else:
         self.assertNotContains(response, 'B00123456')
         self.assertNotContains(response, 'B00987654')
         self.assertNotContains(response, "Student 1 Module 1 Feedback")
         self.assertContains(response, "Student 2 Module 1 Feedback")
         self.assertNotContains(response, "Student 1 Module 2 Feedback")
+        self.assertContains(response, 'Give Feedback')
     self.assertContains(response, 'Session 1')
     self.assertContains(response, 'Session 2')
     self.assertContains(response, 'Dec. 1, 2017')

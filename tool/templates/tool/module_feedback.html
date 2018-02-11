@@ -1,8 +1,36 @@
+{% extends "tool/base_view.html" %}
 {% load static %}
+{% block extrascripts %}
+<script type="text/javascript" src="{% static 'tool/feedback.js' %}"></script>
+{% endblock %}
 
-link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+{% block title %}{{ module.module_code }} - Feedback{% endblock %}
 
-<a href="{% url 'tool:index' %}">Home</a>
+{% block content %}
 
-<h2>Feedback</h2>
+    <form id="feedback-submit" action="{% url 'tool:module_feedback' module_id=module.id %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <span class="feedback-form-question">How have you found the module so far?</span>
+        <textarea class="feedback-form-answer" name="general-feedback"></textarea>
+        <span class="feedback-form-question">What is the module doing well?</span>
+        <textarea class="feedback-form-answer" name="positive-feedback"></textarea>
+        <span class="feedback-form-question">What would you change about the module to improve your experience?</span>
+        <textarea class="feedback-form-answer" name="constructive-feedback"></textarea>
+        <span class="feedback-form-question">Additional comments</span>
+        <textarea class="feedback-form-answer" name="other-feedback"></textarea>
+
+        <div id="feedback-anonymous-container-outer">
+            <div id="feedback-anonymous-container-inner">
+                <input id="anonymous-no" class="feedback-form-answer" type="radio" name="anonymous" value="not-anonymous">
+                <span>Submit feedback under my name</span>
+                <br>
+                <input id="anonymous-yes" class="feedback-form-answer" type="radio" name="anonymous" value="anonymous">
+                <span >Submit feedback anonymously</span>
+            </div>
+        </div>
+
+        <p class="form-error">{{ error_msg }}</p>
+        <input type="submit" class="btn btn-info" value="Submit">
+    </form>
+
+{% endblock %}
