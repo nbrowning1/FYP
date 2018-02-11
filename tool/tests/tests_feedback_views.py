@@ -78,25 +78,15 @@ class ViewsTests(TestCase):
         self.assertEqual(len(get_feedbacks()), 0)
         self.assertContains(response, 'Feedback should be between 1 and 1000 characters')
 
-    def test_invalid_anonymous_option(self):
-        self.assertEqual(len(get_feedbacks()), 0)
-
-        response = setup_and_submit_feedback(self, 'a', 'b', 'c', 'd',
-                                             'invalid')
-        # should stay on feedback page, not save anything
-        self.assertEqual(response.request['PATH_INFO'], '/tool/modules/1/feedback/')
-        self.assertEqual(len(get_feedbacks()), 0)
-        self.assertContains(response, 'Invalid value for anonymous selection')
-
 
 def setup_and_submit_feedback(self, fbg, fbp, fbc, fbo, anon):
     setup_data()
     authenticate_student(self)
     return self.client.post(get_module_feedback_url(1),
-                            {'general-feedback': fbg,
-                             'positive-feedback': fbp,
-                             'constructive-feedback': fbc,
-                             'other-feedback': fbo,
+                            {'feedback_general': fbg,
+                             'feedback_positive': fbp,
+                             'feedback_constructive': fbc,
+                             'feedback_other': fbo,
                              'anonymous': anon}, follow=True)
 
 

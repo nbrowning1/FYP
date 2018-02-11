@@ -1,8 +1,6 @@
 $(document).ready(function() {
     $('#feedback-submit').submit(function(e) {
         var fields = $(".feedback-form-answer").serializeArray();
-        var radioAnonymousVal = $('input[id=anonymous-no]:checked').val()
-        var radioNonAnonymousVal = $('input[id=anonymous-yes]:checked').val()
 
         var anyEmpty = false;
         var lengthsInvalid = false;
@@ -15,9 +13,6 @@ $(document).ready(function() {
                 lengthsInvalid = true;
             }
         });
-        if (!(radioAnonymousVal || radioNonAnonymousVal)) {
-            anyEmpty = true;
-        }
 
         if (anyEmpty || lengthsInvalid) {
             e.preventDefault();

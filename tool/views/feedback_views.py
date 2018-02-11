@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 
+from tool.forms.forms import ModuleFeedbackForm
 from .views_utils import *
 from ..models import *
 
@@ -27,35 +28,34 @@ def module_feedback(request, module_id):
         raise Http404("Module does not exist")
 
     if request.method == 'POST':
-        feedback_general = request.POST.get("general-feedback")
-        feedback_positive = request.POST.get("positive-feedback")
-        feedback_constructive = request.POST.get("constructive-feedback")
-        feedback_other = request.POST.get("other-feedback")
+        feedback_general = request.POST.get("feedback_general")
+        feedback_positive = request.POST.get("feedback_positive")
+        feedback_constructive = request.POST.get("feedback_constructive")
+        feedback_other = request.POST.get("feedback_other")
         anonymous = request.POST.get("anonymous")
 
-        if not (feedback_general and feedback_positive and feedback_constructive and feedback_other and anonymous):
+        if not (feedback_general and feedback_positive and feedback_constructive and feedback_other):
             return render_with_error(request, module, 'Please fill in all form fields')
         else:
             feedback_texts = [feedback_general, feedback_positive, feedback_constructive, feedback_other]
-            error_msg = validate_feedback_texts(feedback_texts, anonymous)
+            error_msg = validate_feedback_texts(feedback_texts)
             if (error_msg):
                 return render_with_error(request, module, error_msg)
             save_feedback(student, module, feedback_general, feedback_positive, feedback_constructive, feedback_other,
                           anonymous)
             return redirect(reverse('tool:module', kwargs={'module_id': module_id}), Permanent=True)
     else:
+        form = ModuleFeedbackForm()
         return render(request, 'tool/module_feedback.html', {
-            'module': module
+            'module': module,
+            'form': form
         })
 
 
-def validate_feedback_texts(feedback_texts, anonymous):
+def validate_feedback_texts(feedback_texts):
     for feedback_text in feedback_texts:
         if not is_feedback_text_valid(feedback_text):
             return 'Feedback should be between 1 and 1000 characters'
-
-    if not (anonymous == "anonymous" or anonymous == "not-anonymous"):
-        return 'Invalid value for anonymous selection'
 
     return None
 
@@ -67,10 +67,10 @@ def is_feedback_text_valid(text):
 def save_feedback(student, module, feedback_general, feedback_positive, feedback_constructive, feedback_other,
                   anonymous):
     date = datetime.date.today()
-    if anonymous == "not-anonymous":
-        anonymous_val = False
-    else:
+    if anonymous:
         anonymous_val = True
+    else:
+        anonymous_val = False
 
     feedback = ModuleFeedback(student=student, module=module,
                               feedback_general=feedback_general, feedback_positive=feedback_positive,

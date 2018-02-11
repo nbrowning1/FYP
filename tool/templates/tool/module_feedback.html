@@ -7,30 +7,16 @@
 {% block title %}{{ module.module_code }} - Feedback{% endblock %}
 
 {% block content %}
-
-    <form id="feedback-submit" action="{% url 'tool:module_feedback' module_id=module.id %}" method="POST" enctype="multipart/form-data">
+    <form id="feedback-submit" name="feedback-submit" action="{% url 'tool:module_feedback' module_id=module.id %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <span class="feedback-form-question">How have you found the module so far?</span>
-        <textarea class="feedback-form-answer" name="general-feedback"></textarea>
-        <span class="feedback-form-question">What is the module doing well?</span>
-        <textarea class="feedback-form-answer" name="positive-feedback"></textarea>
-        <span class="feedback-form-question">What would you change about the module to improve your experience?</span>
-        <textarea class="feedback-form-answer" name="constructive-feedback"></textarea>
-        <span class="feedback-form-question">Additional comments</span>
-        <textarea class="feedback-form-answer" name="other-feedback"></textarea>
-
-        <div id="feedback-anonymous-container-outer">
-            <div id="feedback-anonymous-container-inner">
-                <input id="anonymous-no" class="feedback-form-answer" type="radio" name="anonymous" value="not-anonymous">
-                <span>Submit feedback under my name</span>
-                <br>
-                <input id="anonymous-yes" class="feedback-form-answer" type="radio" name="anonymous" value="anonymous">
-                <span >Submit feedback anonymously</span>
-            </div>
-        </div>
-
+        <!-- {{ form.as_p }} -->
+        {% for field in form %}
+            <span class="feedback-form-question">{{ field.label }}:</span>
+            {{ field }}
+        {% endfor %}
+        <br>
+        <br>
         <p class="form-error">{{ error_msg }}</p>
         <input type="submit" class="btn btn-info" value="Submit">
     </form>
-
 {% endblock %}
