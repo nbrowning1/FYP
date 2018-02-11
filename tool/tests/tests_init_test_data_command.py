@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils.six import StringIO
 
 from django.contrib.auth.models import User
-from ..models import Student, Staff, Module, Lecture, StudentAttendance
+from ..models import *
 
 
 class InitTestDataTest(TestCase):
@@ -15,6 +15,7 @@ class InitTestDataTest(TestCase):
         self.assertEqual(len(Module.objects.all()), 0)
         self.assertEqual(len(Lecture.objects.all()), 0)
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 0)
 
         call_command('init_test_data', '--load-all')
         self.assertEqual(len(User.objects.all()), 235)
@@ -23,6 +24,7 @@ class InitTestDataTest(TestCase):
         self.assertEqual(len(Module.objects.all()), 7)
         self.assertEqual(len(Lecture.objects.all()), 88)
         self.assertEqual(len(StudentAttendance.objects.all()), 1296)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 13)
 
         # calling command again should only overwrite data, not add anything
         call_command('init_test_data', '--load-all')
@@ -32,6 +34,7 @@ class InitTestDataTest(TestCase):
         self.assertEqual(len(Module.objects.all()), 7)
         self.assertEqual(len(Lecture.objects.all()), 88)
         self.assertEqual(len(StudentAttendance.objects.all()), 1296)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 13)
 
     # testing a command to only load specific data, e.g. students, works
     def test_single_datatype_reload(self):

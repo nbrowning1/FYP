@@ -130,12 +130,56 @@ i.fa-times {
   cursor: pointer;
 }
 
-.upload-row {
+.upload-row, .feedback-row {
   border: 1px solid #2e6da4;
   border-radius: 15px;
   margin-top: 10px;
 }
 
+#add-feedback-container {
+  text-align: right;
+}
+
+.feedback-user {
+  font-style: italic;
+}
+
+.feedback-title, .feedback-answer-display {
+  text-align: left;
+}
+
+.feedback-title {
+  font-weight: bold;
+}
+
+.feedback-answer-display {
+  white-space: pre-wrap;
+}
+
+.feedback-form-question, textarea.feedback-form-answer {
+  width: 100%;
+  display: block;
+  margin-bottom: 10px;
+}
+
+textarea.feedback-form-answer {
+  resize: none;
+  height: 100px;
+}
+
+#feedback-anonymous-container-outer {
+  text-align: center;
+}
+
+#feedback-anonymous-container-inner {
+  text-align: left;
+  margin: 0 auto;
+  display: table;
+}
+
+.form-error {
+  color: red;
+}
 
 /* Bootstrap overrides */
 @media (min-width: 768px){

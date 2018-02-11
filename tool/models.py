@@ -109,3 +109,17 @@ class StudentAttendance(models.Model):
 
     def __str__(self):
         return 'Student attendance for %s for %s attended: %s' % (self.student, self.lecture, self.attended)
+
+
+class ModuleFeedback(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE)
+    feedback_general = models.CharField(max_length=1000)
+    feedback_positive = models.CharField(max_length=1000)
+    feedback_constructive = models.CharField(max_length=1000)
+    feedback_other = models.CharField(max_length=1000, blank=True)
+    date = models.DateField()
+    anonymous = models.BooleanField()
+
+    def __str__(self):
+        return 'Module feedback for %s by student %s' % (self.module, self.student)

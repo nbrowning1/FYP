@@ -9,15 +9,15 @@ from ..models import *
 class SingleModuleViewTests(TestCase):
     def test_single_module_view_admin(self):
         authenticate_admin(self)
-        test_valid_module_view(self, True)
+        test_valid_module_view(self)
 
     def test_single_module_view_staff(self):
         authenticate_staff(self)
-        test_valid_module_view(self, True)
+        test_valid_module_view(self)
 
     def test_single_module_view_student(self):
         this_student = authenticate_student(self)
-        test_valid_module_view(self, False, this_student=this_student)
+        test_valid_module_view(self, this_student=this_student)
 
     def test_module_unauthenticated(self):
         create_module('COM101')
@@ -166,9 +166,11 @@ class SingleLectureViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-def test_valid_module_view(self, should_see_students, **kwargs):
+def test_valid_module_view(self, **kwargs):
+    is_student = False
     if 'this_student' in kwargs:
         setup_data(kwargs['this_student'], None)
+        is_student = True
     else:
         setup_data(None, None)
 
@@ -176,19 +178,28 @@ def test_valid_module_view(self, should_see_students, **kwargs):
     response = go_to_module(self, 1)
     self.assertContains(response, 'COM101')
     self.assertNotContains(response, 'COM102')
-    if should_see_students:
+    if not is_student:
         self.assertNotContains(response, 'B00123456')
         self.assertContains(response, 'B00987654')
+        self.assertContains(response, "Student 1 Module 1 Feedback")
+        self.assertContains(response, "Student 2 Module 1 Feedback")
+        self.assertNotContains(response, "Student 1 Module 2 Feedback")
+        # staff can't give feedback for module
+        self.assertNotContains(response, 'Give Feedback')
     else:
         self.assertNotContains(response, 'B00123456')
         self.assertNotContains(response, 'B00987654')
+        self.assertNotContains(response, "Student 1 Module 1 Feedback")
+        self.assertContains(response, "Student 2 Module 1 Feedback")
+        self.assertNotContains(response, "Student 1 Module 2 Feedback")
+        self.assertContains(response, 'Give Feedback')
     self.assertContains(response, 'Session 1')
     self.assertContains(response, 'Session 2')
     self.assertContains(response, 'Dec. 1, 2017')
 
     # should only see information relating to COM102 module - second created
     response = go_to_module(self, 2)
-    if should_see_students:
+    if not is_student:
         self.assertNotContains(response, 'COM101')
         self.assertContains(response, 'COM102')
         self.assertContains(response, 'No attendances are available.')
@@ -197,6 +208,16 @@ def test_valid_module_view(self, should_see_students, **kwargs):
         self.assertNotContains(response, 'Session 1')
         self.assertNotContains(response, 'Session 2')
         self.assertNotContains(response, 'Dec. 1, 2017')
+        self.assertNotContains(response, "Student 1 Module 1 Feedback")
+        self.assertNotContains(response, "Student 2 Module 1 Feedback")
+        self.assertContains(response, "Student 1 Module 2 Feedback")
+    else:
+        self.assertEqual(response.status_code, 404)
+
+    response = go_to_module(self, 3)
+    if not is_student:
+        self.assertContains(response, 'No attendances are available.')
+        self.assertContains(response, 'No feedback is available.')
     else:
         self.assertEqual(response.status_code, 404)
 
@@ -333,8 +354,9 @@ def test_valid_lecture_view(self, is_student, **kwargs):
 
 def setup_data(this_student, this_lecturer):
     module1 = create_module('COM101')
-    create_module('COM102')
-    create_student('B00123456')
+    module2 = create_module('COM102')
+    create_module('COM103')
+    student1 = create_student('B00123456')
     if this_student:
         student2 = this_student
     else:
@@ -354,6 +376,9 @@ def setup_data(this_student, this_lecturer):
     lecturer1.modules.add(module1)
     create_attendance(student2, lecture1, True)
     create_attendance(student2, lecture2, False)
+    create_feedback(student1, module1, "Student 1 Module 1 Feedback", True)
+    create_feedback(student2, module1, "Student 2 Module 1 Feedback", False)
+    create_feedback(student1, module2, "Student 1 Module 2 Feedback", True)
 
 
 def go_to_module(self, module_id):
@@ -440,3 +465,12 @@ def create_attendance(student, lecture, attended):
     attendance = StudentAttendance(student=student, lecture=lecture, attended=attended)
     attendance.save()
     return attendance
+
+
+def create_feedback(student, module, feedback, anonymous):
+    feedback = ModuleFeedback(student=student, module=module,
+                              feedback_general=feedback, feedback_positive=feedback,
+                              feedback_constructive=feedback, feedback_other=feedback,
+                              date="2017-10-10", anonymous=anonymous)
+    feedback.save()
+    return feedback

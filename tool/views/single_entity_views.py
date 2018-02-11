@@ -29,16 +29,27 @@ def module(request, module_id):
         raise Http404("Module does not exist")
 
     module_data = get_module_data(module, user_type, student)
+    module_feedback = get_module_feedback(module, student)
 
     pie_chart = get_attendance_pie_chart_from_percentages(module_data.student_attendances, 'Module Attendance Overview')
     line_chart = get_module_line_chart(module_data.lecture_attendances, len(module_data.student_attendances))
 
     return render(request, 'tool/module.html', {
+        'user_type': user_type.value,
         'module': module,
         'student_attendances': module_data.student_attendances,
+        'module_feedback': module_feedback,
         'pie_chart': pie_chart,
         'line_chart': line_chart
     })
+
+
+def get_module_feedback(module, student):
+    # order by date descending - we'll want to see the newest feedback first
+    if student:
+        return ModuleFeedback.objects.filter(module=module, student=student).order_by('-date')
+    else:
+        return  ModuleFeedback.objects.filter(module=module).order_by('-date')
 
 
 def get_module_line_chart(lecture_attendances, num_students):
