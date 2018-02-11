@@ -144,18 +144,16 @@ i.fa-times {
   font-style: italic;
 }
 
+.feedback-title, .feedback-answer-display {
+  text-align: left;
+}
+
 .feedback-title {
   font-weight: bold;
 }
 
-.form-table {
-  margin: 0 auto;
-}
-
-.form-table, .form-table tr {
-  border: none;
-  border-collapse: collapse;
-  outline: none;
+.feedback-answer-display {
+  white-space: pre-wrap;
 }
 
 .feedback-form-question, textarea.feedback-form-answer {

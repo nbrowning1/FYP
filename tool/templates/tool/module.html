@@ -97,13 +97,17 @@
                 <p class="feedback-date">{{ feedback_item.date }}</p>
                 <hr>
                 <p class="feedback-title">General Feedback</p>
-                <p>{{ feedback_item.feedback_general }}</p>
+                <p class="feedback-answer-display">{{ feedback_item.feedback_general }}</p>
                 <p class="feedback-title">Positive Feedback</p>
-                <p>{{ feedback_item.feedback_positive }}</p>
+                <p class="feedback-answer-display">{{ feedback_item.feedback_positive }}</p>
                 <p class="feedback-title">Constructive Feedback</p>
-                <p>{{ feedback_item.feedback_constructive }}</p>
+                <p class="feedback-answer-display">{{ feedback_item.feedback_constructive }}</p>
                 <p class="feedback-title">Other Feedback</p>
-                <p>{{ feedback_item.feedback_other }}</p>
+                {% if feedback_item.feedback_other %}
+                <p class="feedback-answer-display">{{ feedback_item.feedback_other }}</p>
+                {% else %}
+                <p class="feedback-answer-display">N/A</p>
+                {% endif %}
             </div>
             <br>
             {% endfor %}

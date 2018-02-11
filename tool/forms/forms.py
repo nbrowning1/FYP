@@ -1,10 +1,8 @@
-from django.forms import ModelForm
 from django import forms
+from django.forms import ModelForm
 
 from tool.models import *
 
-ANONTMOUS_CHOICES = (('1', 'Submit feedback under my name'),
-                     ('2', 'Submit feedback anonymously'))
 
 class ModuleFeedbackForm(ModelForm):
     class Meta:
@@ -18,7 +16,7 @@ class ModuleFeedbackForm(ModelForm):
             'anonymous': 'Submit feedback anonymously',
         }
         widgets = {
-            'feedback_general': forms.Textarea( attrs={'class': 'feedback-form-answer'}),
+            'feedback_general': forms.Textarea(attrs={'class': 'feedback-form-answer'}),
             'feedback_positive': forms.Textarea(attrs={'class': 'feedback-form-answer'}),
             'feedback_constructive': forms.Textarea(attrs={'class': 'feedback-form-answer'}),
             'feedback_other': forms.Textarea(attrs={'class': 'feedback-form-answer'}),

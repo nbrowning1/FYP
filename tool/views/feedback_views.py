@@ -34,10 +34,13 @@ def module_feedback(request, module_id):
         feedback_other = request.POST.get("feedback_other")
         anonymous = request.POST.get("anonymous")
 
-        if not (feedback_general and feedback_positive and feedback_constructive and feedback_other):
+        if not (feedback_general and feedback_positive and feedback_constructive):
             return render_with_error(request, module, 'Please fill in all form fields')
         else:
-            feedback_texts = [feedback_general, feedback_positive, feedback_constructive, feedback_other]
+            feedback_texts = [feedback_general,
+                              feedback_positive,
+                              feedback_constructive,
+                              feedback_other]
             error_msg = validate_feedback_texts(feedback_texts)
             if (error_msg):
                 return render_with_error(request, module, error_msg)
@@ -61,7 +64,7 @@ def validate_feedback_texts(feedback_texts):
 
 
 def is_feedback_text_valid(text):
-    return 0 < len(text) <= 1000
+    return len(text) <= 1000
 
 
 def save_feedback(student, module, feedback_general, feedback_positive, feedback_constructive, feedback_other,

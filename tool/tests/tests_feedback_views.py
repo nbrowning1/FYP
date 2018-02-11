@@ -33,9 +33,10 @@ class ViewsTests(TestCase):
 
     def test_valid_data(self):
         self.assertEqual(len(get_feedbacks()), 0)
+
+        # WITH 'other' feedback, anonymous
         response = setup_and_submit_feedback(self, 'Test General', 'Test Positive', 'Test Constructive', 'Test Other',
                                              'anonymous')
-
         # should redirect back to the module page
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.request['PATH_INFO'], '/tool/modules/1')
@@ -48,6 +49,23 @@ class ViewsTests(TestCase):
         self.assertEqual(feedback.feedback_constructive, 'Test Constructive')
         self.assertEqual(feedback.feedback_other, 'Test Other')
         self.assertEqual(feedback.anonymous, True)
+        self.assertEqual(feedback.date, datetime.date.today())
+
+        # WITHOUT 'other' feedback, not anonymous
+        response = setup_and_submit_feedback(self, 'Test General', 'Test Positive', 'Test Constructive', '',
+                                             '')
+        # should redirect back to the module page
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request['PATH_INFO'], '/tool/modules/1')
+        self.assertEqual(len(get_feedbacks()), 2)
+        feedback = get_feedbacks()[1]
+        self.assertEqual(feedback.student.user.username, 'authteststudent')
+        self.assertEqual(feedback.module.module_code, 'COM101')
+        self.assertEqual(feedback.feedback_general, 'Test General')
+        self.assertEqual(feedback.feedback_positive, 'Test Positive')
+        self.assertEqual(feedback.feedback_constructive, 'Test Constructive')
+        self.assertEqual(feedback.feedback_other, '')
+        self.assertEqual(feedback.anonymous, False)
         self.assertEqual(feedback.date, datetime.date.today())
 
     def test_empty_data(self):

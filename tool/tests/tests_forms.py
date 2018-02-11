@@ -7,11 +7,10 @@ class ModuleFeedbackFormTests(TestCase):
         data = {}
         form = ModuleFeedbackForm(data=data)
         self.assertFalse(form.is_valid())
-        self.assertEquals(len(form.errors), 4)
+        self.assertEquals(len(form.errors), 3)
         self.assertEquals(form.errors['feedback_general'], ['This field is required.'])
         self.assertEquals(form.errors['feedback_positive'], ['This field is required.'])
         self.assertEquals(form.errors['feedback_constructive'], ['This field is required.'])
-        self.assertEquals(form.errors['feedback_other'], ['This field is required.'])
 
     def test_valid_form(self):
         data = {'feedback_general': 'feedback',

@@ -1,6 +1,6 @@
 $(document).ready(function() {
     $('#feedback-submit').submit(function(e) {
-        var fields = $(".feedback-form-answer").serializeArray();
+        var fields = $(".feedback-form-answer:not(#id_feedback_other)").serializeArray();
 
         var anyEmpty = false;
         var lengthsInvalid = false;

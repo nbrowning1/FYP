@@ -117,7 +117,7 @@ class ModuleFeedback(models.Model):
     feedback_general = models.CharField(max_length=1000)
     feedback_positive = models.CharField(max_length=1000)
     feedback_constructive = models.CharField(max_length=1000)
-    feedback_other = models.CharField(max_length=1000)
+    feedback_other = models.CharField(max_length=1000, blank=True)
     date = models.DateField()
     anonymous = models.BooleanField()
 
