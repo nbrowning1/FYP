@@ -176,6 +176,10 @@ def get_email_details(self, time_period, modules, to_date_override, student):
         module_data.module_code = module.module_code
         module_data.module_crn = module.module_crn
         module_data.module_data = module.get_data(from_date, to_date, student)
+        module_data.warning_students_data = []
+        for student_attendance in module_data.module_data.student_attendances:
+            if student_attendance.attendance < 50:
+                module_data.warning_students_data.append(student_attendance)
 
         email_details.modules.append(module_data)
 
@@ -195,7 +199,6 @@ def get_from_date(self, today, time_period):
 
 def send_email(self, email_details, connection, test_only):
     plaintext = get_template('emails/attendance_report.txt')
-    html = get_template('emails/attendance_report.html')
 
     email_subject = 'Attendance report'
 
@@ -210,10 +213,8 @@ def send_email(self, email_details, connection, test_only):
     }
 
     text_content = plaintext.render(context_dict)
-    html_content = html.render(context_dict)
 
     email = EmailMultiAlternatives(email_subject, text_content, from_email, [to_email], connection=connection)
-    email.attach_alternative(html_content, "text/html")
 
     if not test_only:
         email.send()

@@ -21,14 +21,16 @@ class EmailAttendanceReportTest(TestCase):
 
         # should only see module containing lectures for this week (COM202)
         self.assertNotIn('COM101', mail.outbox[0].body)
-        self.assertIn('COM202 - COM202-1: 75.0% Attendance', mail.outbox[0].body)
+        self.assertIn('COM202 - COM202-1: 50.00% Attendance', mail.outbox[0].body)
 
         # should only see lectures for that module in this week
         self.assertNotIn('id1', mail.outbox[0].body)
         self.assertNotIn('id2', mail.outbox[0].body)
         today_str = get_django_template_format_date(get_today_date())
-        self.assertIn('id3 -- {}: 50.0% Attendance'.format(today_str), mail.outbox[0].body)
-        self.assertIn('id4 -- {}: 100.0% Attendance'.format(today_str), mail.outbox[0].body)
+        self.assertIn('id3 -- {}: 50.00% Attendance'.format(today_str), mail.outbox[0].body)
+        self.assertIn('id4 -- {}: 50.00% Attendance'.format(today_str), mail.outbox[0].body)
+        self.assertIn('Warning students', mail.outbox[0].body)
+        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
 
     def test_admin_monthly_report(self):
         setup_test_data_monthly()
@@ -40,15 +42,17 @@ class EmailAttendanceReportTest(TestCase):
         self.assertEqual(mail.outbox[0].to[0], 'user1@mail.com')
         print(mail.outbox[0].body)
 
-        self.assertIn('COM101 - COM101-1: 100.0% Attendance', mail.outbox[0].body)
-        self.assertIn('COM202 - COM202-1: 50.0% Attendance', mail.outbox[0].body)
+        self.assertIn('COM101 - COM101-1: 100.00% Attendance', mail.outbox[0].body)
+        self.assertIn('COM202 - COM202-1: 33.33% Attendance - ** Low Attendance Warning **', mail.outbox[0].body)
 
         first_date_str = get_django_template_format_date(get_monthly_first_date())
         second_date_str = get_django_template_format_date(get_monthly_second_date())
-        self.assertIn('id1 -- {}: 100.0% Attendance'.format(first_date_str), mail.outbox[0].body)
-        self.assertIn('id2 -- {}: 0.0% Attendance'.format(first_date_str), mail.outbox[0].body)
-        self.assertIn('id3 -- {}: 50.0% Attendance'.format(second_date_str), mail.outbox[0].body)
-        self.assertIn('id4 -- {}: 100.0% Attendance'.format(second_date_str), mail.outbox[0].body)
+        self.assertIn('id1 -- {}: 100.00% Attendance'.format(first_date_str), mail.outbox[0].body)
+        self.assertIn('id2 -- {}: 0.00% Attendance'.format(first_date_str), mail.outbox[0].body)
+        self.assertIn('id3 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
+        self.assertIn('id4 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
+        self.assertIn('Warning students', mail.outbox[0].body)
+        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
 
     def test_staff_report(self):
         setup_test_data_weekly()
@@ -67,10 +71,12 @@ class EmailAttendanceReportTest(TestCase):
         self.assertNotIn('id1', lecturer1_email_body)
         self.assertNotIn('id2', lecturer1_email_body)
         today_str = get_django_template_format_date(get_today_date())
-        self.assertIn('id3 -- {}: 50.0% Attendance'.format(today_str), lecturer1_email_body)
-        self.assertIn('id4 -- {}: 100.0% Attendance'.format(today_str), lecturer1_email_body)
+        self.assertIn('id3 -- {}: 50.00% Attendance'.format(today_str), lecturer1_email_body)
+        self.assertIn('id4 -- {}: 50.00% Attendance'.format(today_str), lecturer1_email_body)
         self.assertNotIn('COM101', lecturer1_email_body)
-        self.assertIn('COM202 - COM202-1: 75.0% Attendance', lecturer1_email_body)
+        self.assertIn('COM202 - COM202-1: 50.00% Attendance', lecturer1_email_body)
+        self.assertIn('Warning students', mail.outbox[0].body)
+        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
 
 
     def test_student_report(self):
@@ -95,7 +101,8 @@ class EmailAttendanceReportTest(TestCase):
         self.assertNotIn('id3', student1_email_body)
         self.assertNotIn('id4', student1_email_body)
         self.assertNotIn('COM101', student1_email_body)
-        self.assertIn('COM202 - COM202-1: 100.0% Attendance', student1_email_body)
+        self.assertIn('COM202 - COM202-1: 100.00% Attendance', student1_email_body)
+        self.assertNotIn('Warning students', student1_email_body)
 
         student2_email_body = mail.outbox[1].body
         self.assertNotIn('id1', student2_email_body)
@@ -103,7 +110,8 @@ class EmailAttendanceReportTest(TestCase):
         self.assertNotIn('id3', student2_email_body)
         self.assertNotIn('id4', student2_email_body)
         self.assertNotIn('COM101', student2_email_body)
-        self.assertIn('COM202 - COM202-1: 50.0% Attendance', student2_email_body)
+        self.assertIn('COM202 - COM202-1: 0.00% Attendance', student2_email_body)
+        self.assertNotIn('Warning students', student2_email_body)
 
     def test_all_report(self):
         setup_test_data_weekly()
@@ -199,7 +207,7 @@ def setup_test_data(first_date, second_date):
     lecturer2 = Staff(user=User.objects.create_user(username='teststaff2', email='teststaff2@mail.com'))
     lecturer2.save()
 
-    # lecture1 = 100% attendance, lecture2 = 0%, lecture3 = 50%, lecture4 = 100%
+    # lecture1 = 100% attendance, lecture2 = 0%, lecture3 = 50%, lecture4 = 50%
     StudentAttendance(student=student1, lecture=lecture1, attended=True).save()
     StudentAttendance(student=student1, lecture=lecture2, attended=False).save()
     StudentAttendance(student=student1, lecture=lecture3, attended=True).save()
@@ -208,7 +216,4 @@ def setup_test_data(first_date, second_date):
     StudentAttendance(student=student2, lecture=lecture1, attended=True).save()
     StudentAttendance(student=student2, lecture=lecture2, attended=False).save()
     StudentAttendance(student=student2, lecture=lecture3, attended=False).save()
-    StudentAttendance(student=student2, lecture=lecture4, attended=True).save()
-
-
-    # shouldn't see any of these
+    StudentAttendance(student=student2, lecture=lecture4, attended=False).save()

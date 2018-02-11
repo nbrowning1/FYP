@@ -4,12 +4,17 @@ Your attendance report for {{ from_date }} to {{ to_date }}:
 Modules:
 --------
 {% for module in modules %} {% if module.module_data.lecture_attendances %}
-{{ module.module_code }} - {{ module.module_crn }}: {{ module.module_data.attendance }}% Attendance
+{{ module.module_code }} - {{ module.module_crn }}: {{ module.module_data.attendance|floatformat:2 }}% Attendance{% if module.module_data.attendance < 50 %} - ** Low Attendance Warning **{%endif%}
 {% if not is_student %}
     Lectures:
     ---------
-    {% for lecture_data in module.module_data.lecture_attendances %}{{ lecture_data.lecture.session_id }} -- {{ lecture_data.lecture.date }}: {{ lecture_data.attendance }}% Attendance
+    {% for lecture_data in module.module_data.lecture_attendances %}{{ lecture_data.lecture.session_id }} -- {{ lecture_data.lecture.date }}: {{ lecture_data.attendance|floatformat:2 }}% Attendance
     {% endfor %}
+    {% if module.warning_students_data %}
+    Warning students:
+    -----------------
+    {% for student_attendance in module.warning_students_data %}{{ student_attendance.student.user.username }} - {{ student_attendance.attendance|floatformat:2 }}% Attendance{% endfor %}
+    {% endif %}
 {% endif %}
 {% endif %} {% endfor %}
 {% else %}

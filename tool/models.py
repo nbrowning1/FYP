@@ -1,4 +1,5 @@
 import types
+from collections import OrderedDict
 
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
@@ -38,21 +39,24 @@ class Module(models.Model):
             lectures = Lecture.objects.filter(module=self)
 
         lecture_attendances = []
+        student_total_attendances = OrderedDict()
         for lecture in lectures:
             if student:
                 attendances = StudentAttendance.objects.filter(lecture=lecture, student=student) \
                     .order_by('lecture__date')
             else:
                 attendances = StudentAttendance.objects.filter(lecture=lecture) \
-                    .order_by('lecture__date')
+                    .order_by('student', 'lecture__date')
 
             if not attendances:
                 continue
 
             total_attendance = 0
             for attendance in attendances:
+                student_total_attendances.setdefault(attendance.student, 0)
                 if attendance.attended:
                     total_attendance += 1
+                    student_total_attendances[attendance.student] += 1
 
             attended_percent = (total_attendance / len(attendances)) * 100 \
                 if (len(attendances) > 0) else 0
@@ -63,13 +67,20 @@ class Module(models.Model):
             lecture_attendance.attendance = attended_percent
             lecture_attendances.append(lecture_attendance)
 
+        attendance_percent = 0
+        student_attendances = []
         if len(lecture_attendances) > 0:
-            attendance_overall = attendance_overall / len(lecture_attendances)
+            attendance_percent = attendance_overall / len(lecture_attendances)
+            for k, v in student_total_attendances.items():
+                student_attendance = types.SimpleNamespace()
+                student_attendance.student = k
+                student_attendance.attendance = (v / len(lecture_attendances)) * 100
+                student_attendances.append(student_attendance)
 
         data = types.SimpleNamespace()
         data.lecture_attendances = lecture_attendances
-        data.attendance = attendance_overall
-
+        data.attendance = attendance_percent
+        data.student_attendances = student_attendances
         return data
 
     def __str__(self):
