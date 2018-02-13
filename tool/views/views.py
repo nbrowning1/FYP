@@ -102,19 +102,22 @@ def upload(request):
             module = None
             module_str = request.POST.get("module-" + str(i))
             if not module_str:
-                return redirect_to_home_with_error(request, "No module selected for upload #" + str(error_index) + ". Please select a module from the list.")
+                return redirect_to_home_with_error(request, "No module selected for upload #" + str(
+                    error_index) + ". Please select a module from the list.")
             else:
                 try:
                     code = module_str.split("code_")[1].split("crn_")[0].strip()
                     crn = module_str.split("crn_")[1].strip()
                 except Exception:
                     return redirect_to_home_with_error(request,
-                                                       "Invalid module selection for upload #" + str(error_index) + ". Please select a module from the list.")
+                                                       "Invalid module selection for upload #" + str(
+                                                           error_index) + ". Please select a module from the list.")
 
                 try:
                     module = Module.objects.get(module_code=code, module_crn=crn)
                 except Module.DoesNotExist:
-                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(error_index) + ". Please select a module from the list.")
+                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(
+                        error_index) + ". Please select a module from the list.")
 
             upload_file = request.FILES['upload-data-' + str(i)]
             comparison_name = upload_file.name.lower()
@@ -122,7 +125,8 @@ def upload(request):
             is_excel_file = comparison_name.endswith('.xls') or comparison_name.endswith('.xlsx')
 
             if not (is_csv_file or is_excel_file):
-                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(error_index) + ". Only csv, xls, xlsx files are accepted.")
+                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(
+                    error_index) + ". Only csv, xls, xlsx files are accepted.")
 
             if is_csv_file:
                 decoded_file = upload_file.read().decode('utf-8')
@@ -158,7 +162,8 @@ def download(request, path):
 
     if os.path.exists(path):
         with open(path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response = HttpResponse(fh.read(),
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
             return response
     raise Http404
@@ -166,7 +171,28 @@ def download(request, path):
 
 @login_required
 def settings(request):
-    return render(request, 'tool/settings.html')
+    saved_settings = get_settings(request)
+    if request.method == 'POST':
+        colourblind_opts_set = False
+        if request.POST.get("colourblind-opts"):
+            colourblind_opts_set = True
+
+        saved_settings.colourblind_opts_on = colourblind_opts_set
+        saved_settings.save()
+        return redirect(reverse('tool:settings'), Permanent=True)
+
+    return render(request, 'tool/settings.html', {
+        'saved_settings': saved_settings
+    })
+
+
+def get_settings(request):
+    try:
+        return Settings.objects.get(user=request.user)
+    except Settings.DoesNotExist:
+        settings = Settings(user=request.user)
+        settings.save()
+        return settings
 
 
 @login_required

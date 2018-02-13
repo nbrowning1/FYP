@@ -134,3 +134,11 @@ class ModuleFeedback(models.Model):
 
     def __str__(self):
         return 'Module feedback for %s by student %s' % (self.module, self.student)
+
+
+class Settings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    colourblind_opts_on = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'Settings for user %s' % self.user.username

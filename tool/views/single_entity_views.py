@@ -31,7 +31,7 @@ def module(request, module_id):
     module_data = get_module_data(module, user_type, student)
     module_feedback = get_module_feedback(module, student)
 
-    pie_chart = get_attendance_pie_chart_from_percentages(module_data.student_attendances, 'Module Attendance Overview')
+    pie_chart = get_attendance_pie_chart_from_percentages(request, module_data.student_attendances, 'Module Attendance Overview')
     line_chart = get_module_line_chart(module_data.lecture_attendances, len(module_data.student_attendances))
 
     return render(request, 'tool/module.html', {
@@ -40,7 +40,8 @@ def module(request, module_id):
         'student_attendances': module_data.student_attendances,
         'module_feedback': module_feedback,
         'pie_chart': pie_chart,
-        'line_chart': line_chart
+        'line_chart': line_chart,
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
     })
 
 
@@ -98,7 +99,7 @@ def course(request, course_id):
         module_attendance.percent_attended = get_attendance_percentage(module_data.student_attendances)
         module_attendances.append(module_attendance)
 
-    pie_chart = get_attendance_pie_chart_from_percentages(module_attendances, 'Course Attendance Overview')
+    pie_chart = get_attendance_pie_chart_from_percentages(request, module_attendances, 'Course Attendance Overview')
 
     return render(request, 'tool/course.html', {
         'course': course,
@@ -170,7 +171,7 @@ def lecturer(request, lecturer_id):
         module_attendance.percent_attended = percent_attended
         module_attendances.append(module_attendance)
 
-    pie_chart = get_attendance_pie_chart_from_percentages(module_attendances, 'Modules Attendance Overview')
+    pie_chart = get_attendance_pie_chart_from_percentages(request, module_attendances, 'Modules Attendance Overview')
     bar_chart = get_lecturer_bar_chart(module_attendances)
 
     return render(request, 'tool/lecturer.html', {
@@ -233,12 +234,13 @@ def student(request, student_id):
                 student_module_attendance.attendances)) * 100
         student_module_attendances.append(student_module_attendance)
 
-    pie_chart = get_attendance_pie_chart_from_percentages(student_module_attendances, 'Module Attendance Overview')
+    pie_chart = get_attendance_pie_chart_from_percentages(request, student_module_attendances, 'Module Attendance Overview')
 
     return render(request, 'tool/student.html', {
         'student': student,
         'student_module_attendances': student_module_attendances,
-        'pie_chart': pie_chart
+        'pie_chart': pie_chart,
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
     })
 
 
@@ -263,19 +265,20 @@ def lecture(request, lecture_id):
         lecture_attendances = StudentAttendance.objects.filter(lecture__in=[lecture]).order_by('student',
                                                                                                'lecture__date')
 
-    pie_chart = get_attendance_pie_chart_from_absolute_vals(lecture_attendances, 'Lecture Attendance Overview')
+    pie_chart = get_attendance_pie_chart_from_absolute_vals(request, lecture_attendances, 'Lecture Attendance Overview')
 
     return render(request, 'tool/lecture.html', {
         'lecture': lecture,
         'lecture_attendances': lecture_attendances,
-        'pie_chart': pie_chart
+        'pie_chart': pie_chart,
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
     })
 
 
-def get_attendance_pie_chart_from_percentages(attendances, title):
+def get_attendance_pie_chart_from_percentages(request, attendances, title):
     attended_percent = get_attendance_percentage(attendances)
     non_attended_percent = 100 - attended_percent
-    return build_attendance_pie_chart(attended_percent, non_attended_percent, title)
+    return build_attendance_pie_chart(request, attended_percent, non_attended_percent, title)
 
 
 def get_attendance_percentage(attendances):
@@ -288,7 +291,7 @@ def get_attendance_percentage(attendances):
     return attended_percent
 
 
-def get_attendance_pie_chart_from_absolute_vals(attendances, title):
+def get_attendance_pie_chart_from_absolute_vals(request, attendances, title):
     total_attendance = 0
     for attendance in attendances:
         if attendance.attended:
@@ -297,10 +300,10 @@ def get_attendance_pie_chart_from_absolute_vals(attendances, title):
     attended_percent = (total_attendance / len(attendances)) * 100 \
         if (len(attendances) > 0) else 0
     non_attended_percent = 100 - attended_percent
-    return build_attendance_pie_chart(attended_percent, non_attended_percent, title)
+    return build_attendance_pie_chart(request, attended_percent, non_attended_percent, title)
 
 
-def build_attendance_pie_chart(attended_percent, non_attended_percent, title):
+def build_attendance_pie_chart(request, attended_percent, non_attended_percent, title):
     # data format:
     #  data =  [
     #    ...[ Title, Value ]
@@ -310,7 +313,7 @@ def build_attendance_pie_chart(attended_percent, non_attended_percent, title):
     attendance_data = ['Attended', attended_percent]
     non_attendance_data = ['Absent', non_attended_percent]
     chart_data = [title_data, non_attendance_data, attendance_data]
+    colors = ViewsUtils().get_pass_fail_colours_2_tone(request)
 
-    # red colour for absent, green for present
     return PieChart(SimpleDataSource(data=chart_data),
-                    options={'title': title, 'pieHole': 0.4, 'colors': ['#e74c3c', '#2ecc71']})
+                    options={'title': title, 'pieHole': 0.4, 'colors': colors})

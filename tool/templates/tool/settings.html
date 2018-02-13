@@ -1,10 +1,24 @@
-{% load static %}
+{% extends "tool/base_view.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
+{% block title %}Settings{% endblock %}
 
-<a href="{% url 'tool:index' %}">Home</a>
+{% block content %}
+<h2>Accessibility</h2>
+<form id="settings-submit" name="settings-submit" action="{% url 'tool:settings' %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>Colourblind aid:</p>
+    {% if saved_settings and saved_settings.colourblind_opts_on %}
+    <input type="checkbox" name="colourblind-opts" checked>
+    {% else %}
+    <input type="checkbox" name="colourblind-opts">
+    {% endif %}
+    <br>
+    <br>
+    <input type="submit" class="btn btn-info" value="Save">
+</form>
 
-<h2>Settings</h2>
-<br>
+<hr>
+
+<h2>Account</h2>
 <a class="setting" href="{% url 'tool:password_change' %}">Change Password</a>
+{% endblock %}

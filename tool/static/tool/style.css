@@ -93,14 +93,6 @@ table {
   align-self: center;
 }
 
-i.fa-check {
-  color: green;
-}
-
-i.fa-times {
-  color: darkred;
-}
-
 .setting, #reset-password, .centre-link {
   display: block;
 }

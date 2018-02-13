@@ -39,9 +39,9 @@
                             {% for attended in student_module_attendance.attendances %}
                             <td>
                                 {% if attended.attended %}
-                                <i class="fa fa-check fa-lg" aria-hidden="true"></i>
+                                <i class="fa fa-check fa-lg" style="color: {{ colours.1 }};" aria-hidden="true"></i>
                                 {% else %}
-                                <i class="fa fa-times fa-lg" aria-hidden="true"></i>
+                                <i class="fa fa-times fa-lg" style="color: {{ colours.0 }};" aria-hidden="true"></i>
                                 {% endif %}
                             </td>
                             {% endfor %}

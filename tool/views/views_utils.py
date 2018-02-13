@@ -13,6 +13,13 @@ class UserType(Enum):
     STUDENT_TYPE = "STUDENT"
 
 
+class Colours(Enum):
+    GREEN = '#2ecc71'
+    RED = '#e74c3c'
+    BLUE = '#2980b9'
+    ORANGE = '#d35400'
+
+
 VALID_TYPES = [UserType.ADMIN_TYPE, UserType.STAFF_TYPE, UserType.STUDENT_TYPE]
 
 
@@ -38,6 +45,20 @@ class ViewsUtils():
     def check_valid_user(user_type, request):
         if not user_type in VALID_TYPES:
             logout_and_redirect_login(request)
+
+    # return array of 2 colours - [ fail_colour, pass_colour ] e.g. red, green
+    def get_pass_fail_colours_2_tone(self, request):
+        if self.colourblind_options_on(request):
+            return [Colours.ORANGE.value, Colours.BLUE.value]
+        else:
+            return [Colours.RED.value, Colours.GREEN.value]
+
+    def colourblind_options_on(self, request):
+        try:
+            settings = Settings.objects.get(user=request.user)
+            return settings.colourblind_opts_on
+        except Settings.DoesNotExist:
+            return False
 
 
 def logout_and_redirect_login(request):
