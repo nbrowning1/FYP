@@ -1,10 +1,14 @@
 {% extends "tool/base_view.html" %}
+{% block extrascripts %}
+{% load static %}
+<script type="text/javascript" src="{% static 'tool/settings.js' %}"></script>
+{% endblock %}
 
 {% block title %}Settings{% endblock %}
 
 {% block content %}
 <h2>Accessibility</h2>
-<form id="settings-submit" name="settings-submit" action="{% url 'tool:settings' %}" method="POST" enctype="multipart/form-data">
+<form action="{% url 'tool:settings' %}" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <p>Colourblind aid:</p>
     {% if saved_settings and saved_settings.colourblind_opts_on %}
@@ -14,7 +18,61 @@
     {% endif %}
     <br>
     <br>
-    <input type="submit" class="btn btn-info" value="Save">
+    <input name="accessibility-submit" type="submit" class="btn btn-info" value="Save">
+</form>
+
+<hr>
+
+<h2>Attendance</h2>
+<form action="{% url 'tool:settings' %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>Specify attendance ranges for colour-coded attendance values</p>
+    <table class="noborder">
+        <tr>
+            <td>
+                <span>Range 1 (very low):</span>
+            </td>
+            <td>
+                <span>0 - </span>
+                <input value="{{ saved_settings.attendance_range_1_cap }}" class="attendance-range" type="text" id="attendance-range-1" name="attendance-range-1" maxlength="2" size="2">
+            </td>
+        </tr>
+        <tr>
+        <td>
+            <span>Range 2 (low): </span>
+            </td>
+            <td>
+                <span id="attendance-range-1-val">{{ saved_settings.attendance_range_1_cap }}</span>
+                <span> - </span>
+                <input value="{{ saved_settings.attendance_range_2_cap }}" class="attendance-range" type="text" id="attendance-range-2" name="attendance-range-2" maxlength="2" size="2">
+            </td>
+        </tr>
+        <tr>
+        <td>
+            <span>Range 3 (acceptable): </span>
+            </td>
+            <td>
+                <span id="attendance-range-2-val">{{ saved_settings.attendance_range_2_cap }}</span>
+                <span> - </span>
+                <input value="{{ saved_settings.attendance_range_3_cap }}" class="attendance-range" type="text" id="attendance-range-3" name="attendance-range-3" maxlength="2" size="2">
+            </td>
+        <tr>
+            <td>
+                <span>Range 4 (good): </span>
+            </td>
+            <td>
+                <span id="attendance-range-3-val">{{ saved_settings.attendance_range_3_cap }}</span>
+                <span> - 100</span>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <input name="attendance-submit" type="submit" class="btn btn-info" value="Save">
+
+    {% if attendance_error_message %}
+      <br>
+      <p>{{ attendance_error_message }}</p>
+    {% endif %}
 </form>
 
 <hr>

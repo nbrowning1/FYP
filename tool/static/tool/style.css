@@ -159,18 +159,12 @@ textarea.feedback-form-answer {
   height: 100px;
 }
 
-#feedback-anonymous-container-outer {
-  text-align: center;
-}
-
-#feedback-anonymous-container-inner {
-  text-align: left;
-  margin: 0 auto;
-  display: table;
-}
-
 .form-error {
   color: red;
+}
+
+.attendance-range {
+  width: 2em;
 }
 
 /* Bootstrap overrides */

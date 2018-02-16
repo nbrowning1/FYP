@@ -41,7 +41,8 @@ def module(request, module_id):
         'module_feedback': module_feedback,
         'pie_chart': pie_chart,
         'line_chart': line_chart,
-        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request),
+        'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
 
@@ -104,7 +105,8 @@ def course(request, course_id):
     return render(request, 'tool/course.html', {
         'course': course,
         'module_attendances': module_attendances,
-        'pie_chart': pie_chart
+        'pie_chart': pie_chart,
+        'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
 
@@ -178,7 +180,8 @@ def lecturer(request, lecturer_id):
         'lecturer': lecturer,
         'module_attendances': module_attendances,
         'pie_chart': pie_chart,
-        'bar_chart': bar_chart
+        'bar_chart': bar_chart,
+        'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
 
@@ -240,7 +243,8 @@ def student(request, student_id):
         'student': student,
         'student_module_attendances': student_module_attendances,
         'pie_chart': pie_chart,
-        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request),
+        'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
 
@@ -271,7 +275,8 @@ def lecture(request, lecture_id):
         'lecture': lecture,
         'lecture_attendances': lecture_attendances,
         'pie_chart': pie_chart,
-        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request),
+        'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
 

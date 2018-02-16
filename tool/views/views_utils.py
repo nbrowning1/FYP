@@ -60,6 +60,16 @@ class ViewsUtils():
         except Settings.DoesNotExist:
             return False
 
+    # return array of 3 attendance ranges e.g. [25, 50, 75]
+    def get_attendance_ranges(self, request):
+        try:
+            settings = Settings.objects.get(user=request.user)
+            val1 = settings.attendance_range_1_cap
+            val2 = settings.attendance_range_2_cap
+            val3 = settings.attendance_range_3_cap
+            return [val1, val2, val3]
+        except Settings.DoesNotExist:
+            return [25, 50, 75]
 
 def logout_and_redirect_login(request):
     logout(request)

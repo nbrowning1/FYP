@@ -171,17 +171,19 @@ def download(request, path):
 
 @login_required
 def settings(request):
+    attendance_error_msg = request.session.pop('attendance_error', '')
     saved_settings = get_settings(request)
     if request.method == 'POST':
-        colourblind_opts_set = False
-        if request.POST.get("colourblind-opts"):
-            colourblind_opts_set = True
+        if request.POST.get("accessibility-submit"):
+            save_colourblind_settings(request, saved_settings)
+        elif request.POST.get("attendance-submit"):
+            error_msg = save_attendance_settings(request, saved_settings)
+            if error_msg:
+                return redirect_with_error_by_key(request, reverse('tool:settings'), 'attendance_error', error_msg)
 
-        saved_settings.colourblind_opts_on = colourblind_opts_set
-        saved_settings.save()
         return redirect(reverse('tool:settings'), Permanent=True)
-
     return render(request, 'tool/settings.html', {
+        'attendance_error_message': attendance_error_msg,
         'saved_settings': saved_settings
     })
 
@@ -193,6 +195,45 @@ def get_settings(request):
         settings = Settings(user=request.user)
         settings.save()
         return settings
+
+
+def save_colourblind_settings(request, saved_settings):
+    colourblind_opts_set = False
+    if request.POST.get("colourblind-opts"):
+        colourblind_opts_set = True
+
+    saved_settings.colourblind_opts_on = colourblind_opts_set
+    saved_settings.save()
+
+
+def save_attendance_settings(request, saved_settings):
+    attendance_range_1 = request.POST.get("attendance-range-1")
+    attendance_range_2 = request.POST.get("attendance-range-2")
+    attendance_range_3 = request.POST.get("attendance-range-3")
+    if not (attendance_range_1 and attendance_range_2 and attendance_range_3):
+        return 'Attendance ranges must have a value'
+    else:
+        try:
+            attendance_range_1 = int(attendance_range_1)
+            attendance_range_2 = int(attendance_range_2)
+            attendance_range_3 = int(attendance_range_3)
+        except ValueError:
+            return 'Attendance ranges must be whole numbers'
+
+        if attendance_range_1 <= 0:
+            return 'Attendance range 1 must be greater than 0'
+        elif attendance_range_1 >= attendance_range_2:
+            return 'Attendance range 2 must be greater than range 1'
+        elif attendance_range_2 >= attendance_range_3:
+            return 'Attendance range 3 must be greater than range 2'
+        elif attendance_range_3 >= 100:
+            return 'Attendance range 3 must be less than 100'
+        else:
+            saved_settings.attendance_range_1_cap = attendance_range_1
+            saved_settings.attendance_range_2_cap = attendance_range_2
+            saved_settings.attendance_range_3_cap = attendance_range_3
+            saved_settings.save()
+    return ''
 
 
 @login_required
@@ -283,7 +324,12 @@ def save_module_course_settings(request):
 
 # workaround to pass message through redirect
 def redirect_with_error(request, redirect_url, error_msg):
-    request.session['error_message'] = error_msg
+    return redirect_with_error_by_key(request, redirect_url, 'error_message', error_msg)
+
+
+# workaround to pass message through redirect
+def redirect_with_error_by_key(request, redirect_url, error_key, error_msg):
+    request.session[error_key] = error_msg
     return redirect(redirect_url, Permanent=True)
 
 

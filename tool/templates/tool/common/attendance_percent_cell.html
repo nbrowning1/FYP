@@ -1,0 +1,11 @@
+{% if percent_attended < attendance_ranges.0 %}
+<td class="attendance_low">
+{% elif percent_attended < attendance_ranges.1 %}
+<td class="attendance_midlow">
+{% elif percent_attended < attendance_ranges.2 %}
+<td class="attendance_midhigh">
+{% else %}
+<td class="attendance_high">
+{% endif %}
+    {{ percent_attended|floatformat:2 }}%
+</td>

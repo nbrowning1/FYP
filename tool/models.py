@@ -139,6 +139,9 @@ class ModuleFeedback(models.Model):
 class Settings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     colourblind_opts_on = models.BooleanField(default=False)
+    attendance_range_1_cap = models.IntegerField(default=25)
+    attendance_range_2_cap = models.IntegerField(default=50)
+    attendance_range_3_cap = models.IntegerField(default=75)
 
     def __str__(self):
         return 'Settings for user %s' % self.user.username

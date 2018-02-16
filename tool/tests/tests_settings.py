@@ -94,7 +94,8 @@ def go_to_settings(self):
 def set_colourblind_options(self, set_value):
     value = "on" if set_value else ""
     return self.client.post(reverse('tool:settings'), {
-        "colourblind-opts": value
+        "colourblind-opts": value,
+        "accessibility-submit": "Save"
     })
 
 
