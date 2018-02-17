@@ -144,6 +144,7 @@ def upload(request):
 
         return render(request, 'tool/upload.html', {
             'uploaded_data': saved_data,
+            'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
         })
     else:
         return HttpResponseRedirect(reverse('tool:index'))
