@@ -1,0 +1,42 @@
+{% extends "tool/base_view.html" %}
+{% load static %}
+
+{% block title %}Create Module{% endblock %}
+
+{% block content %}
+    {% if success_message %}
+    <span>{{ success_message }}</span>
+    <br>
+    {% endif %}
+    <form action="{% url 'tool:admin_create_module' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+            <span class="feedback-form-question">{{ field.label }}:</span>
+            {{ field }}
+            <br><br>
+        {% endfor %}
+        <br>
+        <br>
+        <p class="form-error">{{ error_msg }}</p>
+        <input type="submit" class="btn btn-info" value="Submit">
+    </form>
+
+    {# quite verbose but a way to show the error labels rather than their keys in error dict #}
+    {% if form.errors %}
+        {% if form.non_field_errors %}
+        <li>{{ form.non_field_errors }}</li>
+        {% endif %}
+        {% for field in form %}
+            {% if field.errors %}
+            <li>
+                {{ field.label }}
+                <ul>
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}

@@ -4,6 +4,16 @@ from django.forms import ModelForm
 from tool.models import *
 
 
+class ModuleForm(ModelForm):
+    class Meta:
+        model = Module
+        fields = ['module_code', 'module_crn']
+        labels = {
+            'module_code': 'Module Code',
+            'module_crn': 'Module CRN',
+        }
+
+
 class ModuleFeedbackForm(ModelForm):
     class Meta:
         model = ModuleFeedback

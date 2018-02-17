@@ -172,6 +172,9 @@ def download(request, path):
 
 @login_required
 def settings(request):
+    user_type = ViewsUtils.get_user_type(request)
+    ViewsUtils.check_valid_user(user_type, request)
+
     attendance_error_msg = request.session.pop('attendance_error', '')
     saved_settings = get_settings(request)
     if request.method == 'POST':
@@ -184,6 +187,7 @@ def settings(request):
 
         return redirect(reverse('tool:settings'), Permanent=True)
     return render(request, 'tool/settings.html', {
+        'user_type': user_type.value,
         'attendance_error_message': attendance_error_msg,
         'saved_settings': saved_settings
     })

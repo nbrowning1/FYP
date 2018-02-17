@@ -11,6 +11,25 @@ class GeneralSettingsTests(TestCase):
         response = go_to_settings(self)
         self.assertRedirects(response, '/tool/login/?next=/tool/settings/', status_code=302)
 
+    def test_user_types(self):
+        setup_data()
+
+        # shouldn't see admin
+        authenticate_student(self)
+        response = go_to_settings(self)
+        self.assertContains(response, 'Accessibility')
+        self.assertContains(response, 'Attendance')
+        self.assertContains(response, 'Account')
+        self.assertNotContains(response, 'Admin')
+
+        # should see all
+        authenticate_staff(self)
+        response = go_to_settings(self)
+        self.assertContains(response, 'Accessibility')
+        self.assertContains(response, 'Attendance')
+        self.assertContains(response, 'Account')
+        self.assertContains(response, 'Admin')
+
 
 class ColourBlindSettingsTests(TestCase):
     def test_colourblind_options_set_value(self):

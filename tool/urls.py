@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from tool.views import feedback_views
-from .views import views, single_entity_views
+from .views import views, single_entity_views, admin_views
 
 from django.urls import reverse_lazy
 
@@ -69,5 +69,7 @@ urlpatterns = [
     url(r'^module-course-view-settings/$', views.module_course_view_settings, name='module_course_view_settings'),
 
     url(r'^save-module-course-settings/$', views.save_module_course_settings, name='save_module_course_settings'),
+
+    url(r'^admin-create-module/$', admin_views.create_module, name='admin_create_module')
 
 ]

@@ -103,4 +103,15 @@
 
 <h2>Account</h2>
 <a class="setting" href="{% url 'tool:password_change' %}">Change Password</a>
+
+{% if user_type %}
+{% if user_type == "STAFF" or user_type == "ADMIN" %}
+
+<hr>
+
+<h2>Admin</h2>
+<a class="setting" href="{% url 'tool:admin_create_module' %}">Create Module</a>
+
+{% endif %}
+{% endif %}
 {% endblock %}
