@@ -73,22 +73,6 @@ th.double-header-right-cell {
   border-right: 1px solid black;
 }
 
-td.attendance_low {
-  background-color: #e74c3c;
-}
-
-td.attendance_midlow {
-  background-color: #f39c12;
-}
-
-td.attendance_midhigh {
-  background-color: #bfe798;
-}
-
-td.attendance_high {
-  background-color: #2ecc71;
-}
-
 table {
   align-self: center;
 }

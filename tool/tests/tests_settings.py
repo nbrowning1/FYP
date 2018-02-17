@@ -59,24 +59,151 @@ class ColourBlindSettingsTests(TestCase):
         test_colourblind_usage(self, go_to_lecture, self)
 
 
+def set_colourblind_options(self, set_value):
+    value = "on" if set_value else ""
+    return self.client.post(reverse('tool:settings'), {
+        "colourblind-opts": value,
+        "accessibility-submit": "Save"
+    })
+
+
 def test_colourblind_usage(self, method, arg):
     set_colourblind_options(self, False)
-    test_response_colours(self, method(arg), False)
+    test_colourblind_response_colours(self, method(arg), False)
     set_colourblind_options(self, True)
-    test_response_colours(self, method(arg), True)
+    test_colourblind_response_colours(self, method(arg), True)
 
 
-def test_response_colours(self, response, colourblind_colours_expected):
+def test_colourblind_response_colours(self, response, colourblind_colours_expected):
     if colourblind_colours_expected:
-        self.assertContains(response, Colours.BLUE.value)
         self.assertContains(response, Colours.ORANGE.value)
-        self.assertNotContains(response, Colours.GREEN.value)
+        self.assertContains(response, Colours.BLUE.value)
         self.assertNotContains(response, Colours.RED.value)
+        self.assertNotContains(response, Colours.GREEN.value)
     else:
-        self.assertContains(response, Colours.GREEN.value)
         self.assertContains(response, Colours.RED.value)
-        self.assertNotContains(response, Colours.BLUE.value)
+        self.assertContains(response, Colours.GREEN.value)
         self.assertNotContains(response, Colours.ORANGE.value)
+        self.assertNotContains(response, Colours.BLUE.value)
+
+
+class AttendanceRangeSettingsTests(TestCase):
+    def test_attendance_range_invalid_values(self):
+        student = create_or_get_student('authteststudent')
+        authenticate_student(self)
+        self.assertEqual(len(Settings.objects.all()), 0)
+        # should be saved as defaults as invalid values aren't set
+        test_set_attendance_range(self, student.user, 35, '', 85, 25, 50, 75,
+                                  'Attendance ranges must have a value')
+
+        test_set_attendance_range(self, student.user, 1, 2, 'c', 25, 50, 75,
+                                  'Attendance ranges must be whole numbers')
+
+        test_set_attendance_range(self, student.user, -10, 65, 85, 25, 50, 75,
+                                  'Attendance range 1 must be greater than 0')
+
+        test_set_attendance_range(self, student.user, 55, 35, 10, 25, 50, 75,
+                                  'Attendance range 2 must be greater than range 1')
+
+        test_set_attendance_range(self, student.user, 45, 85, 65, 25, 50, 75,
+                                  'Attendance range 3 must be greater than range 2')
+
+        test_set_attendance_range(self, student.user, 45, 65, 105, 25, 50, 75,
+                                  'Attendance range 3 must be less than 100')
+
+    def test_attendance_range_valid_values(self):
+        student = create_or_get_student('authteststudent')
+        authenticate_student(self)
+        self.assertEqual(len(Settings.objects.all()), 0)
+        test_set_attendance_range(self, student.user, 45, 65, 85, 45, 65, 85, '')
+
+    def test_attendance_range_usages(self):
+        setup_data()
+        authenticate_staff(self)
+
+        # default settings
+        test_attendance_range_usage(self, go_to_module, self, True, False, True, True)
+        test_attendance_range_usage(self, go_to_course, self, True, False, True, True)
+        test_attendance_range_usage(self, go_to_lecturer, self, True, False, True, True)
+        test_attendance_range_usage(self, go_to_student, self, True, False, True, True)
+
+        # modified range settings
+        set_attendance_range_settings(self, 20, 75, 85)
+        test_attendance_range_usage(self, go_to_module, self, True, True, False, True)
+        test_attendance_range_usage(self, go_to_course, self, True, True, False, True)
+        test_attendance_range_usage(self, go_to_lecturer, self, True, True, False, True)
+        test_attendance_range_usage(self, go_to_student, self, True, True, False, True)
+
+
+def set_attendance_range_settings(self, range_1, range_2, range_3):
+    return self.client.post(reverse('tool:settings'), {
+        "attendance-range-1": range_1,
+        "attendance-range-2": range_2,
+        "attendance-range-3": range_3,
+        "attendance-submit": "Save"
+    }, follow=True)
+
+
+def test_set_attendance_range(self, user,
+                              range_1, range_2, range_3,
+                              expected_range_1, expected_range_2, expected_range_3,
+                              expected_error_msg):
+    response = set_attendance_range_settings(self, range_1, range_2, range_3)
+    self.assertEqual(len(Settings.objects.all()), 1)
+    user_settings = Settings.objects.get(user=user)
+
+    self.assertEqual(user_settings.attendance_range_1_cap, expected_range_1)
+    self.assertEqual(user_settings.attendance_range_2_cap, expected_range_2)
+    self.assertEqual(user_settings.attendance_range_3_cap, expected_range_3)
+
+    if expected_error_msg:
+        self.assertContains(response, expected_error_msg)
+
+
+def test_attendance_range_usage(self, method, arg,
+                                range_1_expected, range_2_expected,
+                                range_3_expected, range_4_expected):
+    set_colourblind_options(self, False)
+    test_attendance_range_response_colours(self, method(arg), False,
+                                           range_1_expected, range_2_expected,
+                                           range_3_expected, range_4_expected)
+    set_colourblind_options(self, True)
+    test_attendance_range_response_colours(self, method(arg), True,
+                                           range_1_expected, range_2_expected,
+                                           range_3_expected, range_4_expected)
+
+
+def test_attendance_range_response_colours(self, response, colourblind_colours_expected,
+                                           range_1_expected, range_2_expected,
+                                           range_3_expected, range_4_expected):
+    if colourblind_colours_expected:
+        if range_1_expected:
+            self.assertContains(response, Colours.ORANGE.value)
+        if range_2_expected:
+            self.assertContains(response, Colours.YELLOW.value)
+        if range_3_expected:
+            self.assertContains(response, Colours.BLUE_LIGHT.value)
+        if range_4_expected:
+            self.assertContains(response, Colours.BLUE.value)
+
+        self.assertNotContains(response, Colours.RED.value)
+        self.assertNotContains(response, Colours.ORANGE_LIGHT.value)
+        self.assertNotContains(response, Colours.GREEN_LIGHT.value)
+        self.assertNotContains(response, Colours.GREEN.value)
+    else:
+        if range_1_expected:
+            self.assertContains(response, Colours.RED.value)
+        if range_2_expected:
+            self.assertContains(response, Colours.ORANGE_LIGHT.value)
+        if range_3_expected:
+            self.assertContains(response, Colours.GREEN_LIGHT.value)
+        if range_4_expected:
+            self.assertContains(response, Colours.GREEN.value)
+
+        self.assertNotContains(response, Colours.ORANGE.value)
+        self.assertNotContains(response, Colours.YELLOW.value)
+        self.assertNotContains(response, Colours.BLUE_LIGHT.value)
+        self.assertNotContains(response, Colours.BLUE.value)
 
 
 def authenticate_student(self):
@@ -89,14 +216,6 @@ def authenticate_staff(self):
 
 def go_to_settings(self):
     return self.client.get(reverse('tool:settings'))
-
-
-def set_colourblind_options(self, set_value):
-    value = "on" if set_value else ""
-    return self.client.post(reverse('tool:settings'), {
-        "colourblind-opts": value,
-        "accessibility-submit": "Save"
-    })
 
 
 def go_to_module(self):

@@ -42,6 +42,7 @@ def module(request, module_id):
         'pie_chart': pie_chart,
         'line_chart': line_chart,
         'colours': ViewsUtils().get_pass_fail_colours_2_tone(request),
+        'attendance_colours': ViewsUtils().get_pass_fail_colours_4_tone(request),
         'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
@@ -106,6 +107,7 @@ def course(request, course_id):
         'course': course,
         'module_attendances': module_attendances,
         'pie_chart': pie_chart,
+        'attendance_colours': ViewsUtils().get_pass_fail_colours_4_tone(request),
         'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
@@ -181,6 +183,7 @@ def lecturer(request, lecturer_id):
         'module_attendances': module_attendances,
         'pie_chart': pie_chart,
         'bar_chart': bar_chart,
+        'attendance_colours': ViewsUtils().get_pass_fail_colours_4_tone(request),
         'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
@@ -244,6 +247,7 @@ def student(request, student_id):
         'student_module_attendances': student_module_attendances,
         'pie_chart': pie_chart,
         'colours': ViewsUtils().get_pass_fail_colours_2_tone(request),
+        'attendance_colours': ViewsUtils().get_pass_fail_colours_4_tone(request),
         'attendance_ranges': ViewsUtils().get_attendance_ranges(request)
     })
 
