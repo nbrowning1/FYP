@@ -102,19 +102,22 @@ def upload(request):
             module = None
             module_str = request.POST.get("module-" + str(i))
             if not module_str:
-                return redirect_to_home_with_error(request, "No module selected for upload #" + str(error_index) + ". Please select a module from the list.")
+                return redirect_to_home_with_error(request, "No module selected for upload #" + str(
+                    error_index) + ". Please select a module from the list.")
             else:
                 try:
                     code = module_str.split("code_")[1].split("crn_")[0].strip()
                     crn = module_str.split("crn_")[1].strip()
                 except Exception:
                     return redirect_to_home_with_error(request,
-                                                       "Invalid module selection for upload #" + str(error_index) + ". Please select a module from the list.")
+                                                       "Invalid module selection for upload #" + str(
+                                                           error_index) + ". Please select a module from the list.")
 
                 try:
                     module = Module.objects.get(module_code=code, module_crn=crn)
                 except Module.DoesNotExist:
-                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(error_index) + ". Please select a module from the list.")
+                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(
+                        error_index) + ". Please select a module from the list.")
 
             upload_file = request.FILES['upload-data-' + str(i)]
             comparison_name = upload_file.name.lower()
@@ -122,7 +125,8 @@ def upload(request):
             is_excel_file = comparison_name.endswith('.xls') or comparison_name.endswith('.xlsx')
 
             if not (is_csv_file or is_excel_file):
-                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(error_index) + ". Only csv, xls, xlsx files are accepted.")
+                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(
+                    error_index) + ". Only csv, xls, xlsx files are accepted.")
 
             if is_csv_file:
                 decoded_file = upload_file.read().decode('utf-8')
@@ -140,6 +144,7 @@ def upload(request):
 
         return render(request, 'tool/upload.html', {
             'uploaded_data': saved_data,
+            'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
         })
     else:
         return HttpResponseRedirect(reverse('tool:index'))
@@ -158,7 +163,8 @@ def download(request, path):
 
     if os.path.exists(path):
         with open(path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response = HttpResponse(fh.read(),
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
             return response
     raise Http404
@@ -166,7 +172,69 @@ def download(request, path):
 
 @login_required
 def settings(request):
-    return render(request, 'tool/settings.html')
+    attendance_error_msg = request.session.pop('attendance_error', '')
+    saved_settings = get_settings(request)
+    if request.method == 'POST':
+        if request.POST.get("accessibility-submit"):
+            save_colourblind_settings(request, saved_settings)
+        elif request.POST.get("attendance-submit"):
+            error_msg = save_attendance_settings(request, saved_settings)
+            if error_msg:
+                return redirect_with_error_by_key(request, reverse('tool:settings'), 'attendance_error', error_msg)
+
+        return redirect(reverse('tool:settings'), Permanent=True)
+    return render(request, 'tool/settings.html', {
+        'attendance_error_message': attendance_error_msg,
+        'saved_settings': saved_settings
+    })
+
+
+def get_settings(request):
+    try:
+        return Settings.objects.get(user=request.user)
+    except Settings.DoesNotExist:
+        settings = Settings(user=request.user)
+        settings.save()
+        return settings
+
+
+def save_colourblind_settings(request, saved_settings):
+    colourblind_opts_set = False
+    if request.POST.get("colourblind-opts"):
+        colourblind_opts_set = True
+
+    saved_settings.colourblind_opts_on = colourblind_opts_set
+    saved_settings.save()
+
+
+def save_attendance_settings(request, saved_settings):
+    attendance_range_1 = request.POST.get("attendance-range-1")
+    attendance_range_2 = request.POST.get("attendance-range-2")
+    attendance_range_3 = request.POST.get("attendance-range-3")
+    if not (attendance_range_1 and attendance_range_2 and attendance_range_3):
+        return 'Attendance ranges must have a value'
+    else:
+        try:
+            attendance_range_1 = int(attendance_range_1)
+            attendance_range_2 = int(attendance_range_2)
+            attendance_range_3 = int(attendance_range_3)
+        except ValueError:
+            return 'Attendance ranges must be whole numbers'
+
+        if attendance_range_1 <= 0:
+            return 'Attendance range 1 must be greater than 0'
+        elif attendance_range_1 >= attendance_range_2:
+            return 'Attendance range 2 must be greater than range 1'
+        elif attendance_range_2 >= attendance_range_3:
+            return 'Attendance range 3 must be greater than range 2'
+        elif attendance_range_3 >= 100:
+            return 'Attendance range 3 must be less than 100'
+        else:
+            saved_settings.attendance_range_1_cap = attendance_range_1
+            saved_settings.attendance_range_2_cap = attendance_range_2
+            saved_settings.attendance_range_3_cap = attendance_range_3
+            saved_settings.save()
+    return ''
 
 
 @login_required
@@ -257,7 +325,12 @@ def save_module_course_settings(request):
 
 # workaround to pass message through redirect
 def redirect_with_error(request, redirect_url, error_msg):
-    request.session['error_message'] = error_msg
+    return redirect_with_error_by_key(request, redirect_url, 'error_message', error_msg)
+
+
+# workaround to pass message through redirect
+def redirect_with_error_by_key(request, redirect_url, error_key, error_msg):
+    request.session[error_key] = error_msg
     return redirect(redirect_url, Permanent=True)
 
 

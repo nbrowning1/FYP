@@ -73,32 +73,8 @@ th.double-header-right-cell {
   border-right: 1px solid black;
 }
 
-td.attendance_low {
-  background-color: #e74c3c;
-}
-
-td.attendance_midlow {
-  background-color: #f39c12;
-}
-
-td.attendance_midhigh {
-  background-color: #bfe798;
-}
-
-td.attendance_high {
-  background-color: #2ecc71;
-}
-
 table {
   align-self: center;
-}
-
-i.fa-check {
-  color: green;
-}
-
-i.fa-times {
-  color: darkred;
 }
 
 .setting, #reset-password, .centre-link {
@@ -167,18 +143,12 @@ textarea.feedback-form-answer {
   height: 100px;
 }
 
-#feedback-anonymous-container-outer {
-  text-align: center;
-}
-
-#feedback-anonymous-container-inner {
-  text-align: left;
-  margin: 0 auto;
-  display: table;
-}
-
 .form-error {
   color: red;
+}
+
+.attendance-range {
+  width: 2em;
 }
 
 /* Bootstrap overrides */

@@ -1,0 +1,11 @@
+{% if percent_attended < attendance_ranges.0 %}
+<td style="background-color: {{ attendance_colours.0 }};">
+{% elif percent_attended < attendance_ranges.1 %}
+<td style="background-color: {{ attendance_colours.1 }};">
+{% elif percent_attended < attendance_ranges.2 %}
+<td style="background-color: {{ attendance_colours.2 }};">
+{% else %}
+<td style="background-color: {{ attendance_colours.3 }};">
+{% endif %}
+    {{ percent_attended|floatformat:2 }}%
+</td>
