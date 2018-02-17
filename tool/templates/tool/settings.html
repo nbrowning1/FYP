@@ -28,32 +28,51 @@
     {% csrf_token %}
     <p>Specify attendance ranges for colour-coded attendance values</p>
     <table class="noborder">
+        <colgroup>
+            <col style="width:70%">
+            <col style="width:10%">
+            <col style="width:5%">
+            <col style="width:15%">
+        </colgroup>
         <tr>
             <td>
                 <span>Range 1 (very low):</span>
             </td>
             <td>
-                <span>0 - </span>
+                <span>0</span>
+            </td>
+            <td>
+                <span>-</span>
+            </td>
+            <td>
                 <input value="{{ saved_settings.attendance_range_1_cap }}" class="attendance-range" type="text" id="attendance-range-1" name="attendance-range-1" maxlength="2" size="2">
             </td>
         </tr>
         <tr>
-        <td>
-            <span>Range 2 (low): </span>
+            <td>
+                <span>Range 2 (low): </span>
             </td>
             <td>
                 <span id="attendance-range-1-val">{{ saved_settings.attendance_range_1_cap }}</span>
-                <span> - </span>
+            </td>
+            <td>
+                <span>-</span>
+            </td>
+            <td>
                 <input value="{{ saved_settings.attendance_range_2_cap }}" class="attendance-range" type="text" id="attendance-range-2" name="attendance-range-2" maxlength="2" size="2">
             </td>
         </tr>
         <tr>
-        <td>
-            <span>Range 3 (acceptable): </span>
+            <td>
+                <span>Range 3 (acceptable): </span>
             </td>
             <td>
                 <span id="attendance-range-2-val">{{ saved_settings.attendance_range_2_cap }}</span>
-                <span> - </span>
+            </td>
+            <td>
+                <span>-</span>
+            </td>
+            <td>
                 <input value="{{ saved_settings.attendance_range_3_cap }}" class="attendance-range" type="text" id="attendance-range-3" name="attendance-range-3" maxlength="2" size="2">
             </td>
         <tr>
@@ -62,7 +81,12 @@
             </td>
             <td>
                 <span id="attendance-range-3-val">{{ saved_settings.attendance_range_3_cap }}</span>
-                <span> - 100</span>
+            </td>
+            <td>
+                <span>-</span>
+            </td>
+            <td>
+                <span>100</span>
             </td>
         </tr>
     </table>
