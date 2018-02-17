@@ -24,6 +24,9 @@ class Module(models.Model):
         max_length=7)
     module_crn = models.CharField(max_length=50)
 
+    class Meta:
+        unique_together = ('module_code', 'module_crn')
+
     """
     Returns object with properties:
     'attendance': Overall module attendance,

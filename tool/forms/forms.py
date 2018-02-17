@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
 from tool.models import *
@@ -12,6 +13,16 @@ class ModuleForm(ModelForm):
             'module_code': 'Module Code',
             'module_crn': 'Module CRN',
         }
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        if 'module_code' in cleaned_data and 'module_crn' in cleaned_data:
+            module_code = cleaned_data['module_code']
+            module_crn = cleaned_data['module_crn']
+            if Module.objects.filter(
+                    module_code__iexact=module_code, module_crn__iexact=module_crn
+            ).count() > 0:
+                raise ValidationError("Module with this Module code and Module crn already exists.")
 
 
 class ModuleFeedbackForm(ModelForm):

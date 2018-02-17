@@ -36,6 +36,17 @@ class ModuleFormTests(TestCase):
         self.assertEquals(form.errors['module_crn'],
                           ['Ensure this value has at most 50 characters (it has 51).'])
 
+    def test_existing_module(self):
+        module = Module(module_code='COM101', module_crn='COM101-crn')
+        module.save()
+
+        data = {'module_code': 'com101',
+                'module_crn': 'com101-crn'}
+        form = ModuleForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.non_field_errors()), 1)
+        self.assertEquals(form.errors['__all__'], ['Module with this Module code and Module crn already exists.'])
+
 
 class ModuleFeedbackFormTests(TestCase):
     def test_empty_form(self):
