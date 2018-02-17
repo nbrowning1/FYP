@@ -177,6 +177,7 @@ def create_or_get_staff(username):
 
 
 def create_module(module_code):
-    module = Module(module_code=module_code)
-    module.save()
+    module, created = Module.objects.get_or_create(module_code=module_code)
+    if created:
+        module.save()
     return module
