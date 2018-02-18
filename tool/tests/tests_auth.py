@@ -1,30 +1,27 @@
-from django.test import TestCase
-
-from django.urls import reverse
-
-from django.core import mail
-
 from django.contrib.auth.models import User
+from django.core import mail
+from django.test import TestCase
+from django.urls import reverse
 
 
 class AuthTests(TestCase):
     def test_login_valid_credentials(self):
-        user = User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
+        User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
         test_login(self, 'john', 'johnpassword', True)
 
     def test_login_invalid_credentials(self):
-        user = User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
+        User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
         test_login(self, 'john', 'wrongpassword', False)
 
     def test_login_nonexistent_user(self):
         test_login(self, 'nouser', 'nopassword', False)
 
     def test_password_reset_recognised_email(self):
-        user = User.objects.create_user('john', 'test@mail.com', 'johnpassword')
+        User.objects.create_user('john', 'test@mail.com', 'johnpassword')
         test_password_reset(self, 'test@mail.com', True)
 
     def test_password_reset_unrecognised_email(self):
-        user = User.objects.create_user('john', 'test@mail.com', 'johnpassword')
+        User.objects.create_user('john', 'test@mail.com', 'johnpassword')
         test_password_reset(self, 'different@mail.com', False)
 
 

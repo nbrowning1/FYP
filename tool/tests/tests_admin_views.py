@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import *
+from .utils import *
 
 
 class GeneralTests(TestCase):
@@ -15,7 +15,7 @@ class GeneralTests(TestCase):
 
     def test_permissions(self):
         # student should see nothing
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         response = go_to_admin_create_module(self)
         self.assertEqual(response.status_code, 404)
         response = go_to_admin_create_course(self)
@@ -24,7 +24,7 @@ class GeneralTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         # staff should be able to see
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         response = go_to_admin_create_module(self)
         self.assertEqual(response.status_code, 200)
         response = go_to_admin_create_course(self)
@@ -157,39 +157,21 @@ def go_to_admin_create_student(self):
     return self.client.get(url)
 
 
-def authenticate_admin(self):
-    user = User.objects.create_superuser(username='test', password='12345', email='test@mail.com')
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def authenticate_student(self):
-    user = create_student('teststudent').user
-    self.client.login(username='teststudent', password='12345')
-    return user
-
-
-def authenticate_staff(self):
-    user = create_staff('teststaff').user
-    self.client.login(username='teststaff', password='12345')
-    return user
-
-
 def submit_create_module(self, module_code, module_crn):
-    authenticate_staff(self)
+    TestUtils.authenticate_staff(self)
     return self.client.post(reverse('tool:admin_create_module'),
                             {'module_code': module_code,
                              'module_crn': module_crn}, follow=True)
 
 
 def submit_create_course(self, course_code):
-    authenticate_staff(self)
+    TestUtils.authenticate_staff(self)
     return self.client.post(reverse('tool:admin_create_course'),
                             {'course_code': course_code}, follow=True)
 
 
 def submit_create_student(self, username, first_name, last_name, email, device_id, course_id):
-    authenticate_staff(self)
+    TestUtils.authenticate_staff(self)
     return self.client.post(reverse('tool:admin_create_student'),
                             {'username': username,
                              'first_name': first_name,
@@ -200,7 +182,7 @@ def submit_create_student(self, username, first_name, last_name, email, device_i
 
 
 def submit_create_staff(self, username, first_name, last_name, email):
-    authenticate_staff(self)
+    TestUtils.authenticate_staff(self)
     return self.client.post(reverse('tool:admin_create_staff'),
                             {'username': username,
                              'first_name': first_name,
@@ -233,7 +215,7 @@ def test_student_create_view(self, username, first_name, last_name, email, devic
 
 
 def test_staff_create_view(self, username, first_name, last_name, email, expected_errors):
-    authenticate_staff(self)
+    TestUtils.authenticate_staff(self)
     get_num_objs_fn = Staff.objects.all
     initial_courses_num = len(get_num_objs_fn())
     response = submit_create_staff(self, username, first_name, last_name, email)
@@ -251,34 +233,3 @@ def test_admin_create_view(self, initial_objs_num, response, expected_errors, ge
         # should be exactly one new module created
         self.assertTrue((initial_objs_num + 1) == len(get_num_objs_fn()))
         self.assertContains(response, saved_str)
-
-
-def create_course(course_code):
-    try:
-        course = Course.objects.get(course_code=course_code)
-        return course
-    except Course.DoesNotExist:
-        course = Course(course_code=course_code)
-        course.save()
-        return course
-
-
-def create_student(username):
-    try:
-        return Student.objects.get(user__username=username)
-    except Student.DoesNotExist:
-        user = User.objects.create_user(username=username, password='12345')
-        course = create_course('Course Code')
-        student = Student(user=user, course=course)
-        student.save()
-        return student
-
-
-def create_staff(username):
-    try:
-        return Staff.objects.get(user__username=username)
-    except Staff.DoesNotExist:
-        user = User.objects.create_user(username=username, password='12345')
-        staff = Staff(user=user)
-        staff.save()
-        return staff

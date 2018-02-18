@@ -3,6 +3,7 @@ import os
 from django.test import TestCase
 from django.urls import reverse
 
+from .utils import TestUtils
 from ..models import *
 
 
@@ -17,7 +18,7 @@ class UploadTests(TestCase):
         test_upload_valid_data(self, 'Attendance_Test_xlsx.xlsx')
 
     def test_sequential_upload_replaces(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
         validate_valid_data(self, False)
@@ -31,39 +32,39 @@ class UploadTests(TestCase):
         validate_valid_data(self, True)
 
     def test_upload_unrecognised_module(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         # uploading valid data but without full DB setup
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1',
                     'Unrecognised module for upload #1. Please select a module from the list.')
 
     def test_upload_unrecognised_student(self):
-        authenticate_admin(self)
-        create_staff('e00123456')
-        create_staff('e00987654')
-        create_module('EEE312', 'EEE312-1')
+        TestUtils.authenticate_admin(self)
+        TestUtils.create_staff('e00123456')
+        TestUtils.create_staff('e00987654')
+        TestUtils.create_module('EEE312', 'EEE312-1')
         # uploading valid data but without full DB setup
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1',
                     'Error processing file upload_test_valid.csv: Error with inputs: [[Unrecognised student: 10519C]] at line 5')
 
     def test_upload_invalid_attendance_data(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         test_upload(self, 'upload_test_invalid.csv', 'code_EEE312 crn_EEE312-1',
                     'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 4, Unrecognised attendance value for 10519C: no at column 7]] at line 5')
 
     def test_upload_incorrect_file_extension(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         test_upload(self, 'upload_test_wrong_ext.txt', 'code_EEE312 crn_EEE312-1',
                     'Invalid file type for upload #1. Only csv, xls, xlsx files are accepted.')
 
     def test_upload_no_file(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         test_upload(self, None, 'code_EEE312 crn_EEE312-1', 'No file uploaded. Please upload a .csv file.')
 
     def test_upload_multiple_files(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_valid_2.csv'],
                              ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
@@ -72,7 +73,7 @@ class UploadTests(TestCase):
 
     # tests valid and invalid file, and tests that valid file was still uploaded
     def test_upload_multiple_files_invalid(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         create_db_props()
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_invalid.csv'],
@@ -87,17 +88,17 @@ class UploadTests(TestCase):
         self.assertEqual(get_module_student_count('EEE312'), 0)
 
         # student - forbidden
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         test_usertype_upload(self, 403)
         self.assertEqual(get_module_student_count('EEE312'), 0)
 
         # staff - forbidden
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         test_usertype_upload(self, 403)
         self.assertEqual(get_module_student_count('EEE312'), 0)
 
         # admin is the only allowed user type - should be the only one to successfully upload
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_usertype_upload(self, 200)
         self.assertEqual(get_module_student_count('EEE312'), 2)
 
@@ -112,7 +113,7 @@ class UploadTests(TestCase):
 
 
 def test_upload_valid_data(self, resource_path):
-    authenticate_admin(self)
+    TestUtils.authenticate_admin(self)
     create_db_props()
 
     # initial check that module is not linked to student
@@ -222,64 +223,23 @@ def get_course_modules(course_code):
     return course.modules.all()
 
 
-def authenticate_admin(self):
-    user = User.objects.create_superuser(username='test', password='12345', email='test@mail.com')
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def authenticate_student(self):
-    user = create_student('teststudent', 'test').user
-    self.client.login(username='teststudent', password='12345')
-    return user
-
-
-def authenticate_staff(self):
-    user = create_staff('teststaff').user
-    self.client.login(username='teststaff', password='12345')
-    return user
-
-
 def create_db_props():
     create_student('B00123456', '10519C')
     create_student('B00987654', '10518B')
-    create_staff('e00123456')
-    create_staff('e00987654')
-    create_staff('e00555555')
-    create_staff('e00666666')
-    create_module('EEE312', 'EEE312-1')
-    create_module('COM999', 'COM999-1')
-
-
-def get_course(course_code):
-    try:
-        course = Course.objects.get(course_code=course_code)
-        return course
-    except Course.DoesNotExist:
-        course = Course(course_code=course_code)
-        course.save()
-        return course
+    TestUtils.create_staff('e00123456')
+    TestUtils.create_staff('e00987654')
+    TestUtils.create_staff('e00555555')
+    TestUtils.create_staff('e00666666')
+    TestUtils.create_module('EEE312', 'EEE312-1')
+    TestUtils.create_module('COM999', 'COM999-1')
 
 
 def create_student(username, device_id):
     user = User.objects.create_user(username=username, password='12345')
-    course = get_course('Course Code')
+    course = TestUtils.create_course('Course Code')
     student = Student(user=user, device_id=device_id, course=course)
     student.save()
     return student
-
-
-def create_staff(username):
-    user = User.objects.create_user(username=username, password='12345')
-    staff = Staff(user=user)
-    staff.save()
-    return staff
-
-
-def create_module(module_code, module_crn):
-    module = Module(module_code=module_code, module_crn=module_crn)
-    module.save()
-    return module
 
 
 def validate_valid_data(self, expect_replaced):

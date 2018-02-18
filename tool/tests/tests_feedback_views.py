@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import *
+from .utils import *
 
 
 class ViewsTests(TestCase):
@@ -14,26 +14,26 @@ class ViewsTests(TestCase):
 
     def test_nonexistent_module(self):
         setup_data()
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         response = go_to_module_feedback(self, 10)
         self.assertEqual(response.status_code, 404)
 
     def test_staff(self):
         setup_data()
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         response = go_to_module_feedback(self, 1)
         # staff shouldn't be able to access module feedback giving page
         self.assertEqual(response.status_code, 404)
 
     def test_student(self):
         setup_data()
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         response = go_to_module_feedback(self, 1)
         self.assertEqual(response.status_code, 200)
 
     def test_student_unlinked_module(self):
         setup_data()
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         response = go_to_module_feedback(self, 2)
         self.assertEqual(response.status_code, 404)
 
@@ -48,7 +48,7 @@ class ViewsTests(TestCase):
         self.assertEqual(response.request['PATH_INFO'], '/tool/modules/1')
         self.assertEqual(len(get_feedbacks()), 1)
         feedback = get_feedbacks()[0]
-        self.assertEqual(feedback.student.user.username, 'authteststudent')
+        self.assertEqual(feedback.student.user.username, 'teststudent')
         self.assertEqual(feedback.module.module_code, 'COM101')
         self.assertEqual(feedback.feedback_general, 'Test General')
         self.assertEqual(feedback.feedback_positive, 'Test Positive')
@@ -65,7 +65,7 @@ class ViewsTests(TestCase):
         self.assertEqual(response.request['PATH_INFO'], '/tool/modules/1')
         self.assertEqual(len(get_feedbacks()), 2)
         feedback = get_feedbacks()[1]
-        self.assertEqual(feedback.student.user.username, 'authteststudent')
+        self.assertEqual(feedback.student.user.username, 'teststudent')
         self.assertEqual(feedback.module.module_code, 'COM101')
         self.assertEqual(feedback.feedback_general, 'Test General')
         self.assertEqual(feedback.feedback_positive, 'Test Positive')
@@ -105,21 +105,13 @@ class ViewsTests(TestCase):
 
 def setup_and_submit_feedback(self, fbg, fbp, fbc, fbo, anon):
     setup_data()
-    authenticate_student(self)
+    TestUtils.authenticate_student(self)
     return self.client.post(get_module_feedback_url(1),
                             {'feedback_general': fbg,
                              'feedback_positive': fbp,
                              'feedback_constructive': fbc,
                              'feedback_other': fbo,
                              'anonymous': anon}, follow=True)
-
-
-def authenticate_student(self):
-    self.client.login(username='authteststudent', password='12345')
-
-
-def authenticate_staff(self):
-    self.client.login(username='authteststaff', password='12345')
 
 
 def go_to_module_feedback(self, module_id):
@@ -136,48 +128,10 @@ def get_feedbacks():
 
 
 def setup_data():
-    student = create_or_get_student('authteststudent')
-    staff = create_or_get_staff('authteststaff')
-    module1 = create_module('COM101')
-    module2 = create_module('COM102')
+    student = TestUtils.create_student('teststudent')
+    staff = TestUtils.create_staff('teststaff')
+    module1 = TestUtils.create_module('COM101', 'COM101-crn')
+    module2 = TestUtils.create_module('COM102', 'COM102-crn')
     module1.students.add(student)
     staff.modules.add(module1)
     staff.modules.add(module2)
-
-
-def create_course(course_code):
-    try:
-        course = Course.objects.get(course_code=course_code)
-        return course
-    except Course.DoesNotExist:
-        course = Course(course_code=course_code)
-        course.save()
-        return course
-
-
-def create_or_get_student(username):
-    try:
-        return Student.objects.get(user__username=username)
-    except Student.DoesNotExist:
-        user = User.objects.create_user(username=username, password='12345')
-        course = create_course('Course Code')
-        student = Student(user=user, course=course)
-        student.save()
-        return student
-
-
-def create_or_get_staff(username):
-    try:
-        return Staff.objects.get(user__username=username)
-    except Staff.DoesNotExist:
-        user = User.objects.create_user(username=username, password='12345')
-        staff = Staff(user=user)
-        staff.save()
-        return staff
-
-
-def create_module(module_code):
-    module, created = Module.objects.get_or_create(module_code=module_code)
-    if created:
-        module.save()
-    return module

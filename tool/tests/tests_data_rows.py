@@ -6,7 +6,8 @@ from ..models import *
 
 class AttendanceSessionRowTest(TestCase):
     def test_valid_row(self):
-        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+                                     '31/01/2017\nSecond Session ID'])
         self.assertEqual(data.get_error_message(), '')
 
         self.assertEqual(len(data.sessions), 2)
@@ -25,18 +26,21 @@ class AttendanceSessionRowTest(TestCase):
         self.assertEqual(secondSession.session_id, 'Second Session ID')
 
     def test_row_invalid_session_format(self):
-        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017 - Second Session ID'])
+        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+                                     '31/01/2017 - Second Session ID'])
         self.assertEqual(data.get_error_message(),
                          'Expected newline to separate date and session id for: 31/01/2017 - Second Session ID at column 5')
 
     def test_row_invalid_date_format(self):
         # wrong formatting
-        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31-01-2017\nSecond Session ID'])
+        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+                                     '31-01-2017\nSecond Session ID'])
         self.assertEqual(data.get_error_message(),
                          'Incorrect date format: 31-01-2017, should be DD/MM/YYYY at column 5')
 
         # totally incorrect
-        data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', 'abc\nSecond Session ID'])
+        data = AttendanceSessionRow(
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', 'abc\nSecond Session ID'])
         self.assertEqual(data.get_error_message(), 'Incorrect date format: abc, should be DD/MM/YYYY at column 5')
 
     def test_row_empty(self):
@@ -65,7 +69,8 @@ class AttendanceSessionRowTest(TestCase):
 class AttendanceRowTests(TestCase):
     def test_valid_row(self):
         attendance_session_row = AttendanceSessionRow(
-            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+             '31/01/2017\nSecond Session ID'])
         setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID', '', '', 'Y', 'N')
 
@@ -80,7 +85,8 @@ class AttendanceRowTests(TestCase):
 
     def test_student_by_username_and_device_id(self):
         attendance_session_row = AttendanceSessionRow(
-            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+             '31/01/2017\nSecond Session ID'])
         setup_test_student()
 
         # device ID should find student
@@ -93,7 +99,8 @@ class AttendanceRowTests(TestCase):
 
     def test_invalid_student_message(self):
         attendance_session_row = AttendanceSessionRow(
-            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+             '31/01/2017\nSecond Session ID'])
         setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID2', '', '', 'Y', 'N')
 
@@ -101,7 +108,8 @@ class AttendanceRowTests(TestCase):
 
     def test_invalid_multiple(self):
         attendance_session_row = AttendanceSessionRow(
-            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+             '31/01/2017\nSecond Session ID'])
         setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, 'DeviceID2', '', '', 'Y', 'donkey')
 
@@ -110,7 +118,8 @@ class AttendanceRowTests(TestCase):
 
     def test_it_trims_spaces(self):
         attendance_session_row = AttendanceSessionRow(
-            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID', '31/01/2017\nSecond Session ID'])
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
+             '31/01/2017\nSecond Session ID'])
         setup_test_student()
         data = setup_input_data_attendance(attendance_session_row, '  DeviceID ', '', '', 'Y ', ' N')
 
@@ -124,7 +133,8 @@ class AttendanceRowTests(TestCase):
         self.assertEqual(attendances[1].attended, False)
 
     def test_incorrect_column_count(self):
-        attendance_session_row = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID'])
+        attendance_session_row = AttendanceSessionRow(
+            ['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID'])
         setup_test_student()
 
         # too many
@@ -160,5 +170,4 @@ def setup_test_student():
 
 
 def setup_input_data_attendance(attendance_session_row, *attendances):
-
     return AttendanceRow(attendance_session_row, attendances)

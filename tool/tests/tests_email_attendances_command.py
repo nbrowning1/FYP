@@ -78,7 +78,6 @@ class EmailAttendanceReportTest(TestCase):
         self.assertIn('Warning students', mail.outbox[0].body)
         self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
 
-
     def test_student_report(self):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)

@@ -1,26 +1,25 @@
-import datetime
-
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import *
+from .utils import *
 
 
 class SingleModuleViewTests(TestCase):
     def test_single_module_view_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_valid_module_view(self)
 
     def test_single_module_view_staff(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         test_valid_module_view(self)
 
     def test_single_module_view_student(self):
-        this_student = authenticate_student(self)
+        user = TestUtils.authenticate_student(self)
+        this_student = Student.objects.get(user=user)
         test_valid_module_view(self, this_student=this_student)
 
     def test_module_unauthenticated(self):
-        create_module('COM101')
+        TestUtils.create_module('COM101', 'COM101-crn')
 
         # check module that exists
         response = go_to_module(self, 1)
@@ -31,28 +30,28 @@ class SingleModuleViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/modules/10', status_code=302)
 
     def test_nonexistent_module(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
-        create_module('COM101')
+        TestUtils.create_module('COM101', 'COM101-crn')
         response = go_to_module(self, 10)
         self.assertEqual(response.status_code, 404)
 
 
 class SingleCourseViewTests(TestCase):
     def test_single_course_view_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_valid_course_view(self, True)
 
     def test_single_course_view_staff(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         test_valid_course_view(self, True)
 
     def test_single_course_view_student(self):
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
         test_valid_course_view(self, False)
 
     def test_course_unauthenticated(self):
-        create_course('Course Code')
+        TestUtils.create_course('Course Code')
 
         # check course that exists
         response = go_to_course(self, 1)
@@ -63,28 +62,30 @@ class SingleCourseViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/courses/10', status_code=302)
 
     def test_nonexistent_course(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
 
-        create_course('Course Code')
+        TestUtils.create_course('Course Code')
         response = go_to_course(self, 10)
         self.assertEqual(response.status_code, 404)
 
 
 class SingleLecturerViewTests(TestCase):
     def test_single_lecturer_view_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_valid_lecturer_view(self, False)
 
     def test_single_lecturer_view_staff(self):
-        this_lecturer = authenticate_staff(self)
+        user = TestUtils.authenticate_staff(self)
+        this_lecturer = Staff.objects.get(user=user)
         test_valid_lecturer_view(self, False, this_lecturer=this_lecturer)
 
     def test_single_lecturer_view_student(self):
-        this_student = authenticate_student(self)
+        user = TestUtils.authenticate_student(self)
+        this_student = Student.objects.get(user=user)
         test_valid_lecturer_view(self, True, this_student=this_student)
 
     def test_lecturer_unauthenticated(self):
-        create_staff('e00123456')
+        TestUtils.create_staff('e00123456')
 
         # check lecturer that exists
         response = go_to_lecturer(self, 1)
@@ -95,28 +96,29 @@ class SingleLecturerViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/lecturers/10', status_code=302)
 
     def test_nonexistent_lecturer(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
-        create_staff('e00123456')
+        TestUtils.create_staff('e00123456')
         response = go_to_lecturer(self, 10)
         self.assertEqual(response.status_code, 404)
 
 
 class SingleStudentViewTests(TestCase):
     def test_single_student_view_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_valid_student_view(self, False)
 
     def test_single_student_view_staff(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         test_valid_student_view(self, False)
 
     def test_single_student_view_student(self):
-        this_student = authenticate_student(self)
+        user = TestUtils.authenticate_student(self)
+        this_student = Student.objects.get(user=user)
         test_valid_student_view(self, True, this_student=this_student)
 
     def test_student_unauthenticated(self):
-        create_student('B00123456')
+        TestUtils.create_student('B00123456')
 
         # check module that exists
         response = go_to_student(self, 1)
@@ -127,28 +129,29 @@ class SingleStudentViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/students/10', status_code=302)
 
     def test_nonexistent_student(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
-        create_student('B00123456')
+        TestUtils.create_student('B00123456')
         response = go_to_student(self, 10)
         self.assertEqual(response.status_code, 404)
 
 
 class SingleLectureViewTests(TestCase):
     def test_single_lecture_view_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
         test_valid_lecture_view(self, False)
 
     def test_single_lecture_view_staff(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
         test_valid_lecture_view(self, False)
 
     def test_single_lecture_view_student(self):
-        this_student = authenticate_student(self)
+        user = TestUtils.authenticate_student(self)
+        this_student = Student.objects.get(user=user)
         test_valid_lecture_view(self, True, this_student=this_student)
 
     def test_lecture_unauthenticated(self):
-        create_student('B00123456')
+        TestUtils.create_student('B00123456')
 
         # check module that exists
         response = go_to_lecture(self, 1)
@@ -159,9 +162,9 @@ class SingleLectureViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/lectures/10', status_code=302)
 
     def test_nonexistent_lecture(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
-        create_student('B00123456')
+        TestUtils.create_student('B00123456')
         response = go_to_lecture(self, 10)
         self.assertEqual(response.status_code, 404)
 
@@ -313,11 +316,11 @@ def test_valid_lecture_view(self, is_student, **kwargs):
     else:
         setup_data(None, None)
 
-    module3 = create_module('COM333')
-    student3 = create_student('B00555555')
-    lecture3 = create_lecture(module3, 'Session 3')
+    module3 = TestUtils.create_module('COM333', 'COM333-crn')
+    student3 = TestUtils.create_student('B00555555')
+    lecture3 = TestUtils.create_lecture(module3, 'Session 3')
     module3.students.add(student3)
-    create_attendance(student3, lecture3, True)
+    TestUtils.create_attendance(student3, lecture3, True)
 
     # should only see information relating to Session 1 lecture - first created
     response = go_to_lecture(self, 1)
@@ -353,14 +356,15 @@ def test_valid_lecture_view(self, is_student, **kwargs):
 
 
 def setup_data(this_student, this_lecturer):
-    module1 = create_module('COM101')
-    module2 = create_module('COM102')
-    create_module('COM103')
-    student1 = create_student('B00123456')
+    module1 = TestUtils.create_module('COM101', 'COM101-crn')
+    module2 = TestUtils.create_module('COM102', 'COM102-crn')
+    TestUtils.create_module('COM103', 'COM103-crn')
+    student1 = TestUtils.create_student('B00123456')
     if this_student:
         student2 = this_student
     else:
-        student2 = create_student('B00987654')
+        TestUtils.create_student('B00987654')
+        student2 = Student.objects.get(user__username='B00987654')
 
     course = Course.objects.get(course_code='Course Code')
     course.modules.add(module1)
@@ -368,17 +372,18 @@ def setup_data(this_student, this_lecturer):
     if this_lecturer:
         lecturer1 = this_lecturer
     else:
-        lecturer1 = create_staff('e00123456')
-    create_staff('e00987654')
-    lecture1 = create_lecture(module1, 'Session 1')
-    lecture2 = create_lecture(module1, 'Session 2')
+        TestUtils.create_staff('e00123456')
+        lecturer1 = Staff.objects.get(user__username='e00123456')
+    TestUtils.create_staff('e00987654')
+    lecture1 = TestUtils.create_lecture(module1, 'Session 1')
+    lecture2 = TestUtils.create_lecture(module1, 'Session 2')
     module1.students.add(student2)
     lecturer1.modules.add(module1)
-    create_attendance(student2, lecture1, True)
-    create_attendance(student2, lecture2, False)
-    create_feedback(student1, module1, "Student 1 Module 1 Feedback", True)
-    create_feedback(student2, module1, "Student 2 Module 1 Feedback", False)
-    create_feedback(student1, module2, "Student 1 Module 2 Feedback", True)
+    TestUtils.create_attendance(student2, lecture1, True)
+    TestUtils.create_attendance(student2, lecture2, False)
+    TestUtils.create_feedback(student1, module1, "Student 1 Module 1 Feedback", True)
+    TestUtils.create_feedback(student2, module1, "Student 2 Module 1 Feedback", False)
+    TestUtils.create_feedback(student1, module2, "Student 1 Module 2 Feedback", True)
 
 
 def go_to_module(self, module_id):
@@ -404,73 +409,3 @@ def go_to_student(self, student_id):
 def go_to_lecture(self, lecture_id):
     url = reverse('tool:lecture', kwargs={'lecture_id': lecture_id})
     return self.client.get(url)
-
-
-def authenticate_admin(self):
-    user = User.objects.create_superuser(username='test', password='12345', email='test@mail.com')
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def authenticate_student(self):
-    student = create_student('test')
-    self.client.login(username='test', password='12345')
-    return student
-
-
-def authenticate_staff(self):
-    staff = create_staff('test')
-    self.client.login(username='test', password='12345')
-    return staff
-
-
-def create_course(course_code):
-    try:
-        course = Course.objects.get(course_code=course_code)
-        return course
-    except Course.DoesNotExist:
-        course = Course(course_code=course_code)
-        course.save()
-        return course
-
-
-def create_student(username):
-    user = User.objects.create_user(username=username, password='12345')
-    course = create_course('Course Code')
-    student = Student(user=user, course=course)
-    student.save()
-    return student
-
-
-def create_staff(username):
-    user = User.objects.create_user(username=username, password='12345')
-    staff = Staff(user=user)
-    staff.save()
-    return staff
-
-
-def create_module(module_code):
-    module = Module(module_code=module_code)
-    module.save()
-    return module
-
-
-def create_lecture(module, session_id):
-    lecture = Lecture(module=module, session_id=session_id, date=datetime.date(2017, 12, 1))
-    lecture.save()
-    return lecture
-
-
-def create_attendance(student, lecture, attended):
-    attendance = StudentAttendance(student=student, lecture=lecture, attended=attended)
-    attendance.save()
-    return attendance
-
-
-def create_feedback(student, module, feedback, anonymous):
-    feedback = ModuleFeedback(student=student, module=module,
-                              feedback_general=feedback, feedback_positive=feedback,
-                              feedback_constructive=feedback, feedback_other=feedback,
-                              date="2017-10-10", anonymous=anonymous)
-    feedback.save()
-    return feedback

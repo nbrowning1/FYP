@@ -1,9 +1,7 @@
-import datetime
-
 from django.test import TestCase
 from django.urls import reverse
 
-from ..models import *
+from .utils import *
 
 
 class ViewsTests(TestCase):
@@ -16,7 +14,7 @@ class ViewsTests(TestCase):
         self.assertNotContains(response, 'Please login to see this page.')
 
     def test_login_redirects_if_authenticated(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
         url = reverse('tool:login')
         response = self.client.get(url)
@@ -37,7 +35,7 @@ class ViewsTests(TestCase):
 
     def test_authenticated_index_view(self):
         # test that when authenticated, it shows index view as expected
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
         response = go_to_index(self)
         self.assertContains(response, 'Home')
@@ -45,7 +43,7 @@ class ViewsTests(TestCase):
         self.assertNotContains(response, 'Password')
 
     def test_no_content_admin(self):
-        authenticate_admin(self)
+        TestUtils.authenticate_admin(self)
 
         response = go_to_index(self)
         self.assertContains(response, 'No modules are available.')
@@ -55,7 +53,7 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'No lectures are available.')
 
     def test_no_content_staff(self):
-        authenticate_staff(self)
+        TestUtils.authenticate_staff(self)
 
         response = go_to_index(self)
 
@@ -67,7 +65,7 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'No lectures are available.')
 
     def test_no_content_student(self):
-        authenticate_student(self)
+        TestUtils.authenticate_student(self)
 
         response = go_to_index(self)
 
@@ -80,12 +78,12 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'No lectures are available.')
 
     def test_content_admin(self):
-        authenticate_admin(self)
-        student_1 = create_student('test_student_1')
-        student_2 = create_student('test_student_2')
-        staff_1 = create_staff('test_staff_1')
-        staff_2 = create_staff('test_staff_2')
-        module = create_module('COM101')
+        TestUtils.authenticate_admin(self)
+        student_1 = TestUtils.create_student('test_student_1')
+        student_2 = TestUtils.create_student('test_student_2')
+        staff_1 = TestUtils.create_staff('test_staff_1')
+        staff_2 = TestUtils.create_staff('test_staff_2')
+        module = TestUtils.create_module('COM101', 'COM101-crn')
         lecture = create_lecture(module)
 
         response = go_to_index(self)
@@ -103,15 +101,15 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'Lectures')
 
     def test_content_staff(self):
-        test_staff = create_staff('test')
+        test_staff = TestUtils.create_staff('test')
         self.client.login(username='test', password='12345')
 
-        student_1 = create_student('test_student_1')
-        student_2 = create_student('test_student_2')
-        staff_1 = create_staff('test_staff_1')
-        staff_2 = create_staff('test_staff_2')
-        module_1 = create_module('COM101')
-        module_2 = create_module('COM999')
+        student_1 = TestUtils.create_student('test_student_1')
+        student_2 = TestUtils.create_student('test_student_2')
+        staff_1 = TestUtils.create_staff('test_staff_1')
+        staff_2 = TestUtils.create_staff('test_staff_2')
+        module_1 = TestUtils.create_module('COM101', 'COM101-crn')
+        module_2 = TestUtils.create_module('COM999', 'COM999-crn')
         lecture_1 = create_lecture(module_1)
         lecture_2 = create_lecture(module_2)
 
@@ -137,15 +135,15 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'Lectures')
 
     def test_content_student(self):
-        test_student = create_student('test')
+        test_student = TestUtils.create_student('test')
         self.client.login(username='test', password='12345')
 
-        student_1 = create_student('test_student_1')
-        student_2 = create_student('test_student_2')
-        staff_1 = create_staff('test_staff_1')
-        staff_2 = create_staff('test_staff_2')
-        module_1 = create_module('COM101')
-        module_2 = create_module('COM999')
+        student_1 = TestUtils.create_student('test_student_1')
+        student_2 = TestUtils.create_student('test_student_2')
+        staff_1 = TestUtils.create_staff('test_staff_1')
+        staff_2 = TestUtils.create_staff('test_staff_2')
+        module_1 = TestUtils.create_module('COM101', 'COM101-crn')
+        module_2 = TestUtils.create_module('COM999', 'COM999-crn')
         lecture_1 = create_lecture(module_1)
         lecture_2 = create_lecture(module_2)
 
@@ -179,56 +177,5 @@ def go_to_index(self):
     return self.client.get(url)
 
 
-def authenticate_admin(self):
-    user = User.objects.create_superuser(username='test', password='12345', email='test@mail.com')
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def authenticate_student(self):
-    user = create_student('test').user
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def authenticate_staff(self):
-    user = create_staff('test').user
-    self.client.login(username='test', password='12345')
-    return user
-
-
-def create_course(course_code):
-    try:
-        course = Course.objects.get(course_code=course_code)
-        return course
-    except Course.DoesNotExist:
-        course = Course(course_code=course_code)
-        course.save()
-        return course
-
-
-def create_student(username):
-    user = User.objects.create_user(username=username, password='12345')
-    course = create_course('Course Code')
-    student = Student(user=user, course=course)
-    student.save()
-    return student
-
-
-def create_staff(username):
-    user = User.objects.create_user(username=username, password='12345')
-    staff = Staff(user=user)
-    staff.save()
-    return staff
-
-
-def create_module(module_code):
-    module = Module(module_code=module_code)
-    module.save()
-    return module
-
-
 def create_lecture(module):
-    lecture = Lecture(module=module, session_id='session id', date=datetime.date(2017, 12, 1))
-    lecture.save()
-    return lecture
+    return TestUtils.create_lecture(module, 'session id')

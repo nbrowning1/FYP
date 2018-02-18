@@ -4,6 +4,7 @@ import types
 from django.test import TestCase
 from xlrd import open_workbook
 
+
 # Doesn't actually test any components but is good playground for excel parsing
 # with xlrd
 class ExcelParserTests(TestCase):
@@ -22,7 +23,7 @@ class ExcelParserTests(TestCase):
 
 def get_rows(filename):
     test = open(get_resource(filename), "rb")
-    contents=test.read()
+    contents = test.read()
     workbook = open_workbook(file_contents=contents)
     sheet = workbook.sheet_by_index(0)
     ret_val = []
