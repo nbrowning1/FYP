@@ -1,3 +1,6 @@
+import secrets
+import string
+
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
@@ -45,11 +48,15 @@ def create_student(request):
     check_valid_user(request)
 
     if request.method == 'POST':
-        user_form = UserForm(request.POST)
+        user_form = StudentUserForm(request.POST)
         form = StudentForm(request.POST)
         if user_form.is_valid() and form.is_valid():
             # save as new user
-            user = user_form.save()
+            user = user_form.save(commit=False)
+            random_password = User.objects.make_random_password(length=20)
+            user.set_password(random_password)
+            user.save()
+
             # save as new student - commit false so we can set user before actual save
             student = form.save(commit=False)
             student.user = user
@@ -58,10 +65,36 @@ def create_student(request):
             request.session['success_msg'] = 'Student %s saved' % user_form.cleaned_data['username']
             return redirect(reverse('tool:admin_create_student'), Permanent=True)
     else:
-        user_form = UserForm()
+        user_form = StudentUserForm()
         form = StudentForm()
 
     return render_user_form(request, 'tool/admin/create_student.html', user_form, form)
+
+
+@login_required
+def create_staff(request):
+    check_valid_user(request)
+
+    if request.method == 'POST':
+        # only user form - staff has no additional fields to be populated at this stage
+        user_form = StaffUserForm(request.POST)
+        if user_form.is_valid():
+            # save as new user
+            user = user_form.save(commit=False)
+            random_password = User.objects.make_random_password(length=20)
+            user.set_password(random_password)
+            user.save()
+
+            # save as new staff
+            staff = Staff(user=user)
+            staff.save()
+
+            request.session['success_msg'] = 'Staff %s saved' % user_form.cleaned_data['username']
+            return redirect(reverse('tool:admin_create_staff'), Permanent=True)
+    else:
+        user_form = StaffUserForm()
+
+    return render_user_form(request, 'tool/admin/create_staff.html', user_form, None)
 
 
 def check_valid_user(request):

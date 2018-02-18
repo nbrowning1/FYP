@@ -78,10 +78,17 @@ class CreateStudentTests(TestCase):
         course = Course(course_code='Course Code')
         course.save()
         test_student_create_view(self, 'B00112233', 'Fname', 'Lname', 'test@email.com', '10101C', course.id, None)
+        student = Student.objects.get(user__username='B00112233')
+        self.assertEqual(student.device_id, '10101C')
+        self.assertTrue(student.user.has_usable_password())
 
     def test_invalid_student(self):
         test_student_create_view(self, 'E00112233', '', '', 'test', '1-', -1,
-                                 ['Must be a valid student code e.g. B00112233'])
+                                 ['Must be a valid student code e.g. B00112233',
+                                  'This field is required.',
+                                  'Enter a valid email address.',
+                                  'Must be a valid device ID e.g. 10101C',
+                                  'Select a valid choice. That choice is not one of the available choices.'])
 
     def test_student_already_exists(self):
         course = Course(course_code='Course code')
@@ -105,6 +112,34 @@ class CreateStudentTests(TestCase):
         test_student_create_view(self, 'B00112234', 'Fname', 'Lname', 'TEST@EMAIL.com', '10101c', course.id,
                                  ['User with this Email address already exists',
                                   'Student with this Device ID already exists'])
+
+
+class CreateStaffTests(TestCase):
+    def test_create_staff(self):
+        test_staff_create_view(self, 'E00112233', 'Fname', 'Lname', 'test@email.com', None)
+        staff = Staff.objects.get(user__username='E00112233')
+        self.assertEqual(staff.user.first_name, 'Fname')
+        self.assertTrue(staff.user.has_usable_password())
+
+    def test_invalid_staff(self):
+        test_staff_create_view(self, 'B00112233', '', '', 'test',
+                               ['Must be a valid staff code e.g. E00112233'])
+
+    def test_staff_already_exists(self):
+        test_staff_create_view(self, 'E00112233', 'Fname', 'Lname', 'test@email.com', None)
+
+        # same-case and case-sensitive checks for username
+        # (case-insensitive fails because lowercase e doesnt match pattern)
+        test_staff_create_view(self, 'E00112233', 'Fname', 'Lname', 'test@email.com',
+                               ['User with this Username already exists'])
+        test_staff_create_view(self, 'e00112233', 'Fname', 'Lname', 'test@email.com',
+                               ['Must be a valid staff code e.g. E00112233'])
+
+        # same-case and case-sensitive checks for email
+        test_staff_create_view(self, 'E00112234', 'Fname', 'Lname', 'test@email.com',
+                               ['User with this Email address already exists']),
+        test_staff_create_view(self, 'E00112234', 'Fname', 'Lname', 'TEST@EMAIL.com',
+                               ['User with this Email address already exists'])
 
 
 def go_to_admin_create_module(self):
@@ -164,6 +199,15 @@ def submit_create_student(self, username, first_name, last_name, email, device_i
                              'course': course_id}, follow=True)
 
 
+def submit_create_staff(self, username, first_name, last_name, email):
+    authenticate_staff(self)
+    return self.client.post(reverse('tool:admin_create_staff'),
+                            {'username': username,
+                             'first_name': first_name,
+                             'last_name': last_name,
+                             'email': email}, follow=True)
+
+
 def test_module_create_view(self, module_code, module_crn, expected_errors):
     get_num_objs_fn = Module.objects.all
     initial_modules_num = len(get_num_objs_fn())
@@ -185,6 +229,15 @@ def test_student_create_view(self, username, first_name, last_name, email, devic
     initial_courses_num = len(get_num_objs_fn())
     response = submit_create_student(self, username, first_name, last_name, email, device_id, course_id)
     saved_str = "Student %s saved" % username
+    test_admin_create_view(self, initial_courses_num, response, expected_errors, get_num_objs_fn, saved_str)
+
+
+def test_staff_create_view(self, username, first_name, last_name, email, expected_errors):
+    authenticate_staff(self)
+    get_num_objs_fn = Staff.objects.all
+    initial_courses_num = len(get_num_objs_fn())
+    response = submit_create_staff(self, username, first_name, last_name, email)
+    saved_str = "Staff %s saved" % username
     test_admin_create_view(self, initial_courses_num, response, expected_errors, get_num_objs_fn, saved_str)
 
 

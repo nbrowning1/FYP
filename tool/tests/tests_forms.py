@@ -84,7 +84,7 @@ class CourseFormTests(TestCase):
 class UserFormTests(TestCase):
     def test_empty_form(self):
         data = {}
-        form = UserForm(data=data)
+        form = StudentUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 4)
         self.assertEquals(form.errors['username'], ['This field is required.'])
@@ -92,23 +92,42 @@ class UserFormTests(TestCase):
         self.assertEquals(form.errors['last_name'], ['This field is required.'])
         self.assertEquals(form.errors['email'], ['This field is required.'])
 
-    def test_valid_form(self):
+    def test_valid_student_form(self):
         data = {'username': 'B00112233',
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
                 'email': 'test@email.com'}
-        form = UserForm(data=data)
+        form = StudentUserForm(data=data)
         self.assertTrue(form.is_valid())
 
-    def test_invalid_form(self):
+    def test_invalid_student_form(self):
         data = {'username': 'E00112233',
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
                 'email': 'test@email'}
-        form = UserForm(data=data)
+        form = StudentUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 2)
         self.assertEquals(form.errors['username'], ['Must be a valid student code e.g. B00112233'])
+        self.assertEquals(form.errors['email'], ['Enter a valid email address.'])
+
+    def test_valid_staff_form(self):
+        data = {'username': 'E00112233',
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
+                'email': 'test@email.com'}
+        form = StaffUserForm(data=data)
+        self.assertTrue(form.is_valid())
+
+    def test_invalid_staff_form(self):
+        data = {'username': 'B00112233',
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
+                'email': 'test@email'}
+        form = StaffUserForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 2)
+        self.assertEquals(form.errors['username'], ['Must be a valid staff code e.g. E00112233'])
         self.assertEquals(form.errors['email'], ['Enter a valid email address.'])
 
     def test_existing_user(self):
@@ -120,7 +139,7 @@ class UserFormTests(TestCase):
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
                 'email': 'test@email.com'}
-        form = UserForm(data=data)
+        form = StudentUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.non_field_errors()), 1)
         self.assertEquals(form.errors['__all__'], ['User with this Username already exists.'])
@@ -130,7 +149,7 @@ class UserFormTests(TestCase):
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
                 'email': 'test@email.com'}
-        form = UserForm(data=data)
+        form = StudentUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.non_field_errors()), 1)
         self.assertEquals(form.errors['__all__'], ['User with this Email address already exists.'])

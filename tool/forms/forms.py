@@ -49,7 +49,7 @@ class UserForm(ModelForm):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
         labels = {
-            'username': 'Username / B00 code',
+            'username': 'Username',
             'first_name': 'First name',
             'last_name': 'Last name',
             'email': 'Email address'
@@ -59,8 +59,8 @@ class UserForm(ModelForm):
         username = self.cleaned_data['username']
         if len(username) > 9:
             raise ValidationError("Ensure this value has at most 9 characters (it has %s)." % str(len(username)))
-        elif not re.match('B\d{8}', username):
-            raise ValidationError('Must be a valid student code e.g. B00112233')
+        elif not re.match(self.get_username_pattern(), username):
+            raise ValidationError(self.get_username_validation_message())
         return username
 
     def clean_first_name(self):
@@ -87,6 +87,28 @@ class UserForm(ModelForm):
                 raise ValidationError("User with this Username already exists.")
             elif User.objects.filter(email__iexact=email).count() > 0:
                 raise ValidationError("User with this Email address already exists.")
+
+    def get_username_pattern(self):
+        raise NotImplementedError("Not implemented")
+
+    def get_username_validation_message(self):
+        raise NotImplementedError("Not implemented")
+
+
+class StudentUserForm(UserForm):
+    def get_username_pattern(self):
+        return 'B\d{8}'
+
+    def get_username_validation_message(self):
+        return 'Must be a valid student code e.g. B00112233'
+
+
+class StaffUserForm(UserForm):
+    def get_username_pattern(self):
+        return 'E\d{8}'
+
+    def get_username_validation_message(self):
+        return 'Must be a valid staff code e.g. E00112233'
 
 
 class StudentForm(ModelForm):

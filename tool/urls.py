@@ -76,6 +76,6 @@ urlpatterns = [
 
     url(r'^admin-create-student/$', admin_views.create_student, name='admin_create_student'),
 
-    url(r'^admin-create-staff/$', admin_views.create_module, name='admin_create_staff')
+    url(r'^admin-create-staff/$', admin_views.create_staff, name='admin_create_staff')
 
 ]
