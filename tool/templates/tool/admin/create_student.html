@@ -1,0 +1,10 @@
+{% extends "tool/admin/base_create_user_entity.html" %}
+
+{% block title %}Create Student{% endblock %}
+
+{% block form_open %}
+<form action="{% url 'tool:admin_create_student' %}" method="POST" enctype="multipart/form-data">
+{% endblock %}
+{% block form_close %}
+</form>
+{% endblock %}

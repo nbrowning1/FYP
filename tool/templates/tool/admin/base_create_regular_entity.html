@@ -1,0 +1,9 @@
+{% extends "tool/admin/base_create_entity.html" %}
+
+{% block form_fields %}
+{% include "tool/common/form_fields.html" with form=form %}
+{% endblock %}
+
+{% block form_errors %}
+{% include "tool/common/form_errors.html" with form=form %}
+{% endblock %}

@@ -10,7 +10,7 @@
     <form id="feedback-submit" name="feedback-submit" action="{% url 'tool:module_feedback' module_id=module.id %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {% for field in form %}
-            <span class="feedback-form-question">{{ field.label }}:</span>
+            <span class="form-question">{{ field.label }}:</span>
             {{ field }}
         {% endfor %}
         <br>

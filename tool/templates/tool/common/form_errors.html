@@ -1,0 +1,18 @@
+{# quite verbose but a way to show the error labels rather than their keys in error dict #}
+{% if form.errors %}
+    {% if form.non_field_errors %}
+    <li>{{ form.non_field_errors }}</li>
+    {% endif %}
+    {% for field in form %}
+        {% if field.errors %}
+        <li>
+            {{ field.label }}
+            <ul>
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+    {% endfor %}
+{% endif %}

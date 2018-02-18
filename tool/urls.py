@@ -70,6 +70,12 @@ urlpatterns = [
 
     url(r'^save-module-course-settings/$', views.save_module_course_settings, name='save_module_course_settings'),
 
-    url(r'^admin-create-module/$', admin_views.create_module, name='admin_create_module')
+    url(r'^admin-create-module/$', admin_views.create_module, name='admin_create_module'),
+
+    url(r'^admin-create-course/$', admin_views.create_course, name='admin_create_course'),
+
+    url(r'^admin-create-student/$', admin_views.create_student, name='admin_create_student'),
+
+    url(r'^admin-create-staff/$', admin_views.create_module, name='admin_create_staff')
 
 ]
