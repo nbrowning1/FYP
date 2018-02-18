@@ -1,0 +1,22 @@
+{% extends "tool/base_view.html" %}
+{% load static %}
+
+{% block content %}
+    {% if success_message %}
+    <span>{{ success_message }}</span>
+    <br>
+    {% endif %}
+    {% block form_open %}<form action="INCORRECT_CONFIGURATION" method="POST" enctype="multipart/form-data">{% endblock %}
+        {% csrf_token %}
+        {% block form_fields %}
+        {% endblock %}
+        <br>
+        <br>
+        <p class="form-error">{{ error_msg }}</p>
+        <input type="submit" class="btn btn-info" value="Submit">
+    {# only adding this to maintain form tags in child templates #}
+    {% block form_close %}</form>{% endblock %}
+
+    {% block form_errors %}
+    {% endblock %}
+{% endblock %}

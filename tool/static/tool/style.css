@@ -132,7 +132,7 @@ table {
   white-space: pre-wrap;
 }
 
-.feedback-form-question, textarea.feedback-form-answer {
+.form-question, textarea.feedback-form-answer {
   width: 100%;
   display: block;
   margin-bottom: 10px;
