@@ -58,7 +58,7 @@ def test_password_reset(self, email_address, email_expected):
         response = self.client.get(reverse('tool:password_reset_confirm', kwargs={'token': token, 'uidb64': uid}),
                                    follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name, ['tool/password_reset_confirm.html'])
+        self.assertEqual(response.template_name, ['tool/auth/password_reset_confirm.html'])
 
         # post to the same url with our new password:
         response = self.client.post(reverse('tool:password_reset_confirm',

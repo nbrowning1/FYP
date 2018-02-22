@@ -1,6 +1,6 @@
-{% extends "tool/base_single_view.html" %}
+{% extends "tool/base/base_single_view.html" %}
 
-{% block title %}{{ course.course_code }}{% endblock %}
+{% block title %}{{ lecturer.user.username }}{% endblock %}
 
 {% block content %}
     {% if module_attendances %}
@@ -32,6 +32,7 @@
     <hr>
     <br>
     {{ pie_chart.as_html }}
+    {{ bar_chart.as_html }}
     {% else %}
     <p>No attendances are available.</p>
     {% endif %}

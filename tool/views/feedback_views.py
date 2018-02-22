@@ -49,7 +49,7 @@ def module_feedback(request, module_id):
             return redirect(reverse('tool:module', kwargs={'module_id': module_id}), Permanent=True)
     else:
         form = ModuleFeedbackForm()
-        return render(request, 'tool/module_feedback.html', {
+        return render(request, 'tool/feedback/module_feedback.html', {
             'module': module,
             'form': form
         })
@@ -83,7 +83,7 @@ def save_feedback(student, module, feedback_general, feedback_positive, feedback
 
 
 def render_with_error(request, module, error_msg):
-    return render(request, 'tool/module_feedback.html', {
+    return render(request, 'tool/feedback/module_feedback.html', {
         'module': module,
         'error_msg': error_msg
     })

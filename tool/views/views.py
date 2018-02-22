@@ -142,7 +142,7 @@ def upload(request):
                 return redirect_with_error(request, reverse('tool:index'), error_msg)
             saved_data.append(uploaded_data)
 
-        return render(request, 'tool/upload.html', {
+        return render(request, 'tool/upload/upload.html', {
             'uploaded_data': saved_data,
             'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
         })
@@ -186,7 +186,7 @@ def settings(request):
                 return redirect_with_error_by_key(request, reverse('tool:settings'), 'attendance_error', error_msg)
 
         return redirect(reverse('tool:settings'), Permanent=True)
-    return render(request, 'tool/settings.html', {
+    return render(request, 'tool/settings/settings.html', {
         'user_type': user_type.value,
         'attendance_error_message': attendance_error_msg,
         'saved_settings': saved_settings
@@ -279,7 +279,7 @@ def module_course_view_settings(request):
             data_course.displayed = False
             courses.append(data_course)
 
-        return render(request, 'tool/module_course_view_settings.html', {
+        return render(request, 'tool/settings/module_course_view_settings.html', {
             'modules': modules,
             'courses': courses
         })

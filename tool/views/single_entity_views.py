@@ -34,7 +34,7 @@ def module(request, module_id):
     pie_chart = get_attendance_pie_chart_from_percentages(request, module_data.student_attendances, 'Module Attendance Overview')
     line_chart = get_module_line_chart(module_data.lecture_attendances, len(module_data.student_attendances))
 
-    return render(request, 'tool/module.html', {
+    return render(request, 'tool/single-entities/module.html', {
         'user_type': user_type.value,
         'module': module,
         'student_attendances': module_data.student_attendances,
@@ -103,7 +103,7 @@ def course(request, course_id):
 
     pie_chart = get_attendance_pie_chart_from_percentages(request, module_attendances, 'Course Attendance Overview')
 
-    return render(request, 'tool/course.html', {
+    return render(request, 'tool/single-entities/course.html', {
         'course': course,
         'module_attendances': module_attendances,
         'pie_chart': pie_chart,
@@ -178,7 +178,7 @@ def lecturer(request, lecturer_id):
     pie_chart = get_attendance_pie_chart_from_percentages(request, module_attendances, 'Modules Attendance Overview')
     bar_chart = get_lecturer_bar_chart(module_attendances)
 
-    return render(request, 'tool/lecturer.html', {
+    return render(request, 'tool/single-entities/lecturer.html', {
         'lecturer': lecturer,
         'module_attendances': module_attendances,
         'pie_chart': pie_chart,
@@ -242,7 +242,7 @@ def student(request, student_id):
 
     pie_chart = get_attendance_pie_chart_from_percentages(request, student_module_attendances, 'Module Attendance Overview')
 
-    return render(request, 'tool/student.html', {
+    return render(request, 'tool/single-entities/student.html', {
         'student': student,
         'student_module_attendances': student_module_attendances,
         'pie_chart': pie_chart,
@@ -275,7 +275,7 @@ def lecture(request, lecture_id):
 
     pie_chart = get_attendance_pie_chart_from_absolute_vals(request, lecture_attendances, 'Lecture Attendance Overview')
 
-    return render(request, 'tool/lecture.html', {
+    return render(request, 'tool/single-entities/lecture.html', {
         'lecture': lecture,
         'lecture_attendances': lecture_attendances,
         'pie_chart': pie_chart,
