@@ -41,11 +41,14 @@ table {
 
 tr {
   outline: thin solid;
-  border-bottom: 1px solid black;
 }
 
 table.noborder tr {
   outline: none;
+}
+
+table:not(.noborder) {
+  border-bottom: 1px solid black;
 }
 
 th, td {
