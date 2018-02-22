@@ -31,8 +31,17 @@ table {
   margin: 0 auto;
 }
 
+.entity-tbl {
+  width: 50%;
+}
+
+.entity-tbl th, .entity-tbl td {
+  text-align: center;
+}
+
 tr {
   outline: thin solid;
+  border-bottom: 1px solid black;
 }
 
 table.noborder tr {
@@ -56,6 +65,11 @@ td.select-row {
   padding-right: 10px;
 }
 
+/* left border seems to disappear from these.. */
+table.double-header-tbl {
+  border-left: 1px solid black;
+}
+
 tr.double-header {
   outline: none;
 }
@@ -75,6 +89,11 @@ th.double-header-right-cell {
 
 table {
   align-self: center;
+}
+
+td a {
+  display: block;
+  width: 100%;
 }
 
 .setting, #reset-password, .centre-link {
@@ -152,14 +171,8 @@ textarea.feedback-form-answer {
 }
 
 /* Bootstrap overrides */
-@media (min-width: 768px){
-  .container{
-    max-width:100%;
-  }
-}
-
-@media (min-width: 992px){
-  .container{
+@media (min-width: 768px) {
+  .container {
     max-width:100%;
   }
 }
