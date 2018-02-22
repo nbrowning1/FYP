@@ -1,0 +1,181 @@
+body {
+  padding: 15px;
+}
+
+#content {
+  width: 80%;
+  margin: 0 auto;
+}
+
+h1, h2, h3, h4, h5, h6, form, .link-container, p, a {
+  text-align: center;
+}
+
+div.download-container, div.pagination-container {
+  text-align: center;
+}
+
+.checkbox-cell {
+  text-align: center;
+}
+
+.login-form-label, .register-form-label {
+  width: 125px;
+}
+
+#username-indicator, .settings {
+  float: right;
+}
+
+table {
+  margin: 0 auto;
+}
+
+.entity-tbl {
+  width: 50%;
+}
+
+.entity-tbl th, .entity-tbl td {
+  text-align: center;
+}
+
+tr {
+  outline: thin solid;
+}
+
+table.noborder tr {
+  outline: none;
+}
+
+table:not(.noborder) {
+  border-bottom: 1px solid black;
+}
+
+th, td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100px;
+}
+
+tr.alt {
+  background-color: lightgrey;
+}
+
+td.select-row {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* left border seems to disappear from these.. */
+table.double-header-tbl {
+  border-left: 1px solid black;
+}
+
+tr.double-header {
+  outline: none;
+}
+
+tr.double-header th {
+  border-bottom: 1px solid black;
+  border-top: 1px solid black;
+}
+
+th.double-header-left-cell {
+  border-left: 1px solid black;
+}
+
+th.double-header-right-cell {
+  border-right: 1px solid black;
+}
+
+table {
+  align-self: center;
+}
+
+td a {
+  display: block;
+  width: 100%;
+}
+
+.setting, #reset-password, .centre-link {
+  display: block;
+}
+
+.panel-heading {
+  cursor: pointer;
+}
+
+.panel-heading:hover h4 {
+  text-decoration: underline;
+}
+
+#attendance-container {
+  overflow: auto;
+}
+
+#placeholder {
+  display: none;
+}
+
+#add-upload-row-container, .delete-upload-row-container {
+  height: 30px;
+}
+
+#add-upload-row, .delete-upload-row {
+  float: right;
+  cursor: pointer;
+}
+
+.upload-row, .feedback-row {
+  border: 1px solid #2e6da4;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
+#add-feedback-container {
+  text-align: right;
+}
+
+.feedback-user {
+  font-style: italic;
+}
+
+.feedback-title, .feedback-answer-display {
+  text-align: left;
+}
+
+.feedback-title {
+  font-weight: bold;
+}
+
+.feedback-answer-display {
+  white-space: pre-wrap;
+}
+
+.form-question, textarea.feedback-form-answer {
+  width: 100%;
+  display: block;
+  margin-bottom: 10px;
+}
+
+textarea.feedback-form-answer {
+  resize: none;
+  height: 100px;
+}
+
+.form-error {
+  color: red;
+}
+
+.attendance-range {
+  width: 2em;
+}
+
+/* Bootstrap overrides */
+@media (min-width: 768px) {
+  .container {
+    max-width:100%;
+  }
+}

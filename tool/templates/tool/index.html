@@ -1,14 +1,14 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'tool/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/font-awesome.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'tool/pagination.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'tool/chosen.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'tool/style.css' %}" />
-<script type="text/javascript" src="{% static 'tool/jquery-3.2.1.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'tool/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'tool/pagination.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'tool/chosen.jquery.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'tool/css/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'tool/css/font-awesome.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/css/pagination.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/css/chosen.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'tool/css/style.css' %}" />
+<script type="text/javascript" src="{% static 'tool/js/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/js/pagination.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/js/chosen.jquery.min.js' %}"></script>
 <script type="text/javascript">
   /* populate entities in JS to enable pagination */
   
@@ -51,7 +51,7 @@
   });
   {% endfor %}
 </script>
-<script type="text/javascript" src="{% static 'tool/script.js' %}"></script>
+<script type="text/javascript" src="{% static 'tool/js/script.js' %}"></script>
 
 <a href="{% url 'tool:logout' %}">Log out</a>
 <a class="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
