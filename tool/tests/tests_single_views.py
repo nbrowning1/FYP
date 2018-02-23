@@ -5,10 +5,6 @@ from .utils import *
 
 
 class SingleModuleViewTests(TestCase):
-    def test_single_module_view_admin(self):
-        TestUtils.authenticate_admin(self)
-        test_valid_module_view(self)
-
     def test_single_module_view_staff(self):
         TestUtils.authenticate_staff(self)
         test_valid_module_view(self)
@@ -30,7 +26,7 @@ class SingleModuleViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/modules/10', status_code=302)
 
     def test_nonexistent_module(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         TestUtils.create_module('COM101', 'COM101-crn')
         response = go_to_module(self, 10)
@@ -38,10 +34,6 @@ class SingleModuleViewTests(TestCase):
 
 
 class SingleCourseViewTests(TestCase):
-    def test_single_course_view_admin(self):
-        TestUtils.authenticate_admin(self)
-        test_valid_course_view(self, True)
-
     def test_single_course_view_staff(self):
         TestUtils.authenticate_staff(self)
         test_valid_course_view(self, True)
@@ -70,10 +62,6 @@ class SingleCourseViewTests(TestCase):
 
 
 class SingleLecturerViewTests(TestCase):
-    def test_single_lecturer_view_admin(self):
-        TestUtils.authenticate_admin(self)
-        test_valid_lecturer_view(self, False)
-
     def test_single_lecturer_view_staff(self):
         user = TestUtils.authenticate_staff(self)
         this_lecturer = Staff.objects.get(user=user)
@@ -96,7 +84,7 @@ class SingleLecturerViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/lecturers/10', status_code=302)
 
     def test_nonexistent_lecturer(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         TestUtils.create_staff('e00123456')
         response = go_to_lecturer(self, 10)
@@ -104,10 +92,6 @@ class SingleLecturerViewTests(TestCase):
 
 
 class SingleStudentViewTests(TestCase):
-    def test_single_student_view_admin(self):
-        TestUtils.authenticate_admin(self)
-        test_valid_student_view(self, False)
-
     def test_single_student_view_staff(self):
         TestUtils.authenticate_staff(self)
         test_valid_student_view(self, False)
@@ -129,7 +113,7 @@ class SingleStudentViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/students/10', status_code=302)
 
     def test_nonexistent_student(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         TestUtils.create_student('B00123456')
         response = go_to_student(self, 10)
@@ -137,10 +121,6 @@ class SingleStudentViewTests(TestCase):
 
 
 class SingleLectureViewTests(TestCase):
-    def test_single_lecture_view_admin(self):
-        TestUtils.authenticate_admin(self)
-        test_valid_lecture_view(self, False)
-
     def test_single_lecture_view_staff(self):
         TestUtils.authenticate_staff(self)
         test_valid_lecture_view(self, False)
@@ -162,7 +142,7 @@ class SingleLectureViewTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/lectures/10', status_code=302)
 
     def test_nonexistent_lecture(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         TestUtils.create_student('B00123456')
         response = go_to_lecture(self, 10)

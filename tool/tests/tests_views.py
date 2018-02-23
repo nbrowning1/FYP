@@ -14,7 +14,7 @@ class ViewsTests(TestCase):
         self.assertNotContains(response, 'Please login to see this page.')
 
     def test_login_redirects_if_authenticated(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         url = reverse('tool:login')
         response = self.client.get(url)
@@ -35,29 +35,18 @@ class ViewsTests(TestCase):
 
     def test_authenticated_index_view(self):
         # test that when authenticated, it shows index view as expected
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
 
         response = go_to_index(self)
         self.assertContains(response, 'Home')
         self.assertNotContains(response, 'Username')
         self.assertNotContains(response, 'Password')
 
-    def test_no_content_admin(self):
-        TestUtils.authenticate_admin(self)
-
-        response = go_to_index(self)
-        self.assertContains(response, 'No modules are available.')
-        self.assertContains(response, 'No courses are available.')
-        self.assertContains(response, 'No lecturers are available.')
-        self.assertContains(response, 'No students are available.')
-        self.assertContains(response, 'No lectures are available.')
-
     def test_no_content_staff(self):
         TestUtils.authenticate_staff(self)
 
         response = go_to_index(self)
 
-        # shouldn't see mention of 'lecturers'
         self.assertContains(response, 'No modules added.')
         self.assertContains(response, 'No courses added.')
         self.assertNotContains(response, 'No lecturers are available.')
@@ -77,29 +66,6 @@ class ViewsTests(TestCase):
         self.assertNotContains(response, 'No students are available.')
         self.assertContains(response, 'No lectures are available.')
 
-    def test_content_admin(self):
-        TestUtils.authenticate_admin(self)
-        student_1 = TestUtils.create_student('test_student_1')
-        student_2 = TestUtils.create_student('test_student_2')
-        staff_1 = TestUtils.create_staff('test_staff_1')
-        staff_2 = TestUtils.create_staff('test_staff_2')
-        module = TestUtils.create_module('COM101', 'COM101-crn')
-        lecture = create_lecture(module)
-
-        response = go_to_index(self)
-        self.assertNotContains(response, 'No modules are available.')
-        self.assertNotContains(response, 'No courses are available.')
-        self.assertNotContains(response, 'No lecturers are available.')
-        self.assertNotContains(response, 'No students are available.')
-        self.assertNotContains(response, 'No lectures are available.')
-        self.assertContains(response, 'COM101')
-        self.assertContains(response, 'Course Code')
-        self.assertContains(response, 'test_student_1')
-        self.assertContains(response, 'test_student_2')
-        self.assertContains(response, 'test_staff_1')
-        self.assertContains(response, 'test_staff_2')
-        self.assertContains(response, 'Lectures')
-
     def test_content_staff(self):
         test_staff = TestUtils.create_staff('test')
         self.client.login(username='test', password='12345')
@@ -117,6 +83,7 @@ class ViewsTests(TestCase):
         response = go_to_index(self)
         self.assertContains(response, 'No modules added.')
         self.assertContains(response, 'No courses added.')
+        self.assertNotContains(response, 'No lecturers are available.')
         self.assertContains(response, 'No students are available.')
         self.assertContains(response, 'No lectures are available.')
 
@@ -130,6 +97,8 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'COM101')
         self.assertNotContains(response, 'COM999')
         self.assertContains(response, 'Course Code')
+        self.assertContains(response, 'test_staff_1')
+        self.assertContains(response, 'test_staff_2')
         self.assertContains(response, 'test_student_1')
         self.assertNotContains(response, 'test_student_2')
         self.assertContains(response, 'Lectures')

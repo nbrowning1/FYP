@@ -8,7 +8,6 @@ from ..models import *
 
 
 class UserType(Enum):
-    ADMIN_TYPE = "ADMIN"
     STAFF_TYPE = "STAFF"
     STUDENT_TYPE = "STUDENT"
 
@@ -27,25 +26,22 @@ class Colours(Enum):
     YELLOW = '#f1c40f'
 
 
-VALID_TYPES = [UserType.ADMIN_TYPE, UserType.STAFF_TYPE, UserType.STUDENT_TYPE]
+VALID_TYPES = [UserType.STAFF_TYPE, UserType.STUDENT_TYPE]
 
 
 class ViewsUtils():
     def get_user_type(request):
-        if request.user.is_staff:
-            return UserType.ADMIN_TYPE
-        else:
-            try:
-                Staff.objects.get(user=request.user)
-                return UserType.STAFF_TYPE
-            except Staff.DoesNotExist:
-                pass
+        try:
+            Staff.objects.get(user=request.user)
+            return UserType.STAFF_TYPE
+        except Staff.DoesNotExist:
+            pass
 
-            try:
-                Student.objects.get(user=request.user)
-                return UserType.STUDENT_TYPE
-            except Student.DoesNotExist:
-                pass
+        try:
+            Student.objects.get(user=request.user)
+            return UserType.STUDENT_TYPE
+        except Student.DoesNotExist:
+            pass
 
         return None
 

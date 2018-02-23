@@ -23,11 +23,6 @@ class Command(BaseCommand):
                             dest='staff',
                             help='Report attendance to staff')
 
-        parser.add_argument('--admins',
-                            action='store_true',
-                            dest='admins',
-                            help='Report attendance to admins')
-
         parser.add_argument('--all-users',
                             action='store_true',
                             dest='all-users',
@@ -61,8 +56,6 @@ class Command(BaseCommand):
             users = Student.objects.all()
         elif options['staff']:
             users = Staff.objects.all()
-        elif options['admins']:
-            users = User.objects.filter(is_staff=True)
         else:
             self.stdout.write(self.style.NOTICE('No users argument supplied. Use --help to get command options'))
             return
@@ -127,13 +120,8 @@ def email_attendance_report(self, user, time_period, connection, test_only, to_d
             pass
 
     if not user_type_found:
-        # finally check if admin user
-        if user.is_staff:
-            email_details = get_admin_attendance_report(self, time_period, to_date)
-            email_details.is_student = False
-        else:
-            self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
-            return
+        self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
+        return
 
     # if no attendance data for email, don't send it
     if not email_details.modules:
@@ -153,12 +141,6 @@ def get_student_attendance_report(self, student, time_period, to_date):
 
 def get_staff_attendance_report(self, lecturer, time_period, to_date):
     modules = lecturer.modules.all()
-    return get_email_details(self, time_period, modules, to_date, None)
-
-
-def get_admin_attendance_report(self, time_period, to_date):
-    # for admins, get everything
-    modules = Module.objects.all()
     return get_email_details(self, time_period, modules, to_date, None)
 
 

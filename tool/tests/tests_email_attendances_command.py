@@ -9,51 +9,6 @@ from ..models import *
 
 
 class EmailAttendanceReportTest(TestCase):
-    def test_admin_weekly_report(self):
-        setup_test_data_weekly()
-        self.assertEqual(len(mail.outbox), 0)
-        call_command('email_attendances', '--admins', '--weekly')
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
-        self.assertEqual(len(mail.outbox[0].to), 1)
-        self.assertEqual(mail.outbox[0].to[0], 'user1@mail.com')
-        print(mail.outbox[0].body)
-
-        # should only see module containing lectures for this week (COM202)
-        self.assertNotIn('COM101', mail.outbox[0].body)
-        self.assertIn('COM202 - COM202-1: 50.00% Attendance', mail.outbox[0].body)
-
-        # should only see lectures for that module in this week
-        self.assertNotIn('id1', mail.outbox[0].body)
-        self.assertNotIn('id2', mail.outbox[0].body)
-        today_str = get_django_template_format_date(get_today_date())
-        self.assertIn('id3 -- {}: 50.00% Attendance'.format(today_str), mail.outbox[0].body)
-        self.assertIn('id4 -- {}: 50.00% Attendance'.format(today_str), mail.outbox[0].body)
-        self.assertIn('Warning students', mail.outbox[0].body)
-        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
-
-    def test_admin_monthly_report(self):
-        setup_test_data_monthly()
-        self.assertEqual(len(mail.outbox), 0)
-        call_command('email_attendances', '--admins', '--monthly', '--test-date=2018-01-31')
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
-        self.assertEqual(len(mail.outbox[0].to), 1)
-        self.assertEqual(mail.outbox[0].to[0], 'user1@mail.com')
-        print(mail.outbox[0].body)
-
-        self.assertIn('COM101 - COM101-1: 100.00% Attendance', mail.outbox[0].body)
-        self.assertIn('COM202 - COM202-1: 33.33% Attendance - ** Low Attendance Warning **', mail.outbox[0].body)
-
-        first_date_str = get_django_template_format_date(get_monthly_first_date())
-        second_date_str = get_django_template_format_date(get_monthly_second_date())
-        self.assertIn('id1 -- {}: 100.00% Attendance'.format(first_date_str), mail.outbox[0].body)
-        self.assertIn('id2 -- {}: 0.00% Attendance'.format(first_date_str), mail.outbox[0].body)
-        self.assertIn('id3 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
-        self.assertIn('id4 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
-        self.assertIn('Warning students', mail.outbox[0].body)
-        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
-
     def test_staff_report(self):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)
@@ -116,12 +71,11 @@ class EmailAttendanceReportTest(TestCase):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)
         call_command('email_attendances', '--all-users', '--weekly')
-        # everybody except staff with no modules/courses - 1 admin, 1 staff, 2 students
-        self.assertEqual(len(mail.outbox), 4)
+        # everybody except staff with no modules/courses - 1 staff, 2 students
+        self.assertEqual(len(mail.outbox), 3)
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(len(mail.outbox[1].to), 1)
         self.assertEqual(len(mail.outbox[2].to), 1)
-        self.assertEqual(len(mail.outbox[3].to), 1)
 
     def test_test_only(self):
         setup_test_data_weekly()
@@ -130,7 +84,8 @@ class EmailAttendanceReportTest(TestCase):
         call_command('email_attendances', '--all-users', '--weekly', '--test-only', stdout=out)
         self.assertEqual(len(mail.outbox), 0)
         self.assertIn('TEST MODE, No emails will actually be sent.', out.getvalue())
-        self.assertIn('Email sent to user1 <user1@mail.com>', out.getvalue())
+        # user1 isn't recognised user type: staff or student
+        self.assertIn('Couldn\'t determine user type for: user1. Skipping', out.getvalue())
         self.assertIn('Email sent to teststudent1 <teststudent1@mail.com>', out.getvalue())
         self.assertIn('Email sent to teststudent2 <teststudent2@mail.com>', out.getvalue())
         self.assertIn('Email sent to teststaff1 <teststaff1@mail.com>', out.getvalue())

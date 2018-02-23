@@ -159,8 +159,6 @@
   <br>
   <hr>
   <br>
-{% elif user_type and user_type == "ADMIN" %}
-  <p>No lecturers are available.</p>
 {% endif %}
   
 <!-- STUDENTS -->
@@ -219,7 +217,7 @@
   <p>No lectures are available.</p>
 {% endif %}
   
-{% if user.is_staff %}
+{% if user_type and user_type == "STAFF" %}
   <hr>
   <h3>Admin Panel</h3>
   <h4>Upload Marks</h4>

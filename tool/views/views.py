@@ -18,54 +18,46 @@ from ..upload_data_save import DataSaver
 def index(request):
     error_msg = request.session.pop('error_message', '')
 
-    if request.user.is_staff:
-        modules = Module.objects.all()
-        courses = Course.objects.all()
+    is_valid_user = False
+
+    # if lecturer exists, it's a lecturer
+    try:
+        lecturer = Staff.objects.get(user=request.user)
+
+        modules = lecturer.modules.all()
+        courses = lecturer.courses.all()
         lecturers = Staff.objects.all()
-        students = Student.objects.all()
-        lectures = Lecture.objects.all()
-        user_type = UserType.ADMIN_TYPE.value
-    else:
-        is_valid_user = False
+        students = []
+        # TODO: add students from courses
+        for module in modules:
+            for student in module.students.all():
+                students.append(student)
+        students = list(OrderedDict.fromkeys(students))
+        lectures = Lecture.objects.filter(module__in=modules)
 
-        # if lecturer exists, it's a lecturer
-        try:
-            lecturer = Staff.objects.get(user=request.user)
+        is_valid_user = True
+        user_type = UserType.STAFF_TYPE.value
+    except Staff.DoesNotExist:
+        pass
 
-            modules = lecturer.modules.all()
-            courses = lecturer.courses.all()
-            lecturers = []
-            students = []
-            # TODO: add students from courses
-            for module in modules:
-                for student in module.students.all():
-                    students.append(student)
-            students = list(OrderedDict.fromkeys(students))
-            lectures = Lecture.objects.filter(module__in=modules)
+    # otherwise try student
+    try:
+        student = Student.objects.get(user=request.user)
 
-            is_valid_user = True
-            user_type = UserType.STAFF_TYPE.value
-        except Staff.DoesNotExist:
-            pass
+        modules = Module.objects.filter(students__id__exact=student.id)
+        courses = []
+        lecturers = []
+        students = []
+        lectures = Lecture.objects.filter(module__in=modules)
+        is_valid_user = True
 
-        # otherwise try student
-        try:
-            student = Student.objects.get(user=request.user)
+        user_type = UserType.STUDENT_TYPE.value
+    except Student.DoesNotExist:
+        pass
 
-            modules = Module.objects.filter(students__id__exact=student.id)
-            courses = []
-            lecturers = []
-            students = []
-            lectures = Lecture.objects.filter(module__in=modules)
-            is_valid_user = True
-
-            user_type = UserType.STUDENT_TYPE.value
-        except Student.DoesNotExist:
-            pass
-
-        # if we made it this far, user is invalid - log user out
-        if not is_valid_user:
-            return logout_and_redirect_login(request)
+    # if we made it this far, user is invalid - log user out
+    if not is_valid_user:
+        return logout_and_redirect_login(request)
 
     upload_example_filepath = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.xlsx')
 
@@ -83,7 +75,9 @@ def index(request):
 
 @login_required
 def upload(request):
-    if not request.user.is_staff:
+    user_type = ViewsUtils.get_user_type(request)
+    ViewsUtils.check_valid_user(user_type, request)
+    if not (user_type == UserType.STAFF_TYPE):
         raise PermissionDenied("Insufficient permissions")
 
     if request.method == 'POST':
@@ -158,7 +152,9 @@ def redirect_to_home_with_error(request, error_msg):
 
 @login_required
 def download(request, path):
-    if not request.user.is_staff:
+    user_type = ViewsUtils.get_user_type(request)
+    ViewsUtils.check_valid_user(user_type, request)
+    if not (user_type == UserType.STAFF_TYPE):
         raise PermissionDenied("Insufficient permissions")
 
     if os.path.exists(path):

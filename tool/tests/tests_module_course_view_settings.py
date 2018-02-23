@@ -6,10 +6,6 @@ from .utils import *
 
 class ModuleCourseViewSettingsTests(TestCase):
     def test_user_type_access(self):
-        TestUtils.authenticate_admin(self)
-        test_settings_and_save_pages(self, 404, 404)
-
-        self.client.logout()
         TestUtils.authenticate_student(self)
         test_settings_and_save_pages(self, 404, 404)
 
