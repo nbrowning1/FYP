@@ -1,8 +1,6 @@
 import csv
 import io
 import os
-import types
-from collections import OrderedDict
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -61,13 +59,43 @@ def index(request):
 
     upload_example_filepath = os.path.join(os.path.dirname(__file__), '..', 'download_resources', 'upload_example.xlsx')
 
+    # representing the objects as lists that can be serialised to JSON for JS usage
+    modulesjs = [{'url': reverse('tool:module', kwargs={'module_id': m.id}),
+                  'code': m.module_code,
+                  'crn': m.module_crn}
+                 for m in modules]
+
+    coursesjs = [{'url': reverse('tool:course', kwargs={'course_id': c.id}),
+                  'name': c.course_code}
+                 for c in courses]
+
+    lecturersjs = [{'url': reverse('tool:lecturer', kwargs={'lecturer_id': l.id}),
+                    'name': l.user.username}
+                   for l in lecturers]
+
+    studentsjs = [{'url': reverse('tool:student', kwargs={'student_id': s.id}),
+                   'name': s.user.username}
+                  for s in students]
+
+    lecturesjs = [{'url': reverse('tool:lecture', kwargs={'lecture_id': l.id}),
+                   'module_code': l.module.module_code,
+                   'session_id': l.session_id,
+                   # format in same way as Django usually formats for templates
+                   'date': l.date.strftime('%b. ' + str(l.date.day) + ', %Y')}
+                  for l in lectures]
+
     return render(request, 'tool/index.html', {
         'error_message': error_msg,
         'modules': modules,
+        'modulesjs': modulesjs,
         'courses': courses,
+        'coursesjs': coursesjs,
         'lecturers': lecturers,
+        'lecturersjs': lecturersjs,
         'students': students,
+        'studentsjs': studentsjs,
         'lectures': lectures,
+        'lecturesjs': lecturesjs,
         'user_type': user_type,
         'upload_example_filepath': upload_example_filepath
     })

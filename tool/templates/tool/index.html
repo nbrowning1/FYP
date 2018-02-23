@@ -11,45 +11,13 @@
 <script type="text/javascript" src="{% static 'tool/js/chosen.jquery.min.js' %}"></script>
 <script type="text/javascript">
   /* populate entities in JS to enable pagination */
-  
-  var modules = [];
-  var courses = [];
-  var lecturers = [];
-  var students = [];
-  var lectures = [];
-  {% for module in modules %}
-  modules.push({
-    url: "{% url 'tool:module' module_id=module.id %}",
-    code: "{{ module.module_code }}",
-    crn: "{{ module.module_crn }}"
-  });
-  {% endfor %}
-  {% for course in courses %}
-  courses.push({
-    url: "{% url 'tool:course' course_id=course.id %}",
-    name: "{{ course.course_code }}"
-  });
-  {% endfor %}
-  {% for lecturer in lecturers %}
-  lecturers.push({
-    url: "{% url 'tool:lecturer' lecturer_id=lecturer.id %}",
-    name: "{{ lecturer.user.username }}"
-  });
-  {% endfor %}
-  {% for student in students %}
-  students.push({
-    url: "{% url 'tool:student' student_id=student.id %}",
-    name: "{{ student.user.username }}"
-  });
-  {% endfor %}
-  {% for lecture in lectures %}
-  lectures.push({
-    url: "{% url 'tool:lecture' lecture_id=lecture.id %}",
-    module_code: "{{ lecture.module.module_code }}",
-    session_id: "{{ lecture.session_id }}",
-    date: "{{ lecture.date }}"
-  });
-  {% endfor %}
+
+  var modules = {{ modulesjs|safe }};
+  var courses = {{ coursesjs|safe }};
+  var lecturers = {{ lecturersjs|safe }};
+  var students = {{ studentsjs|safe }};
+  var lectures = {{ lecturesjs|safe }};
+
 </script>
 <script type="text/javascript" src="{% static 'tool/js/script.js' %}"></script>
 
