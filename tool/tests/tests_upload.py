@@ -18,7 +18,7 @@ class UploadTests(TestCase):
         test_upload_valid_data(self, 'Attendance_Test_xlsx.xlsx')
 
     def test_sequential_upload_replaces(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1', None)
         validate_valid_data(self, False)
@@ -32,13 +32,13 @@ class UploadTests(TestCase):
         validate_valid_data(self, True)
 
     def test_upload_unrecognised_module(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         # uploading valid data but without full DB setup
         test_upload(self, 'upload_test_valid.csv', 'code_EEE312 crn_EEE312-1',
                     'Unrecognised module for upload #1. Please select a module from the list.')
 
     def test_upload_unrecognised_student(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         TestUtils.create_staff('e00123456')
         TestUtils.create_staff('e00987654')
         TestUtils.create_module('EEE312', 'EEE312-1')
@@ -47,24 +47,24 @@ class UploadTests(TestCase):
                     'Error processing file upload_test_valid.csv: Error with inputs: [[Unrecognised student: 10519C]] at line 5')
 
     def test_upload_invalid_attendance_data(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         test_upload(self, 'upload_test_invalid.csv', 'code_EEE312 crn_EEE312-1',
                     'Error processing file upload_test_invalid.csv: Error with inputs: [[Unrecognised attendance value for 10519C: yes at column 4, Unrecognised attendance value for 10519C: no at column 7]] at line 5')
 
     def test_upload_incorrect_file_extension(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         test_upload(self, 'upload_test_wrong_ext.txt', 'code_EEE312 crn_EEE312-1',
                     'Invalid file type for upload #1. Only csv, xls, xlsx files are accepted.')
 
     def test_upload_no_file(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         test_upload(self, None, 'code_EEE312 crn_EEE312-1', 'No file uploaded. Please upload a .csv file.')
 
     def test_upload_multiple_files(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_valid_2.csv'],
                              ['code_EEE312 crn_EEE312-1', 'code_COM999 crn_COM999-1'],
@@ -73,7 +73,7 @@ class UploadTests(TestCase):
 
     # tests valid and invalid file, and tests that valid file was still uploaded
     def test_upload_multiple_files_invalid(self):
-        TestUtils.authenticate_admin(self)
+        TestUtils.authenticate_staff(self)
         create_db_props()
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
         test_multiple_upload(self, ['upload_test_valid.csv', 'upload_test_invalid.csv'],
@@ -92,13 +92,8 @@ class UploadTests(TestCase):
         test_usertype_upload(self, 403)
         self.assertEqual(get_module_student_count('EEE312'), 0)
 
-        # staff - forbidden
+        # staff is the only allowed user type - should be the only one to successfully upload
         TestUtils.authenticate_staff(self)
-        test_usertype_upload(self, 403)
-        self.assertEqual(get_module_student_count('EEE312'), 0)
-
-        # admin is the only allowed user type - should be the only one to successfully upload
-        TestUtils.authenticate_admin(self)
         test_usertype_upload(self, 200)
         self.assertEqual(get_module_student_count('EEE312'), 2)
 
@@ -113,7 +108,7 @@ class UploadTests(TestCase):
 
 
 def test_upload_valid_data(self, resource_path):
-    TestUtils.authenticate_admin(self)
+    TestUtils.authenticate_staff(self)
     create_db_props()
 
     # initial check that module is not linked to student

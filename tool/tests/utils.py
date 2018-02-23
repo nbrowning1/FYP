@@ -5,12 +5,6 @@ from ..models import *
 
 class TestUtils:
     @staticmethod
-    def authenticate_admin(self):
-        user = User.objects.create_superuser(username='test', password='12345', email='test@mail.com')
-        self.client.login(username='test', password='12345')
-        return user
-
-    @staticmethod
     def authenticate_student(self):
         user = TestUtils.create_student('teststudent').user
         self.client.login(username='teststudent', password='12345')

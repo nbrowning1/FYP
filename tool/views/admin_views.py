@@ -101,7 +101,7 @@ def check_valid_user(request):
     user_type = ViewsUtils.get_user_type(request)
     ViewsUtils.check_valid_user(user_type, request)
 
-    if not (user_type == UserType.STAFF_TYPE or user_type == UserType.ADMIN_TYPE):
+    if not (user_type == UserType.STAFF_TYPE):
         raise Http404("Not authorised to view this page")
 
 

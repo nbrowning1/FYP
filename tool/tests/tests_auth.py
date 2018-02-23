@@ -1,27 +1,32 @@
-from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
+from tool.tests.utils import TestUtils
+
 
 class AuthTests(TestCase):
     def test_login_valid_credentials(self):
-        User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
-        test_login(self, 'john', 'johnpassword', True)
+        TestUtils.create_student('jill')
+        test_login(self, 'jill', '12345', True)
 
     def test_login_invalid_credentials(self):
-        User.objects.create_superuser('john', 'test@mail.com', 'johnpassword')
-        test_login(self, 'john', 'wrongpassword', False)
+        TestUtils.create_student('jill')
+        test_login(self, 'jill', 'wrongpassword', False)
 
     def test_login_nonexistent_user(self):
         test_login(self, 'nouser', 'nopassword', False)
 
     def test_password_reset_recognised_email(self):
-        User.objects.create_user('john', 'test@mail.com', 'johnpassword')
+        user = TestUtils.create_student('jill').user
+        user.email = 'test@mail.com'
+        user.save()
         test_password_reset(self, 'test@mail.com', True)
 
     def test_password_reset_unrecognised_email(self):
-        User.objects.create_user('john', 'test@mail.com', 'johnpassword')
+        user = TestUtils.create_student('jill').user
+        user.email = 'test@mail.com'
+        user.save()
         test_password_reset(self, 'different@mail.com', False)
 
 
