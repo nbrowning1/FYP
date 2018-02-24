@@ -1,19 +1,26 @@
 import types
 from collections import OrderedDict
 
-from django.contrib.auth.models import User, AbstractUser
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from encrypted_model_fields.fields import EncryptedCharField
+from encrypted_model_fields.fields import EncryptedCharField, EncryptedEmailField
 
 
 class EncryptedUser(AbstractUser):
     first_name = EncryptedCharField(_('first name'), max_length=30, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
+    last_name = EncryptedCharField(_('last name'), max_length=30, blank=True)
+    email = EncryptedEmailField(_('email address'), blank=True)
 
+    # required because of encrypted email field - can't perform direct get()
+    @staticmethod
+    def get_by_email(email):
+        for user in EncryptedUser.objects.all():
+            # case-insensitive match
+            if email.lower() == user.email.lower():
+                return user
+        return None
 
 class Student(models.Model):
     user = models.OneToOneField(EncryptedUser, on_delete=models.CASCADE)
