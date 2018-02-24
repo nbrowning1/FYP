@@ -51,7 +51,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         users = []
         if options['all-users']:
-            users = User.objects.all()
+            users = EncryptedUser.objects.all()
         elif options['students']:
             users = Student.objects.all()
         elif options['staff']:
@@ -84,7 +84,7 @@ class Command(BaseCommand):
         connection.open()
 
         for user in users:
-            if not isinstance(user, User):
+            if not isinstance(user, EncryptedUser):
                 # unpack user from model object
                 user = user.user
             email_attendance_report(self, user, time_period, connection, test_only, to_date)

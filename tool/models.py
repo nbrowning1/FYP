@@ -1,13 +1,22 @@
 import types
 from collections import OrderedDict
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from encrypted_model_fields.fields import EncryptedCharField
+
+
+class EncryptedUser(AbstractUser):
+    first_name = EncryptedCharField(_('first name'), max_length=30, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
 
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(EncryptedUser, on_delete=models.CASCADE)
     device_id = models.CharField(
         validators=[RegexValidator(regex='^[A-Za-z0-9]{6}$', message='Must be a valid device ID e.g. 10101C')],
         max_length=6)
@@ -34,6 +43,7 @@ class Module(models.Model):
         'lecture': Lecture object,
         'attendance': Attendance % for lecture
     """
+
     def get_data(self, from_date=None, to_date=None, student=None):
         attendance_overall = 0
         if from_date and to_date:
@@ -99,7 +109,7 @@ class Course(models.Model):
 
 
 class Staff(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(EncryptedUser, on_delete=models.CASCADE)
     modules = models.ManyToManyField(Module)
     courses = models.ManyToManyField(Course)
 
@@ -140,7 +150,7 @@ class ModuleFeedback(models.Model):
 
 
 class Settings(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(EncryptedUser, on_delete=models.CASCADE)
     colourblind_opts_on = models.BooleanField(default=False)
     attendance_range_1_cap = models.IntegerField(default=25)
     attendance_range_2_cap = models.IntegerField(default=50)

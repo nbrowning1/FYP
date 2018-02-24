@@ -230,7 +230,7 @@ def create_db_props():
 
 
 def create_student(username, device_id):
-    user = User.objects.create_user(username=username, password='12345')
+    user = EncryptedUser.objects.create_user(username=username, password='12345')
     course = TestUtils.create_course('Course Code')
     student = Student(user=user, device_id=device_id, course=course)
     student.save()

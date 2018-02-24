@@ -151,8 +151,8 @@ class AttendanceRowTests(TestCase):
 def setup_test_db():
     setup_test_student()
 
-    staff_user = User.objects.create_user(username='S00112233', email='test@email.com',
-                                          password='CorrectHorseBatteryStaple')
+    staff_user = EncryptedUser.objects.create_user(username='S00112233', email='test@email.com',
+                                                   password='CorrectHorseBatteryStaple')
     lecturer = Staff(user=staff_user)
     lecturer.save()
 
@@ -161,8 +161,8 @@ def setup_test_db():
 
 
 def setup_test_student():
-    student_user = User.objects.create_user(username='B00112233', email='test@email.com',
-                                            password='CorrectHorseBatteryStaple')
+    student_user = EncryptedUser.objects.create_user(username='B00112233', email='test@email.com',
+                                                     password='CorrectHorseBatteryStaple')
     course = Course(course_code='Course Code')
     course.save()
     student = Student(user=student_user, device_id='DeviceID', course=course)

@@ -40,7 +40,7 @@ class TestUtils:
         try:
             return Student.objects.get(user__username=username)
         except Student.DoesNotExist:
-            user = User.objects.create_user(username=username, password='12345')
+            user = EncryptedUser.objects.create_user(username=username, password='12345')
             course = TestUtils.create_course('Course Code')
             student = Student(user=user, course=course)
             student.save()
@@ -51,7 +51,7 @@ class TestUtils:
         try:
             return Staff.objects.get(user__username=username)
         except Staff.DoesNotExist:
-            user = User.objects.create_user(username=username, password='12345')
+            user = EncryptedUser.objects.create_user(username=username, password='12345')
             staff = Staff(user=user)
             staff.save()
             return staff

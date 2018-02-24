@@ -53,7 +53,7 @@ def create_student(request):
         if user_form.is_valid() and form.is_valid():
             # save as new user
             user = user_form.save(commit=False)
-            random_password = User.objects.make_random_password(length=20)
+            random_password = EncryptedUser.objects.make_random_password(length=20)
             user.set_password(random_password)
             user.save()
 
@@ -81,7 +81,7 @@ def create_staff(request):
         if user_form.is_valid():
             # save as new user
             user = user_form.save(commit=False)
-            random_password = User.objects.make_random_password(length=20)
+            random_password = EncryptedUser.objects.make_random_password(length=20)
             user.set_password(random_password)
             user.save()
 

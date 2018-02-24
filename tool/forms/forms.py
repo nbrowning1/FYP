@@ -46,7 +46,7 @@ class CourseForm(ModelForm):
 
 class UserForm(ModelForm):
     class Meta:
-        model = User
+        model = EncryptedUser
         fields = ['username', 'first_name', 'last_name', 'email']
         labels = {
             'username': 'Username',
@@ -83,9 +83,9 @@ class UserForm(ModelForm):
         if all(key in cleaned_data for key in ('username', 'email')):
             username = cleaned_data['username']
             email = cleaned_data['email']
-            if User.objects.filter(username__iexact=username).count() > 0:
+            if EncryptedUser.objects.filter(username__iexact=username).count() > 0:
                 raise ValidationError("User with this Username already exists.")
-            elif User.objects.filter(email__iexact=email).count() > 0:
+            elif EncryptedUser.objects.filter(email__iexact=email).count() > 0:
                 raise ValidationError("User with this Email address already exists.")
 
     def get_username_pattern(self):

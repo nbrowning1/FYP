@@ -128,3 +128,7 @@ LOGIN_REDIRECT_URL = '/tool/'
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = 'tool/tmp/mail'
 EMAIL_FROM = 'test@from.com'
+
+AUTH_USER_MODEL = 'tool.EncryptedUser'
+
+FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
