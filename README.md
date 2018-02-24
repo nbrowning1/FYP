@@ -6,7 +6,7 @@ Final Year Project for student attendance & feedback functions.
 2. Find a comfy directory, and clone this repository: `git clone https://github.com/nbrowning1/FYP.git`
 3. Install Django: `pip install django`
 4. Install project dependencies: `pip install -r requirements.txt`
-5. Generate field encryption key (set output as value for FIELD_ENCRYPTION_KEY environment variable (may need to start new terminal session if on Windows)
+5. Generate field encryption key (set output from below (minus the "b''") as value for FIELD_ENCRYPTION_KEY environment variable (may need to start new terminal session if on Windows)):
     ```
     python manage.py shell
     >>> from cryptography.fernet import Fernet
