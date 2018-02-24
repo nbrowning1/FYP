@@ -27,3 +27,5 @@ Run command: `python manage.py test tool/`
 https://github.com/agiliq/django-graphos
 ##### xlrd
 https://github.com/python-excel/xlrd
+##### django-encrypted-model-fields
+https://github.com/lanshark/django-encrypted-model-fields
