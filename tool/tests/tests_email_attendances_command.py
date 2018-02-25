@@ -5,6 +5,7 @@ from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
 
+from tool.utils import Utils
 from ..models import *
 
 
@@ -96,7 +97,7 @@ class EmailAttendanceReportTest(TestCase):
 
 def get_django_template_format_date(date):
     # return date in format to mimic django's template format e.g. "Jan. 1, 2018"
-    return date.strftime('%b. ' + str(date.day) + ', %Y')
+    return Utils.get_template_formatted_date(date)
 
 
 def get_today_date():

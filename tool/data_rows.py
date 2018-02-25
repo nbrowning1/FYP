@@ -4,6 +4,7 @@ import types
 
 ATTENDANCE_VALS_START_COL = 3
 
+
 # one row, the column headers for attendance which give session id & date
 class AttendanceSessionRow:
     def __init__(self, data):
