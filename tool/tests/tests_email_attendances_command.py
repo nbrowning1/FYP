@@ -5,11 +5,34 @@ from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
 
+from tool.utils import Utils
 from ..models import *
 
 
 class EmailAttendanceReportTest(TestCase):
-    def test_staff_report(self):
+    def test_staff_monthly_report(self):
+        setup_test_data_monthly()
+
+        self.assertEqual(len(mail.outbox), 0)
+        call_command('email_attendances', '--staff', '--monthly', '--test-date=2018-01-31')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
+        self.assertEqual(len(mail.outbox[0].to), 1)
+        self.assertEqual(mail.outbox[0].to[0], 'teststaff1@mail.com')
+        print(mail.outbox[0].body)
+
+        self.assertIn('COM202 - COM202-1: 33.33% Attendance - ** Low Attendance Warning **', mail.outbox[0].body)
+
+        first_date_str = get_django_template_format_date(get_monthly_first_date())
+        second_date_str = get_django_template_format_date(get_monthly_second_date())
+
+        self.assertIn('id2 -- {}: 0.00% Attendance'.format(first_date_str), mail.outbox[0].body)
+        self.assertIn('id3 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
+        self.assertIn('id4 -- {}: 50.00% Attendance'.format(second_date_str), mail.outbox[0].body)
+        self.assertIn('Warning students', mail.outbox[0].body)
+        self.assertIn('teststudent2 - 0.00% Attendance', mail.outbox[0].body)
+
+    def test_staff_weekly_report(self):
         setup_test_data_weekly()
         self.assertEqual(len(mail.outbox), 0)
         call_command('email_attendances', '--staff', '--weekly')
@@ -96,7 +119,7 @@ class EmailAttendanceReportTest(TestCase):
 
 def get_django_template_format_date(date):
     # return date in format to mimic django's template format e.g. "Jan. 1, 2018"
-    return date.strftime('%b. ' + str(date.day) + ', %Y')
+    return Utils.get_template_formatted_date(date)
 
 
 def get_today_date():
