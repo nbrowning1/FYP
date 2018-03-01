@@ -8,7 +8,7 @@ from ..models import *
 class InitTestDataTest(TestCase):
     # testing ALL data is loaded from fresh DB, and subsequent load doesnt add anything
     def test_all_data_loaded(self):
-        self.assertEqual(len(User.objects.all()), 0)
+        self.assertEqual(len(EncryptedUser.objects.all()), 0)
         self.assertEqual(len(Student.objects.all()), 0)
         self.assertEqual(len(Staff.objects.all()), 0)
         self.assertEqual(len(Module.objects.all()), 0)
@@ -17,7 +17,7 @@ class InitTestDataTest(TestCase):
         self.assertEqual(len(ModuleFeedback.objects.all()), 0)
 
         call_command('init_test_data', '--load-all')
-        self.assertEqual(len(User.objects.all()), 235)
+        self.assertEqual(len(EncryptedUser.objects.all()), 235)
         self.assertEqual(len(Student.objects.all()), 216)
         self.assertEqual(len(Staff.objects.all()), 19)
         self.assertEqual(len(Module.objects.all()), 7)
@@ -27,7 +27,7 @@ class InitTestDataTest(TestCase):
 
         # calling command again should only overwrite data, not add anything
         call_command('init_test_data', '--load-all')
-        self.assertEqual(len(User.objects.all()), 235)
+        self.assertEqual(len(EncryptedUser.objects.all()), 235)
         self.assertEqual(len(Student.objects.all()), 216)
         self.assertEqual(len(Staff.objects.all()), 19)
         self.assertEqual(len(Module.objects.all()), 7)
@@ -37,7 +37,7 @@ class InitTestDataTest(TestCase):
 
     # testing a command to only load specific data, e.g. students, works
     def test_single_datatype_reload(self):
-        self.assertEqual(len(User.objects.all()), 0)
+        self.assertEqual(len(EncryptedUser.objects.all()), 0)
         self.assertEqual(len(Student.objects.all()), 0)
         self.assertEqual(len(Staff.objects.all()), 0)
         self.assertEqual(len(Module.objects.all()), 0)
@@ -45,7 +45,7 @@ class InitTestDataTest(TestCase):
         self.assertEqual(len(StudentAttendance.objects.all()), 0)
 
         call_command('init_test_data', '--load-students')
-        self.assertEqual(len(User.objects.all()), 216)
+        self.assertEqual(len(EncryptedUser.objects.all()), 216)
         self.assertEqual(len(Student.objects.all()), 216)
         self.assertEqual(len(Staff.objects.all()), 0)
         self.assertEqual(len(Module.objects.all()), 0)

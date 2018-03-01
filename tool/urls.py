@@ -1,11 +1,10 @@
 from django.conf.urls import url
-
-from tool.views import feedback_views
-from .views import views, single_entity_views, admin_views
-
+from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
-from django.contrib.auth import views as auth_views
+from tool.forms.forms import EncryptedEmailPasswordResetForm
+from tool.views import feedback_views
+from .views import views, single_entity_views, admin_views
 
 app_name = 'tool'
 urlpatterns = [
@@ -32,7 +31,8 @@ urlpatterns = [
 
     url(r'^password-reset/$', auth_views.PasswordResetView.as_view(template_name='tool/auth/password_reset.html',
                                                                    success_url=reverse_lazy(
-                                                                       'tool:password_reset_done')),
+                                                                       'tool:password_reset_done'),
+                                                                   form_class=EncryptedEmailPasswordResetForm),
         name='password_reset'),
 
     url(r'^password-reset-done/$',

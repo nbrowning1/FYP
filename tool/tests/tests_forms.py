@@ -132,7 +132,7 @@ class UserFormTests(TestCase):
         self.assertEquals(form.errors['email'], ['Enter a valid email address.'])
 
     def test_existing_user(self):
-        user = User(username='B00112233', first_name='First Name', last_name='Last Name', email='test@email.com')
+        user = EncryptedUser(username='B00112233', first_name='First Name', last_name='Last Name', email='test@email.com')
         user.save()
 
         # existing username
@@ -199,7 +199,7 @@ class StudentFormTests(TestCase):
     def test_existing_student(self):
         course = Course(course_code='Course code')
         course.save()
-        user = User(username='B00112233', first_name='First Name', last_name='Last Name', email='test@email.com')
+        user = EncryptedUser(username='B00112233', first_name='First Name', last_name='Last Name', email='test@email.com')
         user.save()
         student = Student(user=user, device_id='10101B', course=course)
         student.save()

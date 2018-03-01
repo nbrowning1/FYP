@@ -144,7 +144,7 @@ def load_students(self):
         try:
             Student.objects.get(user__username=data_username)
             # delete if already exists so new data can act as overwrite if data needs changed
-            user = User.objects.get(username=data_username)
+            user = EncryptedUser.objects.get(username=data_username)
             user.delete()
         except Student.DoesNotExist:
             pass
@@ -156,7 +156,7 @@ def load_students(self):
             course = Course(course_code=data_course_code)
             course.save()
 
-        user = User.objects.create_user(username=data_username, password='Django123')
+        user = EncryptedUser.objects.create_user(username=data_username, password='Django123')
         student = Student(user=user, device_id=data_device_id, course=course)
         student.save()
 
@@ -177,11 +177,11 @@ def load_staff(self):
         try:
             Staff.objects.get(user__username=data_username)
             # delete if already exists so new data can act as overwrite if data needs changed
-            user = User.objects.get(username=data_username)
+            user = EncryptedUser.objects.get(username=data_username)
             user.delete()
         except Staff.DoesNotExist:
             pass
-        user = User.objects.create_user(username=data_username, password='Django123')
+        user = EncryptedUser.objects.create_user(username=data_username, password='Django123')
         staff = Staff(user=user)
         staff.save()
 

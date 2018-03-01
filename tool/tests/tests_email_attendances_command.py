@@ -147,15 +147,15 @@ def setup_test_data_monthly():
 
 
 def setup_test_data(first_date, second_date):
-    User.objects.create_superuser(username='user1', password='12345', email='user1@mail.com')
+    EncryptedUser.objects.create_superuser(username='user1', password='12345', email='user1@mail.com')
 
     course = Course(course_code='Course Code')
     course.save()
 
-    student1 = Student(user=User.objects.create_user(username='teststudent1', email='teststudent1@mail.com'),
+    student1 = Student(user=EncryptedUser.objects.create_user(username='teststudent1', email='teststudent1@mail.com'),
                        device_id='devID1', course=course)
     student1.save()
-    student2 = Student(user=User.objects.create_user(username='teststudent2', email='teststudent2@mail.com'),
+    student2 = Student(user=EncryptedUser.objects.create_user(username='teststudent2', email='teststudent2@mail.com'),
                        device_id='devID2', course=course)
     student2.save()
 
@@ -177,11 +177,11 @@ def setup_test_data(first_date, second_date):
     lecture4 = Lecture(module=module2, session_id='id4', date=second_date)
     lecture4.save()
 
-    lecturer1 = Staff(user=User.objects.create_user(username='teststaff1', email='teststaff1@mail.com'))
+    lecturer1 = Staff(user=EncryptedUser.objects.create_user(username='teststaff1', email='teststaff1@mail.com'))
     lecturer1.save()
     lecturer1.modules.add(module2)
     lecturer1.courses.add(course)
-    lecturer2 = Staff(user=User.objects.create_user(username='teststaff2', email='teststaff2@mail.com'))
+    lecturer2 = Staff(user=EncryptedUser.objects.create_user(username='teststaff2', email='teststaff2@mail.com'))
     lecturer2.save()
 
     # lecture1 = 100% attendance, lecture2 = 0%, lecture3 = 50%, lecture4 = 50%

@@ -1,9 +1,21 @@
 import re
 from django import forms
+from django.contrib.auth.forms import PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
 from tool.models import *
+
+
+class EncryptedEmailPasswordResetForm(PasswordResetForm):
+    # overrides get_users from Django's PasswordResetForm,
+    # to filter on email (because ours is encrypted)
+    def get_users(self, email):
+        user = EncryptedUser.get_by_email(email)
+        if user is not None and user.is_active and user.has_usable_password():
+            return [user]
+
+        return []
 
 
 class ModuleForm(ModelForm):
@@ -46,7 +58,7 @@ class CourseForm(ModelForm):
 
 class UserForm(ModelForm):
     class Meta:
-        model = User
+        model = EncryptedUser
         fields = ['username', 'first_name', 'last_name', 'email']
         labels = {
             'username': 'Username',
@@ -83,9 +95,9 @@ class UserForm(ModelForm):
         if all(key in cleaned_data for key in ('username', 'email')):
             username = cleaned_data['username']
             email = cleaned_data['email']
-            if User.objects.filter(username__iexact=username).count() > 0:
+            if EncryptedUser.objects.filter(username__iexact=username).count() > 0:
                 raise ValidationError("User with this Username already exists.")
-            elif User.objects.filter(email__iexact=email).count() > 0:
+            elif EncryptedUser.get_by_email(email) is not None:
                 raise ValidationError("User with this Email address already exists.")
 
     def get_username_pattern(self):

@@ -133,7 +133,7 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'Lectures')
 
     def test_invalid_user(self):
-        User.objects.create_user(username='test', password='12345')
+        EncryptedUser.objects.create_user(username='test', password='12345')
         self.client.login(username='test', password='12345')
 
         # test invalid user log out is forced
