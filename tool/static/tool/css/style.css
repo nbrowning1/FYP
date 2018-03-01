@@ -165,12 +165,28 @@ textarea.feedback-form-answer {
   height: 100px;
 }
 
-.form-error {
+.form-error, .error-msg {
   color: red;
 }
 
 .attendance-range {
   width: 2em;
+}
+
+#loading-spinner-container {
+  display: none;
+}
+
+#upload-results {
+  background-color: #ecf0f1;
+  overflow-x: scroll;
+  padding: 10px;
+  border-radius: 10px;
+  display: none;
+}
+
+.upload-title {
+  text-decoration: underline;
 }
 
 /* Bootstrap overrides */

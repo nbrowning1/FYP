@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import os
 
 from django.contrib.auth.decorators import login_required
@@ -7,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 
+from tool.utils import Utils
 from .views_utils import *
 from ..models import *
 from ..upload_data_save import DataSaver
@@ -80,8 +82,7 @@ def index(request):
     lecturesjs = [{'url': reverse('tool:lecture', kwargs={'lecture_id': l.id}),
                    'module_code': l.module.module_code,
                    'session_id': l.session_id,
-                   # format in same way as Django usually formats for templates
-                   'date': l.date.strftime('%b. ' + str(l.date.day) + ', %Y')}
+                   'date': Utils.get_template_formatted_date(l.date)}
                   for l in lectures]
 
     return render(request, 'tool/index.html', {
@@ -109,73 +110,75 @@ def upload(request):
         raise PermissionDenied("Insufficient permissions")
 
     if request.method == 'POST':
-        number_of_uploads = 0
-        # figure out how many uploads from number of files
-        while request.FILES.getlist('upload-data-' + str(number_of_uploads)):
-            number_of_uploads += 1
-
-        if number_of_uploads == 0:
-            return redirect_to_home_with_error(request, "No file uploaded. Please upload a .csv file.")
-
-        saved_data = []
-        for i in range(number_of_uploads):
-            # for error messages. #1 makes more sense than #0
-            error_index = i + 1
-            module = None
-            module_str = request.POST.get("module-" + str(i))
-            if not module_str:
-                return redirect_to_home_with_error(request, "No module selected for upload #" + str(
-                    error_index) + ". Please select a module from the list.")
-            else:
-                try:
-                    code = module_str.split("code_")[1].split("crn_")[0].strip()
-                    crn = module_str.split("crn_")[1].strip()
-                except Exception:
-                    return redirect_to_home_with_error(request,
-                                                       "Invalid module selection for upload #" + str(
-                                                           error_index) + ". Please select a module from the list.")
-
-                try:
-                    module = Module.objects.get(module_code=code, module_crn=crn)
-                except Module.DoesNotExist:
-                    return redirect_to_home_with_error(request, "Unrecognised module for upload #" + str(
-                        error_index) + ". Please select a module from the list.")
-
-            upload_file = request.FILES['upload-data-' + str(i)]
-            comparison_name = upload_file.name.lower()
-            is_csv_file = comparison_name.endswith('.csv')
-            is_excel_file = comparison_name.endswith('.xls') or comparison_name.endswith('.xlsx')
-
-            if not (is_csv_file or is_excel_file):
-                return redirect_to_home_with_error(request, "Invalid file type for upload #" + str(
-                    error_index) + ". Only csv, xls, xlsx files are accepted.")
-
-            if is_csv_file:
-                decoded_file = upload_file.read().decode('utf-8')
-                file_str = io.StringIO(decoded_file)
-                reader = csv.reader(file_str)
-                uploaded_data = DataSaver().save_uploaded_data_csv(reader, module)
-            else:
-                contents = upload_file.read()
-                uploaded_data = DataSaver().save_uploaded_data_excel(contents, module)
-
-            if hasattr(uploaded_data, 'error'):
-                error_msg = 'Error processing file ' + upload_file.name + ': ' + uploaded_data.error
-                return redirect_with_error(request, reverse('tool:index'), error_msg)
-            saved_data.append(uploaded_data)
-
-        return render(request, 'tool/upload/upload.html', {
-            'uploaded_data': saved_data,
-            'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
-        })
+        return handle_unprocessed_upload(request)
     else:
         return HttpResponseRedirect(reverse('tool:index'))
 
 
-def redirect_to_home_with_error(request, error_msg):
-    # workaround to pass message through redirect
-    request.session['error_message'] = error_msg
-    return redirect(reverse('tool:index'), Permanent=True)
+def handle_unprocessed_upload(request):
+    number_of_uploads = 0
+    # figure out how many uploads from number of files
+    while request.FILES.getlist('upload-data-' + str(number_of_uploads)):
+        number_of_uploads += 1
+
+    if number_of_uploads == 0:
+        return json_failure_response("No file uploaded. Please upload a .csv, .xls, or .xlsx file.")
+
+    saved_data = []
+    for i in range(number_of_uploads):
+        # for error messages. #1 makes more sense than #0
+        error_index = i + 1
+        module = None
+        module_str = request.POST.get("module-" + str(i))
+        if not module_str:
+            return json_failure_response("No module selected for upload #" + str(
+                error_index) + ". Please select a module from the list.")
+        else:
+            try:
+                code = module_str.split("code_")[1].split("crn_")[0].strip()
+                crn = module_str.split("crn_")[1].strip()
+            except Exception:
+                return json_failure_response("Invalid module selection for upload #" + str(
+                    error_index) + ". Please select a module from the list.")
+
+            try:
+                module = Module.objects.get(module_code=code, module_crn=crn)
+            except Module.DoesNotExist:
+                return json_failure_response("Unrecognised module for upload #" + str(
+                    error_index) + ". Please select a module from the list.")
+
+        upload_file = request.FILES['upload-data-' + str(i)]
+        comparison_name = upload_file.name.lower()
+        is_csv_file = comparison_name.endswith('.csv')
+        is_excel_file = comparison_name.endswith('.xls') or comparison_name.endswith('.xlsx')
+
+        if not (is_csv_file or is_excel_file):
+            return json_failure_response("Invalid file type for upload #" + str(
+                error_index) + ". Only csv, xls, xlsx files are accepted.")
+
+        if is_csv_file:
+            decoded_file = upload_file.read().decode('utf-8')
+            file_str = io.StringIO(decoded_file)
+            reader = csv.reader(file_str)
+            uploaded_data = DataSaver().save_uploaded_data_csv(reader, module)
+        else:
+            contents = upload_file.read()
+            uploaded_data = DataSaver().save_uploaded_data_excel(contents, module)
+
+        if hasattr(uploaded_data, 'error'):
+            error_msg = 'Error processing file ' + upload_file.name + ': ' + uploaded_data.error
+            return json_failure_response(error_msg)
+        saved_data.append(uploaded_data)
+
+    return render(request, 'tool/upload/upload.html', {
+        'uploaded_data': saved_data,
+        'colours': ViewsUtils().get_pass_fail_colours_2_tone(request)
+    })
+
+
+def json_failure_response(error_msg):
+    json_str = {"failure": error_msg}
+    return HttpResponse(json.dumps(json_str), content_type='application/json')
 
 
 @login_required
@@ -349,11 +352,6 @@ def save_module_course_settings(request):
         return redirect(reverse('tool:index'), Permanent=True)
     except Staff.DoesNotExist:
         raise Http404
-
-
-# workaround to pass message through redirect
-def redirect_with_error(request, redirect_url, error_msg):
-    return redirect_with_error_by_key(request, redirect_url, 'error_message', error_msg)
 
 
 # workaround to pass message through redirect

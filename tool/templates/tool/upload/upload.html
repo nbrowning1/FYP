@@ -1,13 +1,9 @@
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'tool/css/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/css/style.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/css/font-awesome.min.css' %}">
-<script type="text/javascript" src="{% static 'tool/js/script.js' %}"></script>
+{# Designed to be returned by ajax request, so partial HTML to be placed in a container #}
 
 {% if uploaded_data %}
-  <h4>Saved data:</h4>
+  <h3>Saved data:</h3>
   {% for data in uploaded_data %}
+  <h4 class="upload-title">Upload #{{ forloop.counter }}</h4>
   <table>
     <tr>
       <th>Module Code</th>
@@ -63,11 +59,13 @@
       </tr>
     {% endfor %}
   </table>
+  {% if not forloop.last %}
+  <br>
+  <hr>
+  <br>
+  {% endif %}
   {% endfor %}
   
 {% else %}
   <p>No upload information available.</p>
 {% endif %}
-
-<br>
-<a href="{% url 'tool:index' %}">Go back</a>

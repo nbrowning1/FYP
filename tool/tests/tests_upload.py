@@ -61,7 +61,7 @@ class UploadTests(TestCase):
     def test_upload_no_file(self):
         TestUtils.authenticate_staff(self)
         create_db_props()
-        test_upload(self, None, 'code_EEE312 crn_EEE312-1', 'No file uploaded. Please upload a .csv file.')
+        test_upload(self, None, 'code_EEE312 crn_EEE312-1', 'No file uploaded. Please upload a .csv, .xls, or .xlsx file.')
 
     def test_upload_multiple_files(self):
         TestUtils.authenticate_staff(self)
@@ -152,12 +152,12 @@ def test_upload(self, file_path, module_str, expected_error_msg):
 
     self.assertEqual(response.status_code, 200)
 
-    # if no error message expected, check for successfully making it to upload confirmation page
+    self.assertEqual(response.request['PATH_INFO'], '/tool/upload/')
     if expected_error_msg:
-        self.assertEqual(response.request['PATH_INFO'], '/tool/')
+        self.assertContains(response, 'failure')
         self.assertContains(response, expected_error_msg)
     else:
-        self.assertEqual(response.request['PATH_INFO'], '/tool/upload/')
+        self.assertNotContains(response, 'failure')
 
     return response
 
@@ -181,12 +181,12 @@ def test_multiple_upload(self, file_paths, module_strs, expected_error_msg):
 
     self.assertEqual(response.status_code, 200)
 
-    # if no error message expected, check for successfully making it to upload confirmation page
+    self.assertEqual(response.request['PATH_INFO'], '/tool/upload/')
     if expected_error_msg:
-        self.assertEqual(response.request['PATH_INFO'], '/tool/')
+        self.assertContains(response, 'failure')
         self.assertContains(response, expected_error_msg)
     else:
-        self.assertEqual(response.request['PATH_INFO'], '/tool/upload/')
+        self.assertNotContains(response, 'failure')
 
     return response
 
