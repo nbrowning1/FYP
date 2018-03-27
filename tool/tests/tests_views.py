@@ -116,15 +116,24 @@ class ViewsTests(TestCase):
         lecture_1 = create_lecture(module_1)
         lecture_2 = create_lecture(module_2)
 
-        # nothing should appear when nothing is linked to staff
+        # nothing should appear when nothing is linked to student
         response = go_to_index(self)
         self.assertNotContains(response, 'No lecturers are available.')
         self.assertContains(response, 'No modules are available.')
         self.assertContains(response, 'No lectures are available.')
 
-        # link module to 1 student and this staff member
+        # link module to this student
         staff_1.modules.add(module_1)
         module_1.students.add(test_student)
+
+        # nothing should STILL appear if module has no attendances
+        response = go_to_index(self)
+        self.assertNotContains(response, 'No lecturers are available.')
+        self.assertContains(response, 'No modules are available.')
+        self.assertContains(response, 'No lectures are available.')
+
+        # add student attendance for this module
+        TestUtils.create_attendance(test_student, lecture_1, False)
 
         # linked items should now appear
         response = go_to_index(self)

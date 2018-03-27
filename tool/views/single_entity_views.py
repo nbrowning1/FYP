@@ -117,7 +117,7 @@ def get_module_data(module, user_type, student):
 
     # get attendances for lectures, sorted by student then date
     if (user_type == UserType.STUDENT_TYPE):
-        lecture_attendances = StudentAttendance.objects.filter(student__in=[student]).order_by('lecture__date')
+        lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures, student__in=[student]).order_by('lecture__date')
     else:
         lecture_attendances = StudentAttendance.objects.filter(lecture__in=lectures).order_by('student',
                                                                                               'lecture__date')

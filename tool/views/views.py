@@ -44,11 +44,17 @@ def index(request):
     try:
         student = Student.objects.get(user=request.user)
 
-        modules = Module.objects.filter(students__id__exact=student.id)
+        attendances = StudentAttendance.objects.filter(student=student)
+        lectures = []
+        for attendance in attendances:
+            lectures.append(attendance.lecture)
+        modules = []
+        for lecture in lectures:
+            if lecture.module not in modules:
+                modules.append(lecture.module)
         courses = []
         lecturers = []
         students = []
-        lectures = Lecture.objects.filter(module__in=modules)
         is_valid_user = True
 
         user_type = UserType.STUDENT_TYPE.value
