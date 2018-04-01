@@ -12,6 +12,8 @@ Final Year Project for student attendance & feedback functions.
     >>> from cryptography.fernet import Fernet
     >>> print(Fernet.generate_key())
     ```
+    or easier, from terminal:
+    `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 6. Apply migrations: `python manage.py migrate`
 7. Create an admin user: `python manage.py createsuperuser`
 8. Start the server: `python manage.py runserver`
@@ -21,6 +23,12 @@ Final Year Project for student attendance & feedback functions.
 ### Testing
 ##### Running unit tests
 Run command: `python manage.py test tool/`
+##### Running automated tests
+There are a few pre-requisites to run the automated tests, which can be followed at https://pypi.python.org/pypi/selenium
+Summarised (assumes Firefox):
+1. Download geckodriver from https://github.com/mozilla/geckodriver/releases and add it to PATH (as of writing, v0.20.0 is used)
+2. Download Firefox (at time of writing, FF Quantum 59.0.2 is used)
+3. Run the tests! `python manage.py test tool.tests_automation`
 
 ### Libraries Used
 ##### Graphos
@@ -29,3 +37,5 @@ https://github.com/agiliq/django-graphos
 https://github.com/python-excel/xlrd
 ##### django-encrypted-model-fields
 https://github.com/lanshark/django-encrypted-model-fields
+##### selenium webdriver
+https://github.com/SeleniumHQ/selenium

@@ -34,9 +34,12 @@
         </table>
     </div>
     <br>
+    {# chart doesn't matter for student as only one attendance will be here #}
+    {% if user_type and user_type == "STAFF" %}
     <hr>
     <br>
     {{ pie_chart.as_html }}
+    {% endif %}
     {% else %}
     <p>No attendances are available.</p>
     {% endif %}
