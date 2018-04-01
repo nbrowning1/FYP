@@ -1,6 +1,10 @@
 {% extends "tool/base/base_view.html" %}
 {% load static %}
 
+{% block home_link %}
+<a class="btn btn-link" role="button" href="{% url 'tool:settings' %}">Settings</a>
+{% endblock %}
+
 {% block content %}
     {% if success_message %}
     <span>{{ success_message }}</span>
