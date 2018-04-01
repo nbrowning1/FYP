@@ -69,10 +69,10 @@ class TestUtils:
         return attendance
 
     @staticmethod
-    def create_feedback(student, module, feedback, anonymous):
+    def create_feedback(student, module, feedback, anonymous, date="2017-10-10"):
         feedback = ModuleFeedback(student=student, module=module,
                                   feedback_general=feedback, feedback_positive=feedback,
                                   feedback_constructive=feedback, feedback_other=feedback,
-                                  date="2017-10-10", anonymous=anonymous)
+                                  date=date, anonymous=anonymous)
         feedback.save()
         return feedback
