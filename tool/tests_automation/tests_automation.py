@@ -80,16 +80,6 @@ class AutomationTests(StaticLiveServerTestCase):
     driver = None
     waiter = None
 
-    """
-    test_auth
-        - wrong password
-        - password reset
-        - login
-        - change password
-        - logout
-        - login new password
-    """
-
     def setUp(self):
         self.driver = webdriver.Firefox()
         self.driver.maximize_window()
@@ -132,35 +122,35 @@ class AutomationTests(StaticLiveServerTestCase):
             soft_failures.append(test_module_course_settings(self))
             soft_failures.append(test_index_page_staff(self))
             # module
-            # go_to_module(self, 'COM101')
-            # soft_failures.append(test_module_view_attendance(self, 'COM101'))
-            # self.driver.find_element_by_xpath(FEEDBACK_TAB_XPATH).click()
-            # soft_failures.append(test_module_view_feedback_staff(self))
+            go_to_module(self, 'COM101')
+            soft_failures.append(test_module_view_attendance(self, 'COM101'))
+            self.driver.find_element_by_xpath(FEEDBACK_TAB_XPATH).click()
+            soft_failures.append(test_module_view_feedback_staff(self))
             # course
-            # go_to_index(self)
-            # open_containers_staff(self)
-            # go_to_course(self, 'Course Code')
-            # soft_failures.append(test_course_view(self, 'Course Code'))
+            go_to_index(self)
+            open_containers_staff(self)
+            go_to_course(self, 'Course Code')
+            soft_failures.append(test_course_view(self, 'Course Code'))
             # staff
-            # go_to_index(self)
-            # open_containers_staff(self)
-            # go_to_lecturer(self, STAFF_USERNAME)
-            # soft_failures.append(test_lecturer_view(self, STAFF_USERNAME))
+            go_to_index(self)
+            open_containers_staff(self)
+            go_to_lecturer(self, STAFF_USERNAME)
+            soft_failures.append(test_lecturer_view(self, STAFF_USERNAME))
             # student
-            # go_to_index(self)
-            # open_containers_staff(self)
-            # go_to_student(self, STUDENT_USERNAME)
-            # soft_failures.append(test_student_view(self, STUDENT_USERNAME))
+            go_to_index(self)
+            open_containers_staff(self)
+            go_to_student(self, STUDENT_USERNAME)
+            soft_failures.append(test_student_view(self, STUDENT_USERNAME))
             # lecture
-            # go_to_index(self)
-            # open_containers_staff(self)
-            # go_to_lecture(self, 'mod1 lec1')
-            # soft_failures.append(test_lecture_view(self, 'Dec. 1, 2017 - mod1 lec1'))
+            go_to_index(self)
+            open_containers_staff(self)
+            go_to_lecture(self, 'mod1 lec1')
+            soft_failures.append(test_lecture_view(self, 'Dec. 1, 2017 - mod1 lec1'))
             # upload
-            # go_to_index(self)
+            go_to_index(self)
             soft_failures.append(test_upload(self))
-            # go_to_settings(self)
-            # soft_failures.append(test_settings(self))
+            go_to_settings(self)
+            soft_failures.append(test_settings(self))
             logout(self)
         except Exception as e:
             soft_failures.append('Something went wrong: ' + str(e))
