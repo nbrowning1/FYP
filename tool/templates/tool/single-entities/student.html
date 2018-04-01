@@ -8,7 +8,7 @@
     <div class="panel-group" id="accordion">
         {% for student_module_attendance in student_module_attendances %}
         <div class="panel panel-default">
-            <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse{{ forloop.counter }}">
+            <div class="panel-heading" data-toggle="collapse" data-target="#collapse{{ forloop.counter }}">
                 <h4 class="panel-title">
                     {{ student_module_attendance.module.module_code }}
                 </h4>

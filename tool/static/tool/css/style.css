@@ -23,8 +23,21 @@ div.download-container, div.pagination-container {
   width: 125px;
 }
 
-#username-indicator, .settings {
+#navbar-container {
+  width: 100%;
+  height: 25px;
+}
+
+#user-dropdown, .settings {
   float: right;
+}
+
+#user-dropdown a {
+  text-align: left;
+}
+
+#user-settings-cog {
+  margin-top: 3px;
 }
 
 table {

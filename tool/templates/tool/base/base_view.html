@@ -7,9 +7,20 @@
 <script type="text/javascript" src="{% static 'tool/js/bootstrap.min.js' %}"></script>
 {% block extrascripts %}{% endblock %}
 
-<a href="{% url 'tool:index' %}">Home</a>
-<a class="settings" href="{% url 'tool:settings' %}"><i class="fa fa-cog fa-lg" aria-hidden="true"></i></a>
-<span id="username-indicator">{{ user.username }}&nbsp;&nbsp;</span>
+<div id="navbar-container">
+    {% block home_link %}
+    <a class="btn btn-link" role="button" href="{% url 'tool:index' %}">Home</a>
+    {% endblock %}
+    <div id="user-dropdown" class="dropdown">
+      <button class="btn btn-link dropdown-toggle" type="button" data-toggle="dropdown">{{ user.username }}
+      <span class="caret"></span></button>
+      <ul class="dropdown-menu dropdown-menu-right">
+        <li><a href="{% url 'tool:settings' %}">Settings <i id="user-settings-cog" class="fa fa-cog fa-lg settings" aria-hidden="true"></i></a></li>
+        <li class="divider"></li>
+        <li><a href="{% url 'tool:logout' %}">Log out</a></li>
+      </ul>
+    </div>
+</div>
 
 <div id="content" class="container">
 
