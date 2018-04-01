@@ -8,4 +8,4 @@ install:
   - python manage.py migrate
 # command to run tests
 script:
-  - python manage.py test tool
+  - python manage.py test tool.tests

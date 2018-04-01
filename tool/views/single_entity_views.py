@@ -276,6 +276,7 @@ def lecture(request, lecture_id):
     pie_chart = get_attendance_pie_chart_from_absolute_vals(request, lecture_attendances, 'Lecture Attendance Overview')
 
     return render(request, 'tool/single-entities/lecture.html', {
+        'user_type': user_type.value,
         'lecture': lecture,
         'lecture_attendances': lecture_attendances,
         'pie_chart': pie_chart,
