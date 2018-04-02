@@ -1,6 +1,7 @@
-from .models import Student, Staff, Module, Lecture, StudentAttendance
 import datetime
 import types
+
+from .models import Student
 
 ATTENDANCE_VALS_START_COL = 3
 
