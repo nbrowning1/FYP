@@ -1,15 +1,8 @@
-{% load static %}
+{% extends "tool/base/base_view.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'tool/css/bootstrap.min.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'tool/css/style.css' %}" />
-<script type="text/javascript" src="{% static 'tool/js/jquery-3.2.1.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'tool/js/bootstrap.min.js' %}"></script>
+{% block title %}Module / Course View Settings{% endblock %}
 
-<a href="{% url 'tool:index' %}">Home</a>
-
-<h2>Module / Course View Settings</h2>
-<br>
-
+{% block content %}
 <!-- MODULES -->
 <form action="{% url 'tool:save_module_course_settings' %}" method="POST" enctype="multipart/form-data">
 {% csrf_token %}
@@ -83,3 +76,4 @@
 {% endif %}
 <input type="submit" class="btn btn-success" value="Save">
 </form>
+{% endblock %}
