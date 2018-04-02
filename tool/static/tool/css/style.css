@@ -7,49 +7,16 @@ body {
   margin: 0 auto;
 }
 
-h1, h2, h3, h4, h5, h6, form, .link-container, p, a {
+h1, h2, h3, h4, h5, h6, form, p, a, .link-container {
   text-align: center;
 }
 
-div.download-container, div.pagination-container {
-  text-align: center;
-}
-
-.checkbox-cell {
-  text-align: center;
-}
-
-.login-form-label, .register-form-label {
-  width: 125px;
-}
-
-#navbar-container {
-  width: 100%;
-  height: 25px;
-}
-
-#user-dropdown, .settings {
-  float: right;
-}
-
-#user-dropdown a {
-  text-align: left;
-}
-
-#user-settings-cog {
-  margin-top: 3px;
-}
-
+/******************/
+/***** TABLES *****/
+/******************/
 table {
   margin: 0 auto;
-}
-
-.entity-tbl {
-  width: 50%;
-}
-
-.entity-tbl th, .entity-tbl td {
-  text-align: center;
+  align-self: center;
 }
 
 tr {
@@ -64,6 +31,10 @@ table:not(.noborder) {
   border-bottom: 1px solid black;
 }
 
+tr.alt {
+  background-color: lightgrey;
+}
+
 th, td {
   padding-top: 5px;
   padding-bottom: 5px;
@@ -72,13 +43,9 @@ th, td {
   width: 100px;
 }
 
-tr.alt {
-  background-color: lightgrey;
-}
-
-td.select-row {
-  padding-left: 10px;
-  padding-right: 10px;
+td a {
+  display: block;
+  width: 100%;
 }
 
 /* left border seems to disappear from these.. */
@@ -102,30 +69,25 @@ th.double-header-left-cell {
 th.double-header-right-cell {
   border-right: 1px solid black;
 }
+/******************/
+/******************/
+/******************/
 
-table {
-  align-self: center;
+
+
+/****************/
+/***** HOME *****/
+/****************/
+.entity-tbl {
+  width: 50%;
 }
 
-td a {
-  display: block;
-  width: 100%;
+.entity-tbl th, .entity-tbl td {
+  text-align: center;
 }
 
-.setting, #reset-password, .centre-link {
-  display: block;
-}
-
-.panel-heading {
-  cursor: pointer;
-}
-
-.panel-heading:hover h4 {
-  text-decoration: underline;
-}
-
-#attendance-container {
-  overflow: auto;
+#loading-spinner-container {
+  display: none;
 }
 
 #placeholder {
@@ -141,12 +103,84 @@ td a {
   cursor: pointer;
 }
 
-.upload-row, .feedback-row {
-  border: 1px solid #2e6da4;
-  border-radius: 15px;
-  margin-top: 10px;
+#upload-results {
+  background-color: #ecf0f1;
+  overflow-x: scroll;
+  padding: 10px;
+  border-radius: 10px;
+  display: none;
 }
 
+/* In upload results */
+.upload-title {
+  text-decoration: underline;
+}
+/****************/
+/****************/
+/****************/
+
+
+
+/************************************/
+/***** MODULE / COURSE SETTINGS *****/
+/************************************/
+.checkbox-cell {
+  text-align: center;
+}
+/************************************/
+/************************************/
+/************************************/
+
+
+
+/******************/
+/***** HEADER *****/
+/******************/
+#header-container {
+  width: 100%;
+  height: 25px;
+}
+
+#user-dropdown {
+  float: right;
+}
+
+#user-dropdown a {
+  text-align: left;
+}
+
+#user-settings-cog {
+  margin-top: 3px;
+}
+/******************/
+/******************/
+/******************/
+
+
+
+/********************/
+/***** SETTINGS *****/
+/********************/
+.settings {
+  float: right;
+}
+
+.setting {
+  display: block;
+}
+
+.attendance-range {
+  width: 2em;
+}
+/********************/
+/********************/
+/********************/
+
+
+
+/********************/
+/***** FEEDBACK *****/
+/********************/
 #add-feedback-container {
   text-align: right;
 }
@@ -167,44 +201,69 @@ td a {
   white-space: pre-wrap;
 }
 
+textarea.feedback-form-answer {
+  resize: none;
+  height: 100px;
+}
+/********************/
+/********************/
+/********************/
+
+
+
+/*****************/
+/***** OTHER *****/
+/*****************/
+#reset-password, .centre-link {
+  display: block;
+}
+
+#attendance-container {
+  overflow: auto;
+}
+
+.upload-row, .feedback-row {
+  border: 1px solid #2e6da4;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
 .form-question, textarea.feedback-form-answer {
   width: 100%;
   display: block;
   margin-bottom: 10px;
 }
 
-textarea.feedback-form-answer {
-  resize: none;
-  height: 100px;
+div.download-container, div.pagination-container {
+  text-align: center;
 }
 
 .form-error, .error-msg {
   color: red;
 }
+/*****************/
+/*****************/
+/*****************/
 
-.attendance-range {
-  width: 2em;
-}
 
-#loading-spinner-container {
-  display: none;
-}
 
-#upload-results {
-  background-color: #ecf0f1;
-  overflow-x: scroll;
-  padding: 10px;
-  border-radius: 10px;
-  display: none;
-}
-
-.upload-title {
-  text-decoration: underline;
-}
-
-/* Bootstrap overrides */
+/*******************************/
+/***** BOOTSTRAP OVERRIDES *****/
+/*******************************/
 @media (min-width: 768px) {
   .container {
     max-width:100%;
   }
 }
+
+/* Student view, bootstrap accordion overrides */
+.panel-heading {
+  cursor: pointer;
+}
+
+.panel-heading:hover h4 {
+  text-decoration: underline;
+}
+/*******************************/
+/*******************************/
+/*******************************/
