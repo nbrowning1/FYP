@@ -9,18 +9,21 @@ from encrypted_model_fields.fields import EncryptedCharField, EncryptedEmailFiel
 
 
 class EncryptedUser(AbstractUser):
+    """Encrypted user override for Django's AbstractUser model, to wrap certain fields as encrypted."""
+
     first_name = EncryptedCharField(_('first name'), max_length=30, blank=True)
     last_name = EncryptedCharField(_('last name'), max_length=30, blank=True)
     email = EncryptedEmailField(_('email address'), blank=True)
 
-    # required because of encrypted email field - can't perform direct get()
+    # Required because of encrypted email field - can't perform direct get() as usual so requires iteration
     @staticmethod
     def get_by_email(email):
         for user in EncryptedUser.objects.all():
-            # case-insensitive match
+            # Case-insensitive matching
             if email.lower() == user.email.lower():
                 return user
         return None
+
 
 class Student(models.Model):
     user = models.OneToOneField(EncryptedUser, on_delete=models.CASCADE)
@@ -43,16 +46,25 @@ class Module(models.Model):
     class Meta:
         unique_together = ('module_code', 'module_crn')
 
-    """
-    Returns object with properties:
-    'attendance': Overall module attendance,
-    'lecture_attendances[]':
-        'lecture': Lecture object,
-        'attendance': Attendance % for lecture
-    """
-
     def get_data(self, from_date=None, to_date=None, student=None):
+        """Returns data object with properties:
+        'attendance': Overall module attendance,
+        'lecture_attendances[]':
+            'lecture': Lecture object,
+            'attendance': Attendance % for lecture
+        'student_attendances[]':
+            'student': Student object,
+            'attendance': Attendance % for student
+
+        :param from_date: a start date from which lectures should be gathered
+        :param to_date: an end date up to which lectures should be gathered
+        :param student: a particular student to gather the data for
+        :return: a data object with information about attendance and lectures meeting these constraints
+        """
+
         attendance_overall = 0
+
+        # Get lectures in date range, or unbounded if dates unspecified
         if from_date and to_date:
             lectures = Lecture.objects.filter(module=self, date__range=[from_date, to_date])
         else:
@@ -61,6 +73,7 @@ class Module(models.Model):
         lecture_attendances = []
         student_total_attendances = OrderedDict()
         for lecture in lectures:
+            # Gather attendances relating only to specified student, or all attendances for lecture if unspecified
             if student:
                 attendances = StudentAttendance.objects.filter(lecture=lecture, student=student) \
                     .order_by('lecture__date')
@@ -68,38 +81,44 @@ class Module(models.Model):
                 attendances = StudentAttendance.objects.filter(lecture=lecture) \
                     .order_by('student', 'lecture__date')
 
+            # Move to next lecture if no attendances meet these constraints
             if not attendances:
                 continue
 
             total_attendance = 0
+
+            # Build up the total attendances for each student and total overall
             for attendance in attendances:
                 student_total_attendances.setdefault(attendance.student, 0)
                 if attendance.attended:
                     total_attendance += 1
                     student_total_attendances[attendance.student] += 1
 
+            # Get overall attendance % for lecture and append to overall for module so far
             attended_percent = (total_attendance / len(attendances)) * 100 \
                 if (len(attendances) > 0) else 0
             attendance_overall += attended_percent
 
             lecture_attendance = types.SimpleNamespace()
             lecture_attendance.lecture = lecture
-            lecture_attendance.attendance = attended_percent
+            lecture_attendance.percent_attended = attended_percent
             lecture_attendances.append(lecture_attendance)
 
         attendance_percent = 0
         student_attendances = []
+
+        # Finally gather up the module attendance % and attendance % per student
         if len(lecture_attendances) > 0:
             attendance_percent = attendance_overall / len(lecture_attendances)
-            for k, v in student_total_attendances.items():
+            for key, val in student_total_attendances.items():
                 student_attendance = types.SimpleNamespace()
-                student_attendance.student = k
-                student_attendance.attendance = (v / len(lecture_attendances)) * 100
+                student_attendance.student = key
+                student_attendance.percent_attended = (val / len(lecture_attendances)) * 100
                 student_attendances.append(student_attendance)
 
         data = types.SimpleNamespace()
         data.lecture_attendances = lecture_attendances
-        data.attendance = attendance_percent
+        data.percent_attended = attendance_percent
         data.student_attendances = student_attendances
         return data
 

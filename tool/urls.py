@@ -8,18 +8,19 @@ from .views import views, single_entity_views, admin_views
 
 app_name = 'tool'
 urlpatterns = [
-    # ex: /tool/
+    # Ex: /tool/
     url(r'^$', views.index, name='index'),
 
-    # ex: /tool/login/
-    url(r'^login/$', auth_views.LoginView.as_view(template_name='tool/auth/login.html', redirect_authenticated_user=True),
+    # Ex: /tool/login/
+    url(r'^login/$',
+        auth_views.LoginView.as_view(template_name='tool/auth/login.html', redirect_authenticated_user=True),
         name='login'),
 
     url(r'^logout/$', auth_views.logout_then_login, name='logout'),
 
-    # reverse_lazy call needed for password_change_done because of line here:
+    # Reverse_lazy call needed for password_change_done because of line here:
     # https://github.com/django/django/blob/6e40b70bf4c6e475266a9f011269c50f29f0f14e/django/contrib/auth/views.py#L334
-    # reverse_lazy performed in the view doesn't supply the app namespace
+    # reverse_lazy performed in the view doesn't supply the app namespace aka 'tool'
     url(r'^password-change/$', auth_views.PasswordChangeView.as_view(template_name='tool/auth/password_change.html',
                                                                      success_url=reverse_lazy(
                                                                          'tool:password_change_done')),

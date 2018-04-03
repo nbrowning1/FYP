@@ -8,6 +8,10 @@ from django.template.loader import get_template
 
 from tool.models import *
 
+"""
+Used to send emails to users to report on attendances.
+"""
+
 
 class Command(BaseCommand):
     help = 'Emails attendance reports to users'
@@ -78,8 +82,8 @@ class Command(BaseCommand):
         if options['test-date']:
             to_date = datetime.datetime.strptime(options['test-date'], "%Y-%m-%d").date()
 
-        # uses SMTP server specified in settings.py
-        # get and open one connection for all emails
+        # Uses SMTP server specified in settings.py
+        # Get and open one connection for all emails
         connection = get_connection()
         connection.open()
 
@@ -94,13 +98,9 @@ class Command(BaseCommand):
 
 
 def email_attendance_report(self, user, time_period, connection, test_only, to_date):
-    # TODO:
-    # should check whether user is actually active before processing on them
-    # (won't send email if they don't have updates but cuts down on work done)
-
     user_type_found = False
 
-    # try student first
+    # Try student first
     try:
         student = Student.objects.get(user=user)
         email_details = get_student_attendance_report(self, student, time_period, to_date)
@@ -110,7 +110,7 @@ def email_attendance_report(self, user, time_period, connection, test_only, to_d
         pass
 
     if not user_type_found:
-        # fall back to staff
+        # Fall back to staff
         try:
             lecturer = Staff.objects.get(user=user)
             email_details = get_staff_attendance_report(self, lecturer, time_period, to_date)
@@ -123,7 +123,7 @@ def email_attendance_report(self, user, time_period, connection, test_only, to_d
         self.stdout.write(self.style.NOTICE('Couldn\'t determine user type for: ' + user.username + '. Skipping'))
         return
 
-    # if no attendance data for email, don't send it
+    # If no attendance data for email, don't send it
     if not email_details.modules:
         if test_only:
             self.stdout.write('Email not sent to {} <{}>'.format(str(user.username), user.email))
@@ -160,7 +160,7 @@ def get_email_details(self, time_period, modules, to_date_override, student):
         module_data.module_data = module.get_data(from_date, to_date, student)
         module_data.warning_students_data = []
         for student_attendance in module_data.module_data.student_attendances:
-            if student_attendance.attendance < 50:
+            if student_attendance.percent_attended < 50:
                 module_data.warning_students_data.append(student_attendance)
 
         email_details.modules.append(module_data)
@@ -170,10 +170,10 @@ def get_email_details(self, time_period, modules, to_date_override, student):
 
 def get_from_date(self, today, time_period):
     if time_period == TimePeriod.WEEKLY:
-        # start of week
+        # Start of week
         return today - datetime.timedelta(days=today.weekday())
     elif time_period == TimePeriod.MONTHLY:
-        # start of month
+        # Start of month
         return datetime.date(today.year, today.month, 1)
     else:
         raise CommandError('Unrecognised time period')

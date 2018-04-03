@@ -6,6 +6,10 @@ from django.core.management.base import BaseCommand, CommandError
 from tool.models import *
 from tool.upload_data_save import DataSaver
 
+"""
+Used to set up test data for a fresh system. Mainly used for development purposes.
+"""
+
 
 class Command(BaseCommand):
     help = 'Initialises test data in the app for development purposes'
@@ -355,10 +359,10 @@ def load_attendances(self):
     for i, filename in enumerate(attendance_file_names):
         if filename.endswith("csv"):
             reader = open_file(filename)
-            response = DataSaver().save_uploaded_data_csv(reader, attendance_data_modules[i - 1])
+            response = DataSaver.save_uploaded_data_csv(reader, attendance_data_modules[i - 1])
         else:
             file_contents = open_xls_file(filename).read()
-            response = DataSaver().save_uploaded_data_excel(file_contents, attendance_data_modules[i - 1])
+            response = DataSaver.save_uploaded_data_excel(file_contents, attendance_data_modules[i - 1])
 
         if hasattr(response, 'error'):
             raise CommandError(response.error)

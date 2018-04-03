@@ -131,8 +131,6 @@ def test_upload_valid_data(self, resource_path):
 
     validate_valid_data(self, False)
 
-    # TODO: assert upload confirmation page
-
 
 def test_upload(self, file_path, module_str, expected_error_msg):
     response = self.client.get(reverse('tool:index'))
