@@ -146,7 +146,7 @@ def load_students(self):
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
         try:
             Student.objects.get(user__username=data_username)
-            # delete if already exists so new data can act as overwrite if data needs changed
+            # Delete if already exists so new data can act as overwrite if data needs changed
             user = EncryptedUser.objects.get(username=data_username)
             user.delete()
         except Student.DoesNotExist:
@@ -179,7 +179,7 @@ def load_staff(self):
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
         try:
             Staff.objects.get(user__username=data_username)
-            # delete if already exists so new data can act as overwrite if data needs changed
+            # Delete if already exists so new data can act as overwrite if data needs changed
             user = EncryptedUser.objects.get(username=data_username)
             user.delete()
         except Staff.DoesNotExist:
@@ -205,7 +205,7 @@ def load_modules(self):
         self.stdout.write(self.style.SUCCESS("Loading... " + data_module_id))
         try:
             module = Module.objects.get(module_code=data_module_id, module_crn=data_module_crn)
-            # delete if already exists so new data can act as overwrite if data needs changed
+            # Delete if already exists so new data can act as overwrite if data needs changed
             module.delete()
         except Module.DoesNotExist:
             pass
