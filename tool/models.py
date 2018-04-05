@@ -11,6 +11,7 @@ from encrypted_model_fields.fields import EncryptedCharField, EncryptedEmailFiel
 class EncryptedUser(AbstractUser):
     """Encrypted user override for Django's AbstractUser model, to wrap certain fields as encrypted."""
 
+    # Field definitions are lifted directly from AbstractUser, and just wrapped in EncryptedFields
     first_name = EncryptedCharField(_('first name'), max_length=30, blank=True)
     last_name = EncryptedCharField(_('last name'), max_length=30, blank=True)
     email = EncryptedEmailField(_('email address'), blank=True)

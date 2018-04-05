@@ -112,20 +112,23 @@ $(document).ready(function() {
         }
 
         function add_upload_row() {
+            // clone placeholder upload and remove id
             var newFileUpload = document.getElementById("placeholder").cloneNode(true);
             newFileUpload.id = "";
+            // add to top of existing uploads
             uploadRowsContainer.insertBefore(newFileUpload, uploadRowsContainer.firstChild);
 
-            // file upload element
+            // file upload element - change id, name, label to indicate index of new upload
             var fileInput = document.getElementById("placeholder-file");
             fileInput.id = "file-" + uploadsCounter;
             fileInput.name = "upload-data-" + uploadsCounter;
             fileInput.nextElementSibling.htmlFor = "file-" + uploadsCounter;
 
-            // filename text
+            // filename text (appears after uploading)
             moduleTextEl = document.getElementById('filename-text');
             moduleTextEl.id = "";
             (function(_moduleTextEl){
+                // on file upload, change text to indicate file that was uploaded
                 fileInput.addEventListener('change', function(e) {
                     var filenameSpanText;
                      if (e.target.files[0]) {
@@ -152,8 +155,8 @@ $(document).ready(function() {
                     // delete actual element
                     $(uploadElement).remove();
 
-                    // set existing uploads to have updated indices,
-                    //  where bottom should be 0 index
+                    // set existing uploads to have updated indices after removal,
+                    //  where bottom element should be 0 index
                     var numUploadRows = $(".upload-row:not(#placeholder)").length;
                     $("input[id^='file-']").each(function (i, el) {
                         el.id = "file-" + (numUploadRows - (i+1));

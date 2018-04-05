@@ -9,8 +9,10 @@ from tool.models import *
 
 
 class EncryptedEmailPasswordResetForm(PasswordResetForm):
-    # overrides get_users from Django's PasswordResetForm,
-    # to filter on email (because ours is encrypted)
+    """Overrides get_users from Django's PasswordResetForm,
+        to filter on email (because ours is encrypted).
+    """
+
     def get_users(self, email):
         user = EncryptedUser.get_by_email(email)
         if user is not None and user.is_active and user.has_usable_password():
