@@ -1,5 +1,7 @@
 import csv
 import os
+import random
+import string
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -17,10 +19,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Named (optional) arguments
         parser.add_argument(
+            '--load-minimal',
+            action='store_true',
+            dest='load-minimal',
+            help='Loads single staff user - recommended for a fresh start (production)',
+        )
+
+        parser.add_argument(
             '--load-all',
             action='store_true',
             dest='load-all',
-            help='Loads everything - recommended for a fresh start',
+            help='Loads everything - recommended for a fresh start (developer)',
         )
 
         parser.add_argument(
@@ -87,7 +96,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if options['load-all']:
+        if options['load-minimal']:
+            load_minimal(self)
+        elif options['load-all']:
             load_students(self)
             load_staff(self)
             load_modules(self)
@@ -129,6 +140,29 @@ class Command(BaseCommand):
 
             if not args_supplied:
                 self.stdout.write(self.style.NOTICE('No load argument supplied. Use --help to get load options'))
+
+
+def load_minimal(self):
+    self.stdout.write(self.style.NOTICE('Loading minimal data...'))
+
+    admin_username = 'admin'
+    # code from https://stackoverflow.com/a/2257449
+    admin_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
+    try:
+        user = EncryptedUser.objects.get(username=admin_username)
+        self.stdout.write(self.style.NOTICE('Admin staff user already exists. Deleting and creating new user'))
+        user.delete()
+    except EncryptedUser.DoesNotExist:
+        pass
+
+    user = EncryptedUser.objects.create_user(username=admin_username, password=admin_password)
+    staff = Staff(user=user)
+    staff.save()
+
+    self.stdout.write(self.style.SUCCESS('Loaded minimal data'))
+    self.stdout.write(self.style.NOTICE(
+        '\'admin\' user created. Initial password: ' + admin_password + ' - this password is random, please change at your earliest convenience'))
 
 
 def load_students(self):

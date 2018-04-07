@@ -6,6 +6,38 @@ from ..models import *
 
 
 class InitTestDataTest(TestCase):
+    def test_minimal_data_loaded(self):
+        self.assertEqual(len(EncryptedUser.objects.all()), 0)
+        self.assertEqual(len(Student.objects.all()), 0)
+        self.assertEqual(len(Staff.objects.all()), 0)
+        self.assertEqual(len(Module.objects.all()), 0)
+        self.assertEqual(len(Lecture.objects.all()), 0)
+        self.assertEqual(len(StudentAttendance.objects.all()), 0)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 0)
+
+        call_command('init_test_data', '--load-minimal')
+        self.assertEqual(len(EncryptedUser.objects.all()), 1)
+        self.assertEqual(len(Student.objects.all()), 0)
+        self.assertEqual(len(Staff.objects.all()), 1)
+        self.assertEqual(len(Module.objects.all()), 0)
+        self.assertEqual(len(Lecture.objects.all()), 0)
+        self.assertEqual(len(StudentAttendance.objects.all()), 0)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 0)
+        staff_user = Staff.objects.get(user__username='admin')
+        self.assertTrue(staff_user.user.has_usable_password())
+
+        # calling command again should only overwrite data, not add anything
+        call_command('init_test_data', '--load-minimal')
+        self.assertEqual(len(EncryptedUser.objects.all()), 1)
+        self.assertEqual(len(Student.objects.all()), 0)
+        self.assertEqual(len(Staff.objects.all()), 1)
+        self.assertEqual(len(Module.objects.all()), 0)
+        self.assertEqual(len(Lecture.objects.all()), 0)
+        self.assertEqual(len(StudentAttendance.objects.all()), 0)
+        self.assertEqual(len(ModuleFeedback.objects.all()), 0)
+        staff_user = Staff.objects.get(user__username='admin')
+        self.assertTrue(staff_user.user.has_usable_password())
+
     # testing ALL data is loaded from fresh DB, and subsequent load doesnt add anything
     def test_all_data_loaded(self):
         self.assertEqual(len(EncryptedUser.objects.all()), 0)

@@ -12,6 +12,8 @@ class GeneralTests(TestCase):
         self.assertRedirects(response, '/tool/login/?next=/tool/admin-create-course/', status_code=302)
         response = go_to_admin_create_student(self)
         self.assertRedirects(response, '/tool/login/?next=/tool/admin-create-student/', status_code=302)
+        response = go_to_admin_create_staff(self)
+        self.assertRedirects(response, '/tool/login/?next=/tool/admin-create-staff/', status_code=302)
 
     def test_permissions(self):
         # student should see nothing
@@ -22,6 +24,8 @@ class GeneralTests(TestCase):
         self.assertEqual(response.status_code, 404)
         response = go_to_admin_create_student(self)
         self.assertEqual(response.status_code, 404)
+        response = go_to_admin_create_staff(self)
+        self.assertEqual(response.status_code, 404)
 
         # staff should be able to see
         TestUtils.authenticate_staff(self)
@@ -30,6 +34,8 @@ class GeneralTests(TestCase):
         response = go_to_admin_create_course(self)
         self.assertEqual(response.status_code, 200)
         response = go_to_admin_create_student(self)
+        self.assertEqual(response.status_code, 200)
+        response = go_to_admin_create_staff(self)
         self.assertEqual(response.status_code, 200)
 
 
@@ -154,6 +160,11 @@ def go_to_admin_create_course(self):
 
 def go_to_admin_create_student(self):
     url = reverse('tool:admin_create_student')
+    return self.client.get(url)
+
+
+def go_to_admin_create_staff(self):
+    url = reverse('tool:admin_create_staff')
     return self.client.get(url)
 
 

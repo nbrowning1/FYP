@@ -256,7 +256,7 @@ def test_valid_student_view(self, is_student, **kwargs):
 
     # should only see information relating to B00123456 student - first created (or this user if student)
     response = go_to_student(self, 1)
-    # pdb.set_trace()
+
     if not is_student:
         self.assertNotContains(response, 'COM101')
         self.assertNotContains(response, 'COM102')

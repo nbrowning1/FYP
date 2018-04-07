@@ -408,26 +408,29 @@ def save_module_course_settings(request):
             module_checkbox_vals = request.POST.getlist('modules[]')
             course_checkbox_vals = request.POST.getlist('courses[]')
 
-            # Save checked modules to lecturer
-            for val in module_checkbox_vals:
-                code = val.split("code_")[1].split("crn_")[0].strip()
-                crn = val.split("crn_")[1].strip()
+            try:
+                # Save checked modules to lecturer
+                for val in module_checkbox_vals:
+                    code = val.split("code_")[1].split("crn_")[0].strip()
+                    crn = val.split("crn_")[1].strip()
 
-                try:
-                    module = Module.objects.get(module_code=code, module_crn=crn)
-                    lecturer.modules.add(module)
-                except Module.DoesNotExist:
-                    print("Could not find module with code: " + code + " crn: " + crn)
+                    try:
+                        module = Module.objects.get(module_code=code, module_crn=crn)
+                        lecturer.modules.add(module)
+                    except Module.DoesNotExist:
+                        print("Could not find module with code: " + code + " crn: " + crn)
 
-            # Save checked courses to lecturer
-            for val in course_checkbox_vals:
-                code = val.split("code_")[1].strip()
+                # Save checked courses to lecturer
+                for val in course_checkbox_vals:
+                    code = val.split("code_")[1].strip()
 
-                try:
-                    course = Course.objects.get(course_code=code)
-                    lecturer.courses.add(course)
-                except Course.DoesNotExist:
-                    print("Could not find course with code: " + code)
+                    try:
+                        course = Course.objects.get(course_code=code)
+                        lecturer.courses.add(course)
+                    except Course.DoesNotExist:
+                        print("Could not find course with code: " + code)
+            except Exception as e:
+                print("Something went wrong. Exception: " + str(e))
 
         return redirect(reverse('tool:index'), Permanent=True)
     except Staff.DoesNotExist:

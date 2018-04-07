@@ -4,7 +4,7 @@ from ..data_rows import AttendanceSessionRow, AttendanceRow
 from ..models import *
 
 
-class AttendanceSessionRowTest(TestCase):
+class AttendanceSessionRowTests(TestCase):
     def test_valid_row(self):
         data = AttendanceSessionRow(['Device ID(s)', 'Last Name', 'First Name', '01/01/2017\nFirst Session ID',
                                      '31/01/2017\nSecond Session ID'])

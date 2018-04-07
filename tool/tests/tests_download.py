@@ -27,7 +27,7 @@ class DownloadTests(TestCase):
         TestUtils.authenticate_staff(self)
         self.assertEquals(test_download(self).status_code, 200)
 
-    def test_unauthenticated_upload(self):
+    def test_unauthenticated_download(self):
         response = test_download(self)
         self.assertContains(response, "Please login to see this page.")
 
