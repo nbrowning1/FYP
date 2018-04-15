@@ -121,6 +121,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Custom configuration
 LOGIN_URL = '/tool/login/'
 LOGIN_REDIRECT_URL = '/tool/'
 

@@ -16,7 +16,7 @@ class EmailAttendanceReportTest(TestCase):
         self.assertEqual(len(mail.outbox), 0)
         call_command('email_attendances', '--staff', '--monthly', '--test-date=2018-01-31')
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
+        self.assertEqual(mail.outbox[0].subject, 'Attendance Report')
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(mail.outbox[0].to[0], 'teststaff1@mail.com')
         print(mail.outbox[0].body)
@@ -38,7 +38,7 @@ class EmailAttendanceReportTest(TestCase):
         call_command('email_attendances', '--staff', '--weekly')
         # 1 emails because only 1 lecturer has modules/courses linked
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
+        self.assertEqual(mail.outbox[0].subject, 'Attendance Report')
         # sent to both lecturers
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(mail.outbox[0].to[0], 'teststaff1@mail.com')
@@ -62,8 +62,8 @@ class EmailAttendanceReportTest(TestCase):
         call_command('email_attendances', '--students', '--weekly')
         # 2 emails because 2 students
         self.assertEqual(len(mail.outbox), 2)
-        self.assertEqual(mail.outbox[0].subject, 'Attendance report')
-        self.assertEqual(mail.outbox[1].subject, 'Attendance report')
+        self.assertEqual(mail.outbox[0].subject, 'Attendance Report')
+        self.assertEqual(mail.outbox[1].subject, 'Attendance Report')
         # sent to both lecturers
         self.assertEqual(len(mail.outbox[0].to), 1)
         self.assertEqual(mail.outbox[0].to[0], 'teststudent1@mail.com')

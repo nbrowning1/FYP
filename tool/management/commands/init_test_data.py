@@ -175,6 +175,7 @@ def load_students(self):
             continue
 
         data_course_code = row[1]
+        data_email = row[2]
         data_device_id = row[5]
         data_username = row[6]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
@@ -193,7 +194,7 @@ def load_students(self):
             course = Course(course_code=data_course_code)
             course.save()
 
-        user = EncryptedUser.objects.create_user(username=data_username, password='Django123')
+        user = EncryptedUser.objects.create_user(username=data_username, password='Django123', email=data_email)
         student = Student(user=user, device_id=data_device_id, course=course)
         student.save()
 
@@ -209,6 +210,7 @@ def load_staff(self):
         if counter == 0:
             continue
 
+        data_email = row[0]
         data_username = row[3]
         self.stdout.write(self.style.SUCCESS("Loading... " + data_username))
         try:
@@ -218,7 +220,7 @@ def load_staff(self):
             user.delete()
         except Staff.DoesNotExist:
             pass
-        user = EncryptedUser.objects.create_user(username=data_username, password='Django123')
+        user = EncryptedUser.objects.create_user(username=data_username, password='Django123', email=data_email)
         staff = Staff(user=user)
         staff.save()
 
@@ -393,10 +395,10 @@ def load_attendances(self):
     for i, filename in enumerate(attendance_file_names):
         if filename.endswith("csv"):
             reader = open_file(filename)
-            response = DataSaver.save_uploaded_data_csv(reader, attendance_data_modules[i - 1])
+            response = DataSaver.save_uploaded_data_csv(reader, attendance_data_modules[i])
         else:
             file_contents = open_xls_file(filename).read()
-            response = DataSaver.save_uploaded_data_excel(file_contents, attendance_data_modules[i - 1])
+            response = DataSaver.save_uploaded_data_excel(file_contents, attendance_data_modules[i])
 
         if hasattr(response, 'error'):
             raise CommandError(response.error)

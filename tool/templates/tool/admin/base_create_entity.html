@@ -1,3 +1,4 @@
+{# Base template for creating entities (e.g. module, course). Defines form structure #}
 {% extends "tool/base/base_view.html" %}
 {% load static %}
 
@@ -10,6 +11,7 @@
     <span>{{ success_message }}</span>
     <br>
     {% endif %}
+    {# Set action to something invalid to force implementation #}
     {% block form_open %}<form action="INCORRECT_CONFIGURATION" method="POST" enctype="multipart/form-data">{% endblock %}
         {% csrf_token %}
         {% block form_fields %}

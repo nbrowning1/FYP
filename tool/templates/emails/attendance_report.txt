@@ -1,6 +1,6 @@
 Your attendance report for {{ from_date }} to {{ to_date }}:
 
-{% if modules %}
+{% if has_attendance_data %}
 Modules:
 --------
 {% for module in modules %} {% if module.module_data.lecture_attendances %}

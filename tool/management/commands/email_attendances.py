@@ -182,7 +182,7 @@ def get_from_date(self, today, time_period):
 def send_email(self, email_details, connection, test_only):
     plaintext = get_template('emails/attendance_report.txt')
 
-    email_subject = 'Attendance report'
+    email_subject = 'Attendance Report'
 
     from_email = settings.EMAIL_FROM
     to_email = email_details.email
@@ -191,6 +191,7 @@ def send_email(self, email_details, connection, test_only):
         'from_date': email_details.from_date,
         'to_date': email_details.to_date,
         'modules': email_details.modules,
+        'has_attendance_data': has_attendance_data(email_details.modules),
         'is_student': email_details.is_student
     }
 
@@ -204,6 +205,14 @@ def send_email(self, email_details, connection, test_only):
         self.stdout.write('Email sent to {} <{}>'.format(str(email_details.username), to_email))
     return True
 
+
+def has_attendance_data(modules):
+    has_data = False
+    for module in modules:
+        if len(module.module_data.lecture_attendances) > 0:
+            has_data = True
+            break
+    return has_data
 
 class TimePeriod(Enum):
     WEEKLY = "Weekly"

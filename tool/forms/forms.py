@@ -103,6 +103,7 @@ class UserForm(ModelForm):
             elif EncryptedUser.get_by_email(email) is not None:
                 raise ValidationError("User with this Email address already exists.")
 
+    # Expect these to be implemented by subclasses
     def get_username_pattern(self):
         raise NotImplementedError("Not implemented")
 
