@@ -16,8 +16,8 @@ Final Year Project for student attendance & feedback functions.
     `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 6. Apply migrations: `python manage.py migrate`
 7. Load initial data into the system by using the `init_test_data` command.
-⋅⋅* For minimal data loading, `python manage.py init_test_data --load-minimal`. This will load a single staff user 'admin' and will output a generated password for use
-⋅⋅* For a large batch of initial data, `python manage.py init_test_data --load-all`. This will load a good amount of data for development purposes, with all user passwords set to 'Django123' for easier testing. The data loaded here can be found in the files at tool/test_data/.
+  * For minimal data loading, `python manage.py init_test_data --load-minimal`. This will load a single staff user 'admin' and will output a generated password for use
+  * For a large batch of initial data, `python manage.py init_test_data --load-all`. This will load a good amount of data for development purposes, with all user passwords set to 'Django123' for easier testing. The data loaded here can be found in the files at tool/test_data/.
 8. Start the server: `python manage.py runserver`
 9. Go to http://127.0.0.1:8000/tool/ to access the project. If you haven't already, you will have to log in as a valid user
 
