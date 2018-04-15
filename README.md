@@ -2,7 +2,7 @@
 Final Year Project for student attendance & feedback functions.
 [Build:](https://travis-ci.org/nbrowning1/FYP) ![build status](https://travis-ci.org/nbrowning1/FYP.svg?branch=master)
 ### Setup Instructions
-1. Make sure Python3 and pip are installed: https://www.python.org/downloads/
+1. Make sure Python3 and pip are installed: https://www.python.org/downloads/ - these commands assume python3 is your default python installation
 2. Find a comfy directory, and clone this repository: `git clone https://github.com/nbrowning1/FYP.git`
 3. Install Django: `pip install django`
 4. Install project dependencies: `pip install -r requirements.txt`
@@ -15,10 +15,11 @@ Final Year Project for student attendance & feedback functions.
     or easier, from terminal:
     `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 6. Apply migrations: `python manage.py migrate`
-7. Create an admin user: `python manage.py createsuperuser`
+7. Load initial data into the system by using the `init_test_data` command.
+⋅⋅* For minimal data loading, `python manage.py init_test_data --load-minimal`. This will load a single staff user 'admin' and will output a generated password for use
+⋅⋅* For a large batch of initial data, `python manage.py init_test_data --load-all`. This will load a good amount of data for development purposes, with all user passwords set to 'Django123' for easier testing. The data loaded here can be found in the files at tool/test_data/.
 8. Start the server: `python manage.py runserver`
-9. Go to the Django admin panel at http://127.0.0.1:8000/admin in your browser of choice. You can log in here with your newly created admin user and manually add users
-10. Go to http://127.0.0.1:8000/tool/ to access the project. If you haven't already, you will have to log in as a valid user
+9. Go to http://127.0.0.1:8000/tool/ to access the project. If you haven't already, you will have to log in as a valid user
 
 ### Testing
 ##### Running unit tests
